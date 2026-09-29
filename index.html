@@ -1,0 +1,3691 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Escapa del cole</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Nunito:wght@600;700;800&family=Gochi+Hand&family=Noto+Color+Emoji&display=swap" rel="stylesheet">
+<style>
+:root{
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+  --bg:#F3EEE3;--surface:#FFFFFF;--ink:#1D2B45;--muted:#5E6780;--line:#DDD3C0;--soft:#F7F2E7;
+  --ok:#1E9E5A;--bad:#D64545;--accent:#2E7BD6;
+  --display:'Baloo 2','Noto Color Emoji','Trebuchet MS',system-ui,sans-serif;
+  --body:'Nunito','Noto Color Emoji','Segoe UI',system-ui,sans-serif;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){--bg:#17191F;--surface:#22252E;--ink:#EEF1F7;--muted:#A6ADBF;--line:#353A47;--soft:#1B1E25}
+}
+:root[data-theme="dark"]{--bg:#17191F;--surface:#22252E;--ink:#EEF1F7;--muted:#A6ADBF;--line:#353A47;--soft:#1B1E25}
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body)}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible,input:focus-visible,select:focus-visible,.tile:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.hidden{display:none!important}
+.wrap{max-width:1260px;margin:0 auto;padding:18px 16px 36px}
+h1{font-family:var(--display);font-weight:800;line-height:1;margin:0}
+.btn{border:2.5px solid var(--ink);background:var(--surface);border-radius:12px;padding:10px 16px;font-weight:800;box-shadow:0 3px 0 rgba(29,43,69,.25);transition:transform .08s}
+.btn:active{transform:translateY(2px);box-shadow:none}
+.btn:disabled{opacity:.5;cursor:default}
+.btn-primary{background:var(--accent);color:#fff}
+.btn-go{background:var(--ok);color:#fff}
+.btn-no{background:var(--bad);color:#fff}
+.btn-big{font-family:var(--display);font-size:1.3rem;padding:11px 20px}
+.box{background:var(--surface);border:2.5px solid var(--ink);border-radius:16px;padding:14px 16px;box-shadow:0 3px 0 rgba(29,43,69,.18)}
+.box h2{font-family:var(--display);font-size:1.3rem;margin:0 0 10px;line-height:1.1}
+.chip{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:3px 11px 3px 7px;font-weight:800;font-size:.88rem;color:#fff;background:var(--sc)}
+
+/* ----- Setup ----- */
+.setup-head{display:flex;flex-wrap:wrap;align-items:flex-end;gap:10px 22px;margin:8px 0 20px}
+.setup-head h1{font-size:clamp(2.4rem,7vw,4.2rem)}
+.setup-head p{margin:0;color:var(--muted);font-weight:700;max-width:46ch}
+.setup-grid{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:20px;align-items:start}
+@media (max-width:900px){.setup-grid{grid-template-columns:1fr}}
+.prow-set{border:2px solid var(--line);border-radius:14px;padding:10px;margin-bottom:10px;display:grid;grid-template-columns:48px minmax(0,1fr) minmax(0,1fr) auto;gap:8px 10px;align-items:center;background:var(--soft)}
+@media (max-width:560px){.prow-set{grid-template-columns:48px minmax(0,1fr) auto}.prow-set select{grid-column:2/-1}}
+.pawn{width:44px;height:44px;border-radius:50%;border:3px solid #1D2B45;box-shadow:0 0 0 3px #fff inset;display:grid;place-items:center;font-family:var(--display);font-weight:800;font-size:1.3rem}
+.prow-set input,.prow-set select{width:100%;min-width:0;border:2px solid var(--line);border-radius:10px;padding:9px 10px;font:inherit;font-weight:700;background:var(--surface);color:var(--ink)}
+.swatches{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:6px}
+.sw{display:flex;align-items:center;gap:6px;border:2px solid var(--line);border-radius:999px;padding:3px 10px 3px 4px;background:var(--surface);font-weight:700;font-size:.85rem}
+.sw i{width:20px;height:20px;border-radius:50%;border:2px solid #1D2B45;display:block}
+.sw.on{border-color:var(--ink);box-shadow:0 0 0 2px var(--ink) inset}
+.sw:disabled{opacity:.35;cursor:not-allowed}
+.icon-btn{border:none;background:none;font-size:1.2rem;padding:6px;color:var(--muted)}
+.rules{margin:0;padding-left:1.1em;line-height:1.5}
+.rules li{margin-bottom:6px}
+
+/* ----- Juego ----- */
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}
+.topbar h1{font-size:clamp(1.5rem,3.6vw,2.2rem)}
+.layout{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:20px;align-items:start}
+@media (max-width:980px){.layout{grid-template-columns:1fr}}
+.board-box{width:100%;max-width:min(100%,calc(100vh - 100px));min-width:280px;margin:0 auto}
+@media (max-width:980px){.board-box{max-width:100%}}
+svg#board{display:block;width:100%;height:auto;border-radius:22px;box-shadow:0 6px 0 rgba(29,43,69,.25)}
+.tile{cursor:pointer}
+.tile:focus{outline:none}
+.tile.sel .plank{stroke:#FFD000;stroke-width:8}
+.token{transition:transform .23s ease}
+.token.slow{transition:transform .7s cubic-bezier(.5,0,.3,1)}
+.halo{transform-box:fill-box;transform-origin:center;animation:halo 1.1s ease-out infinite}
+@keyframes halo{from{transform:scale(1);opacity:.9}to{transform:scale(1.7);opacity:0}}
+
+.panel{display:flex;flex-direction:column;gap:14px}
+.turn{text-align:center}
+.turn .who{display:flex;align-items:center;justify-content:center;gap:10px;font-family:var(--display);font-size:1.6rem;font-weight:800;line-height:1.1}
+.turn .who .pawn{width:36px;height:36px;font-size:1rem}
+.turn .lvl{color:var(--muted);font-weight:700;font-size:.9rem;margin:4px 0 4px}
+.turn .status{font-weight:800;min-height:1.3em;margin-bottom:10px}
+.dice-row{display:flex;align-items:center;justify-content:center;gap:14px;flex-wrap:wrap}
+.die{width:62px;height:62px;border:3px solid #1D2B45;border-radius:14px;background:#fff;display:grid;grid-template:repeat(3,1fr)/repeat(3,1fr);padding:8px;box-shadow:0 3px 0 rgba(29,43,69,.25)}
+.die i{width:11px;height:11px;border-radius:50%;background:#1D2B45;place-self:center;visibility:hidden}
+.die i.on{visibility:visible}
+.die.rolling{animation:shake .12s linear infinite}
+@keyframes shake{25%{transform:rotate(-12deg)}75%{transform:rotate(12deg)}}
+.plist{padding:4px 12px}
+.pl{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;padding:9px 0;border-bottom:2px dashed var(--line)}
+.pl:last-child{border-bottom:none}
+.pl .pawn{width:36px;height:36px;font-size:1rem}
+.pl.now .nm::after{content:" ◀";color:var(--accent)}
+.nm{font-weight:800;line-height:1.15}
+.meta{font-size:.8rem;color:var(--muted);font-weight:700}
+.badges{font-size:.8rem;font-weight:800;margin-top:2px;display:flex;gap:4px;flex-wrap:wrap}
+.badge{background:var(--soft);border:1.5px solid var(--line);border-radius:999px;padding:0 7px}
+.exitdots{display:inline-flex;gap:2px;vertical-align:middle}
+.exitdots b{width:10px;height:10px;border-radius:50%;border:2px solid var(--sc);display:inline-block}
+.exitdots b.on{background:var(--sc)}
+.where{font-family:var(--display);font-weight:800;font-size:1.35rem;text-align:right;line-height:1}
+.where small{display:block;font-family:var(--body);font-size:.72rem;color:var(--muted)}
+.log ul{list-style:none;margin:0;padding:0;font-size:.9rem;line-height:1.45}
+.log li{padding:2px 0;color:var(--muted)}
+.log li:first-child{color:var(--ink);font-weight:800}
+.info .kind{font-weight:800;margin-bottom:4px}
+.info p{margin:0;line-height:1.45;font-size:.95rem}
+details.legend summary{font-family:var(--display);font-weight:800;font-size:1.1rem;cursor:pointer}
+.leg{list-style:none;margin:8px 0 0;padding:0;font-size:.9rem}
+.leg li{display:grid;grid-template-columns:30px 1fr;gap:8px;padding:5px 0;align-items:start}
+.leg .ic{width:28px;height:28px;border-radius:8px;background:#FFF4DA;border:2px solid #1D2B45;display:grid;place-items:center;font-family:var(--display);font-weight:800;color:#1D2B45;font-size:.9rem}
+
+/* ----- Modal ----- */
+.modal{position:fixed;inset:0;background:rgba(15,20,35,.55);display:grid;place-items:center;padding:calc(12px + env(safe-area-inset-top,0px)) 12px calc(12px + env(safe-area-inset-bottom,0px));z-index:20}
+.card{width:100%;max-width:600px;max-height:100%;overflow:auto;background:var(--surface);border:3px solid #1D2B45;border-radius:20px;box-shadow:0 6px 0 rgba(0,0,0,.3);animation:pop .2s ease-out}
+@keyframes pop{from{transform:scale(.93);opacity:0}}
+.card-head{background:var(--sc,#1D2B45);color:var(--hc,#fff);padding:14px 18px;display:flex;align-items:center;gap:12px;border-bottom:3px solid #1D2B45}
+.card-head .big{font-size:2rem;font-family:var(--display);font-weight:800;line-height:1}
+.card-head .t{font-family:var(--display);font-size:1.4rem;font-weight:800;line-height:1.05}
+.card-head .s{font-weight:700;opacity:.92;font-size:.9rem}
+.card-head .timer{margin-left:auto;font-family:var(--display);font-size:2rem;font-weight:800;background:rgba(0,0,0,.2);border-radius:12px;padding:0 12px}
+.card-body{padding:18px}
+.card-body p{line-height:1.5;margin:0 0 10px}
+.situation{background:var(--soft);border:2px dashed var(--line);border-radius:12px;padding:9px 12px;font-weight:700;margin-bottom:14px}
+.question{font-family:var(--display);font-size:1.4rem;font-weight:700;line-height:1.25;margin:0 0 14px}
+.options{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media (max-width:480px){.options{grid-template-columns:1fr}}
+.opt{text-align:left;border:2.5px solid #1D2B45;border-radius:12px;background:var(--surface);padding:11px 13px;font-weight:800;font-size:1.02rem;box-shadow:0 3px 0 rgba(29,43,69,.2);display:flex;gap:10px;align-items:center}
+.opt .k{flex:none;width:26px;height:26px;border-radius:8px;display:grid;place-items:center;background:#1D2B45;color:#fff;font-size:.85rem}
+.opt:disabled{cursor:default;opacity:.55}
+.opt.right{background:var(--ok);color:#fff;opacity:1}
+.opt.wrong{background:var(--bad);color:#fff;opacity:1}
+.feedback{margin-top:14px;border-radius:12px;padding:11px 13px;font-weight:700;line-height:1.4}
+.feedback.good{background:color-mix(in srgb,var(--ok) 15%,var(--surface));border:2px solid var(--ok)}
+.feedback.badf{background:color-mix(in srgb,var(--bad) 12%,var(--surface));border:2px solid var(--bad)}
+.feedback b{font-family:var(--display);font-size:1.2rem}
+.foot{display:flex;justify-content:flex-end;gap:10px;flex-wrap:wrap;margin-top:14px}
+.pick{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media (max-width:480px){.pick{grid-template-columns:1fr}}
+.pick button{border:2.5px solid #1D2B45;border-radius:12px;padding:12px;font-weight:800;display:flex;align-items:center;gap:10px;box-shadow:0 3px 0 rgba(29,43,69,.2);background:var(--surface);text-align:left}
+.pick button.subj{background:var(--sc);color:#fff}
+.pick .pawn{width:32px;height:32px;font-size:.95rem}
+.score{font-family:var(--display);font-weight:800;font-size:1.1rem;margin-bottom:10px}
+.win-list{list-style:none;padding:0;margin:0}
+.win-list li{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 0;border-bottom:2px dashed var(--line);font-weight:700;flex-wrap:wrap}
+.win-list li>span:first-child{display:flex;align-items:center;gap:8px}
+.win-list .pawn{width:30px;height:30px;font-size:.9rem}
+.confetti{position:fixed;top:-20px;width:10px;height:14px;z-index:30;pointer-events:none;animation:fall linear forwards}
+@keyframes fall{to{transform:translateY(110vh) rotate(720deg)}}
+@media (prefers-reduced-motion:reduce){.token,.token.slow{transition:none}.halo,.die.rolling,.card{animation:none}.confetti{display:none}}
+</style>
+</head>
+<body>
+
+<!-- ============ PANTALLA INICIAL ============ -->
+<div id="setup" class="wrap">
+  <div class="setup-head">
+    <h1>Escapa del cole</h1>
+    <p>Sal del aula, recorre los pasillos respondiendo preguntas y llega a la puerta de salida antes que nadie.</p>
+  </div>
+  <div class="setup-grid">
+    <div class="box">
+      <h2>Jugadores</h2>
+      <div id="playerRows"></div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:4px">
+        <button class="btn" id="addPlayer">+ Añadir jugador</button>
+        <button class="btn btn-primary btn-big" id="startBtn" style="margin-left:auto">Empezar partida</button>
+      </div>
+    </div>
+    <div class="box">
+      <h2>Cómo se juega</h2>
+      <ol class="rules">
+        <li>Todos empiezan en el aula. Tira el dado y avanza por la espiral.</li>
+        <li>En las casillas de color respondes una pregunta de esa asignatura. Si aciertas, te quedas. Si fallas, vuelves a la casilla donde empezaste el turno.</li>
+        <li>Las casillas blancas son especiales: atajos, retos, castigos, el recreo…</li>
+        <li>Si un evento te mueve a otra casilla, esa casilla no se activa. Excepción: en el Atajo y el Pasillo equivocado respondes la pregunta de donde caigas y, si fallas, vuelves a donde empezaste el turno.</li>
+        <li>Para escapar por la salida (75) hay que acertar una pregunta de cada asignatura. Las que aciertes ya no se repiten.</li>
+      </ol>
+      <p style="color:var(--muted);font-weight:700;margin:10px 0 0">Cada jugador elige su nivel de preguntas: Year 5, Year 7 o Adulto.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ============ PARTIDA ============ -->
+<div id="game" class="wrap hidden">
+  <div class="topbar">
+    <h1>Escapa del cole</h1>
+    <button class="btn" id="newGameBtn">Nueva partida</button>
+  </div>
+  <div class="layout">
+    <div class="board-box">
+      <svg id="board" viewBox="0 0 1000 1000" role="img" aria-label="Tablero en espiral de 75 casillas: se empieza en el aula del centro y se escapa hacia la salida del colegio"></svg>
+    </div>
+    <aside class="panel">
+      <div class="box turn">
+        <div class="who" id="turnWho">—</div>
+        <div class="lvl" id="turnLvl"></div>
+        <div class="status" id="turnStatus"></div>
+        <div class="dice-row">
+          <div class="die" id="die"></div>
+          <button class="btn btn-primary btn-big" id="actBtn">Tirar dado</button>
+        </div>
+      </div>
+      <div class="box plist" id="plist"></div>
+      <div class="box log"><h2 style="font-size:1.1rem;margin-bottom:6px">Lo último</h2><ul id="log"></ul></div>
+      <div class="box info" id="info"><div class="kind">Toca una casilla</div><p>Toca cualquier casilla del tablero para ver qué hace.</p></div>
+      <details class="box legend"><summary>Qué hace cada casilla</summary><ul class="leg" id="legend"></ul></details>
+    </aside>
+  </div>
+</div>
+
+<div id="modal" class="modal hidden"><div class="card" id="card" role="dialog" aria-modal="true"></div></div>
+<script>
+/* ================= DATOS ================= */
+const TOTAL = 75;
+const SUBJECTS = [
+  {id:'lengua',  name:'Lengua',  icon:'🇪🇸', color:'#E4572E'},
+  {id:'maths',   name:'Maths',   icon:'➗', color:'#2E7BD6'},
+  {id:'english', name:'English', icon:'🇬🇧', color:'#E84A8A'},
+  {id:'science', name:'Science', icon:'🔬', color:'#1F9E5B'},
+  {id:'hisgeo',  name:'Historia y Geografía', icon:'🌍', color:'#E0930F'}
+];
+const LEVELS = {
+  y4:{label:'Year 5', short:'Year 5'},
+  y6:{label:'Year 7', short:'Year 7'},
+  adult:{label:'Adulto', short:'Adulto'}
+};
+const COLORS = [
+  {id:'negro',   name:'Negro',       hex:'#1E1E1E'},
+  {id:'granate', name:'Granate',     hex:'#7B1E2B'},
+  {id:'oro',     name:'Oro',         hex:'#D4A017'},
+  {id:'crema',   name:'Crema',       hex:'#F3E6C4'},
+  {id:'teal',    name:'Teal',        hex:'#0F8B8D'},
+  {id:'pistacho',name:'Pistacho',    hex:'#93C572'}
+];
+const COL = Object.fromEntries(COLORS.map(c=>[c.id,c]));
+const textOn = hex => { const n=parseInt(hex.slice(1),16), r=n>>16, g=(n>>8)&255, b=n&255; return (0.299*r+0.587*g+0.114*b)>150 ? '#1D2B45' : '#FFFFFF'; };
+
+const SPECIALS = {
+  fwd:      {g:'mov',    icon:'⏩', name:'¡Atajo!',             sub:'Avanza 2', bg:'#9FE3C8',
+             desc:'¡Has encontrado un atajo por el pasillo! Avanza 2 casillas y responde la pregunta de la casilla donde caigas. Si fallas, vuelves a la casilla donde empezaste el turno.'},
+  back:     {g:'mov',    icon:'⏪', name:'Pasillo equivocado',  sub:'Retrocede 1', bg:'#F2B8B5',
+             desc:'¡Te has equivocado de pasillo! Retrocede 1 casilla y responde la pregunta de la casilla donde caigas. Si fallas, vuelves a la casilla donde empezaste el turno.'},
+  again:    {g:'mov',    icon:'🎲', name:'Roll again',          sub:'Tira otra vez', bg:'#1B2A5C',
+             desc:'¡Tirada gratis! Vuelves a tirar el dado.'},
+  detention:{g:'mov',    icon:'📝', name:'Detention',           sub:'Pierdes un turno', bg:'#E3000F',
+             desc:'¡Te has olvidado los deberes en la taquilla! Te quedas castigado un turno… salvo que aciertes una pregunta difícil.'},
+  speed:    {g:'reto',   icon:'⏱️', name:'Speed Run',           sub:'60 segundos', bg:'#FFF3A6',
+             desc:'Tienes 60 segundos para responder todas las preguntas que puedas, de cualquier asignatura. Avanzas una casilla por cada acierto.'},
+  vs:       {g:'reto',   icon:'⚔️', name:'VS',                  sub:'Reta a otro jugador', bg:'#A7ACB2',
+             desc:'Retas a otro jugador. El retador elige la asignatura y cada uno responde una pregunta: quien acierte avanza 3, quien falle retrocede 3.'},
+  principal:{g:'suerte', icon:'🧑‍🏫', name:"Principal's Office",  sub:'Despacho del director', bg:'#1E1E1E',
+             desc:'Te quedas encerrado en el despacho, como mucho 3 turnos. En cada turno otro jugador elige la asignatura y respondes una pregunta difícil. Si aciertas, sales y tiras el dado en ese mismo turno. Si fallas los 3 intentos, sales en tu siguiente turno y tiras normal.'},
+  double:   {g:'suerte', icon:'×2', name:'Double or Nothing',   sub:'Doble o nada', bg:'#2E7BD6', bg2:'#E3000F',
+             desc:'Tiras el dado en ese momento y respondes una pregunta. Si aciertas, avanzas el doble de lo que saques: si caes en una casilla de asignatura no respondes nada más, y si caes en una especial, se activa. Si fallas, retrocedes lo que hayas sacado.'},
+  mystery:  {g:'suerte', icon:'🎁', name:'Mystery Box',         sub:'Caja sorpresa', bg:'#7B3FB5',
+             desc:'Abre una caja sorpresa.'},
+  recess:   {g:'suerte', icon:'⚽', name:'Recess',              sub:'Recreo', bg:'#FFFFFF',
+             desc:'¡Recreo! Aquí no tienes que responder ninguna pregunta.'}
+};
+const LAYOUT = {
+   5:'fwd',      8:'again',    10:'double',   12:'back',     15:'speed',
+  17:'recess',  19:'detention',21:'mystery',  23:'fwd',      26:'vs',
+  30:'again',   34:'recess',   38:'back',     41:'principal',44:'speed',
+  46:'mystery', 48:'fwd',      50:'recess',   52:'detention',55:'vs',
+  57:'again',   61:'recess',   63:'double',   66:'back',     68:'principal',
+  70:'vs',      73:'recess'
+};
+const GOAL_DESC='La salida del colegio. Para escapar tienes que acertar una pregunta de cada asignatura. Las que aciertes quedan superadas; en los turnos siguientes solo respondes las que te falten.';
+
+const SQUARES=[]; { let k=0;
+  for(let n=1;n<=TOTAL;n++){
+    if(n===TOTAL) SQUARES.push({n,type:'goal'});
+    else if(LAYOUT[n]) SQUARES.push({n,type:'special',key:LAYOUT[n]});
+    else { SQUARES.push({n,type:'subject',subj:SUBJECTS[k%5]}); k++; }
+  }
+}
+
+
+
+/* Preguntas normales. Formato: [pregunta, [correcta, incorrecta, incorrecta, incorrecta], explicación] */
+const QB = {
+ "y4": {
+  "lengua": [
+   [
+    "¿Qué palabra es un sustantivo colectivo?",
+    [
+     "enjambre",
+     "abeja",
+     "volar",
+     "rápido"
+    ],
+    "Un enjambre es un conjunto de abejas: nombra un grupo."
+   ],
+   [
+    "¿Cuál es el antónimo de \"generoso\"?",
+    [
+     "tacaño",
+     "amable",
+     "simpático",
+     "rico"
+    ],
+    "Generoso comparte; tacaño no quiere compartir."
+   ],
+   [
+    "¿Cuál es un sinónimo de \"enorme\"?",
+    [
+     "gigantesco",
+     "estrecho",
+     "pesado",
+     "redondo"
+    ],
+    "Enorme y gigantesco significan muy grande."
+   ],
+   [
+    "¿Cuántas sílabas tiene \"helicóptero\"?",
+    [
+     "5",
+     "4",
+     "6",
+     "3"
+    ],
+    "he-li-cóp-te-ro: 5 sílabas."
+   ],
+   [
+    "¿Cuál está bien escrita?",
+    [
+     "jugábamos",
+     "jugávamos",
+     "jugabamos",
+     "hugábamos"
+    ],
+    "El pretérito imperfecto -aba va con b, y jugábamos es esdrújula: lleva tilde."
+   ],
+   [
+    "¿En qué tiempo está el verbo \"saltó\"?",
+    [
+     "pasado",
+     "presente",
+     "futuro",
+     "no es un verbo"
+    ],
+    "Saltó ya ocurrió: es pasado."
+   ],
+   [
+    "¿Cuál es el plural de \"el lunes\"?",
+    [
+     "los lunes",
+     "los luneses",
+     "las lunes",
+     "los lunés"
+    ],
+    "Las palabras llanas acabadas en -s no cambian en plural."
+   ],
+   [
+    "¿Qué palabra va primero en el diccionario?",
+    [
+     "casa",
+     "casco",
+     "casita",
+     "caspa"
+    ],
+    "Las cuatro empiezan por cas-; se mira la cuarta letra: a, c, i, p."
+   ],
+   [
+    "\"El perro negro ladra.\" ¿Cuál es el adjetivo?",
+    [
+     "negro",
+     "perro",
+     "ladra",
+     "el"
+    ],
+    "Negro dice cómo es el perro."
+   ],
+   [
+    "¿Qué palabra NO es de la familia de \"mar\"?",
+    [
+     "marco",
+     "marinero",
+     "marea",
+     "marítimo"
+    ],
+    "Marco empieza igual pero no tiene que ver con el mar."
+   ],
+   [
+    "¿Cuál es el femenino de \"caballo\"?",
+    [
+     "yegua",
+     "caballa",
+     "vaca",
+     "caballera"
+    ],
+    "Algunos animales tienen una palabra distinta para el femenino."
+   ],
+   [
+    "¿En qué oración están bien usadas las mayúsculas?",
+    [
+     "Vivo en Málaga desde el lunes.",
+     "Vivo en málaga desde el Lunes.",
+     "vivo en Málaga desde el Lunes.",
+     "Vivo en Málaga Desde el lunes."
+    ],
+    "Mayúscula al principio y en nombres propios. Los días de la semana van en minúscula."
+   ]
+  ],
+  "maths": [
+   [
+    "7 × 12 = ?",
+    [
+     "84",
+     "72",
+     "74",
+     "82"
+    ],
+    "7 × 12 = 84."
+   ],
+   [
+    "243 × 4 = ?",
+    [
+     "972",
+     "962",
+     "872",
+     "986"
+    ],
+    "200 × 4 = 800, 40 × 4 = 160, 3 × 4 = 12. Total: 972."
+   ],
+   [
+    "Round 4,650 to the nearest thousand.",
+    [
+     "5,000",
+     "4,000",
+     "4,700",
+     "4,600"
+    ],
+    "The hundreds digit is 6, so we round up."
+   ],
+   [
+    "What is LXXIV in numbers?",
+    [
+     "74",
+     "64",
+     "76",
+     "94"
+    ],
+    "L = 50, XX = 20, IV = 4."
+   ],
+   [
+    "Which fraction is equivalent to 3/4?",
+    [
+     "9/12",
+     "6/12",
+     "3/8",
+     "4/3"
+    ],
+    "Multiply top and bottom by 3: 9/12."
+   ],
+   [
+    "What is 0.07 as a fraction?",
+    [
+     "7/100",
+     "7/10",
+     "70/100",
+     "1/7"
+    ],
+    "0.07 is 7 hundredths."
+   ],
+   [
+    "A square has a perimeter of 36 cm. How long is each side?",
+    [
+     "9 cm",
+     "6 cm",
+     "12 cm",
+     "18 cm"
+    ],
+    "A square has 4 equal sides: 36 ÷ 4 = 9."
+   ],
+   [
+    "What is 7:45 pm in 24-hour time?",
+    [
+     "19:45",
+     "17:45",
+     "07:45",
+     "21:45"
+    ],
+    "Add 12 to pm hours: 7 + 12 = 19."
+   ],
+   [
+    "Which angle is obtuse?",
+    [
+     "120°",
+     "90°",
+     "45°",
+     "180°"
+    ],
+    "Obtuse angles are between 90° and 180°."
+   ],
+   [
+    "How many seconds are there in 3 minutes?",
+    [
+     "180",
+     "300",
+     "120",
+     "360"
+    ],
+    "3 × 60 = 180."
+   ],
+   [
+    "What is 3/5 of 25?",
+    [
+     "15",
+     "5",
+     "10",
+     "20"
+    ],
+    "25 ÷ 5 = 5, and 5 × 3 = 15."
+   ],
+   [
+    "5,000 − 1,248 = ?",
+    [
+     "3,752",
+     "3,852",
+     "4,752",
+     "3,762"
+    ],
+    "5,000 − 1,248 = 3,752."
+   ],
+   [
+    "What is the value of the 7 in 4,725?",
+    [
+     "700",
+     "7",
+     "70",
+     "7,000"
+    ],
+    "The 7 is in the hundreds column."
+   ],
+   [
+    "A rectangle is 7 cm long and 4 cm wide. What is its area?",
+    [
+     "28 cm²",
+     "22 cm²",
+     "11 cm²",
+     "24 cm²"
+    ],
+    "Area = length × width = 28 cm²."
+   ]
+  ],
+  "english": [
+   [
+    "Which word is an abstract noun?",
+    [
+     "kindness",
+     "table",
+     "dog",
+     "run"
+    ],
+    "You can't touch kindness: it is an abstract noun."
+   ],
+   [
+    "What is the plural of \"mouse\"?",
+    [
+     "mice",
+     "mouses",
+     "mices",
+     "meese"
+    ],
+    "\"Mouse\" has an irregular plural: mice."
+   ],
+   [
+    "Which sentence has a fronted adverbial with the comma in the right place?",
+    [
+     "As the sun set, the children went home.",
+     "As the sun, set the children went home.",
+     "As the sun set the children, went home.",
+     "As, the sun set the children went home."
+    ],
+    "The comma goes right after the fronted adverbial."
+   ],
+   [
+    "Choose the correct word: \"The ___ toys were everywhere.\" (many children)",
+    [
+     "children's",
+     "childrens'",
+     "childs'",
+     "children"
+    ],
+    "\"Children\" is already plural, so we add 's."
+   ],
+   [
+    "Choose the correct word: \"I can't wait to see ___ new house.\"",
+    [
+     "their",
+     "there",
+     "they're",
+     "thier"
+    ],
+    "\"Their\" shows that something belongs to them."
+   ],
+   [
+    "What is the past tense of \"catch\"?",
+    [
+     "caught",
+     "catched",
+     "cought",
+     "caughted"
+    ],
+    "Catch is irregular: caught."
+   ],
+   [
+    "Which word means the opposite of \"appear\"?",
+    [
+     "disappear",
+     "unappear",
+     "inappear",
+     "misappear"
+    ],
+    "dis- + appear = disappear."
+   ],
+   [
+    "\"Mum gave the book to Teo and me.\" Which pronoun could replace \"Teo and me\"?",
+    [
+     "us",
+     "we",
+     "them",
+     "our"
+    ],
+    "Mum gave the book to us."
+   ],
+   [
+    "Which sentence is punctuated correctly?",
+    [
+     "\"Come here,\" said Lea.",
+     "\"Come here\" said Lea.",
+     "Come here, \"said Lea.\"",
+     "\"Come here,\" said Lea"
+    ],
+    "Speech marks go around the spoken words, with a comma inside them and a full stop at the end."
+   ],
+   [
+    "\"We stayed inside because it was raining.\" Which word is the conjunction?",
+    [
+     "because",
+     "stayed",
+     "inside",
+     "raining"
+    ],
+    "\"Because\" joins the two ideas."
+   ],
+   [
+    "Choose the correct determiner: \"She waited for ___ hour.\"",
+    [
+     "an",
+     "a",
+     "some",
+     "these"
+    ],
+    "The h in \"hour\" is silent, so it starts with a vowel sound."
+   ],
+   [
+    "Which word is spelled correctly?",
+    [
+     "separate",
+     "seperate",
+     "separete",
+     "seprate"
+    ],
+    "There is \"a rat\" in sep-A-RAT-e."
+   ]
+  ],
+  "science": [
+   [
+    "Sand can be poured, but it is a…",
+    [
+     "solid",
+     "liquid",
+     "gas",
+     "mixture of liquid and gas"
+    ],
+    "Each grain of sand keeps its shape: it is a solid."
+   ],
+   [
+    "Puddles disappear on a sunny day because the water…",
+    [
+     "evaporates",
+     "condenses",
+     "freezes",
+     "melts"
+    ],
+    "The heat turns the water into water vapour."
+   ],
+   [
+    "At what temperature does water boil?",
+    [
+     "100 °C",
+     "0 °C",
+     "50 °C",
+     "212 °C"
+    ],
+    "Water boils at 100 °C (212 is in Fahrenheit)."
+   ],
+   [
+    "Sound travels to our ears as…",
+    [
+     "vibrations",
+     "light",
+     "electricity",
+     "heat"
+    ],
+    "Sound is vibrations travelling through the air."
+   ],
+   [
+    "Which object would complete a circuit and light the bulb?",
+    [
+     "a metal key",
+     "a plastic ruler",
+     "a rubber",
+     "a wooden spoon"
+    ],
+    "Metals are electrical conductors."
+   ],
+   [
+    "Which teeth are used for tearing food?",
+    [
+     "canines",
+     "incisors",
+     "molars",
+     "milk teeth"
+    ],
+    "Incisors cut, canines tear and molars grind."
+   ],
+   [
+    "grass → rabbit → fox. The fox is a…",
+    [
+     "predator",
+     "producer",
+     "prey",
+     "herbivore"
+    ],
+    "The fox hunts and eats the rabbit."
+   ],
+   [
+    "Where is food mixed with acid to break it down?",
+    [
+     "the stomach",
+     "the small intestine",
+     "the mouth",
+     "the large intestine"
+    ],
+    "The stomach uses acid to break down food."
+   ],
+   [
+    "What happens when you open the switch in a circuit?",
+    [
+     "the bulb turns off",
+     "the bulb gets brighter",
+     "the battery recharges",
+     "nothing changes"
+    ],
+    "An open switch breaks the circuit."
+   ],
+   [
+    "Which of these animals is an amphibian?",
+    [
+     "frog",
+     "lizard",
+     "salmon",
+     "penguin"
+    ],
+    "Amphibians live in water and on land: frogs, toads, newts."
+   ],
+   [
+    "If you hit a drum harder, the sound is…",
+    [
+     "louder",
+     "higher",
+     "lower",
+     "quieter"
+    ],
+    "Stronger vibrations make a louder sound."
+   ],
+   [
+    "Why do drops of water appear on a cold can from the fridge?",
+    [
+     "water vapour in the air condenses on it",
+     "the can is leaking",
+     "the metal is melting",
+     "the drink evaporates"
+    ],
+    "Water vapour cools on the can and turns into liquid."
+   ]
+  ],
+  "hisgeo": [
+   [
+    "¿Cuántas comunidades autónomas tiene España?",
+    [
+     "17",
+     "15",
+     "19",
+     "50"
+    ],
+    "17 comunidades y 2 ciudades autónomas: Ceuta y Melilla."
+   ],
+   [
+    "¿Cuál es la capital de Portugal?",
+    [
+     "Lisboa",
+     "Oporto",
+     "Faro",
+     "Madrid"
+    ],
+    "Lisboa está en la desembocadura del Tajo."
+   ],
+   [
+    "¿En qué provincia está Ronda?",
+    [
+     "Málaga",
+     "Cádiz",
+     "Sevilla",
+     "Granada"
+    ],
+    "Ronda es famosa por su Puente Nuevo."
+   ],
+   [
+    "¿Cuántas provincias tiene Andalucía?",
+    [
+     "8",
+     "6",
+     "10",
+     "12"
+    ],
+    "Almería, Cádiz, Córdoba, Granada, Huelva, Jaén, Málaga y Sevilla."
+   ],
+   [
+    "¿Qué estrecho separa España de África?",
+    [
+     "el estrecho de Gibraltar",
+     "el estrecho de Magallanes",
+     "el estrecho de Bering",
+     "el estrecho de Ormuz"
+    ],
+    "Solo mide unos 14 km en su parte más estrecha."
+   ],
+   [
+    "¿Qué océano baña las costas de Cádiz y Huelva?",
+    [
+     "el Atlántico",
+     "el Mediterráneo",
+     "el Pacífico",
+     "el Índico"
+    ],
+    "Málaga está en el Mediterráneo; Cádiz y Huelva, en el Atlántico."
+   ],
+   [
+    "Si miras al norte, ¿qué punto cardinal tienes a tu derecha?",
+    [
+     "el este",
+     "el oeste",
+     "el sur",
+     "el norte"
+    ],
+    "Mirando al norte: el este a la derecha y el oeste a la izquierda."
+   ],
+   [
+    "Why did the Romans build Hadrian's Wall?",
+    [
+     "to keep out tribes from the north",
+     "to stop floods",
+     "to mark a road",
+     "to protect a castle"
+    ],
+    "It protected Roman Britain from the tribes of what is now Scotland."
+   ],
+   [
+    "Who was the Celtic queen who led a revolt against the Romans in Britain?",
+    [
+     "Boudicca",
+     "Cleopatra",
+     "Victoria",
+     "Elizabeth"
+    ],
+    "Boudicca was queen of the Iceni tribe."
+   ],
+   [
+    "¿Qué río pasa por Córdoba?",
+    [
+     "el Guadalquivir",
+     "el Genil",
+     "el Guadalhorce",
+     "el Tajo"
+    ],
+    "El Guadalquivir pasa por Córdoba y Sevilla."
+   ],
+   [
+    "Which people gave England its name?",
+    [
+     "the Angles",
+     "the Romans",
+     "the Vikings",
+     "the Normans"
+    ],
+    "England comes from \"Angle-land\", the land of the Angles (Anglo-Saxons)."
+   ],
+   [
+    "¿Cómo se llama el mapa que representa una ciudad o un barrio con mucho detalle?",
+    [
+     "un plano",
+     "un atlas",
+     "un globo terráqueo",
+     "un mapa político"
+    ],
+    "Los planos muestran calles y edificios."
+   ]
+  ]
+ },
+ "y6": {
+  "lengua": [
+   [
+    "¿Cuál de estas palabras es llana y lleva tilde?",
+    [
+     "árbol",
+     "canción",
+     "pájaro",
+     "reloj"
+    ],
+    "ÁR-bol es llana y no acaba en n, s ni vocal: lleva tilde."
+   ],
+   [
+    "¿Cuál está bien escrita?",
+    [
+     "examen",
+     "exámen",
+     "éxamen",
+     "examén"
+    ],
+    "Es llana acabada en n: no lleva tilde (pero exámenes sí)."
+   ],
+   [
+    "\"A mi hermana le encantan los caballos.\" ¿Cuál es el sujeto?",
+    [
+     "los caballos",
+     "a mi hermana",
+     "le",
+     "encantan"
+    ],
+    "¿Qué le encanta? Los caballos. Concuerdan con el verbo: encantan."
+   ],
+   [
+    "¿En qué tiempo está \"habíamos cantado\"?",
+    [
+     "pretérito pluscuamperfecto",
+     "pretérito perfecto compuesto",
+     "futuro",
+     "condicional"
+    ],
+    "Había + participio = pluscuamperfecto."
+   ],
+   [
+    "¿Cuál es el infinitivo de \"supieron\"?",
+    [
+     "saber",
+     "suponer",
+     "subir",
+     "sufrir"
+    ],
+    "Supieron es el pretérito del verbo saber."
+   ],
+   [
+    "Completa: \"No sé ___ ir a la fiesta.\"",
+    [
+     "si",
+     "sí",
+     "sin",
+     "se"
+    ],
+    "Si sin tilde es conjunción; sí con tilde es afirmación."
+   ],
+   [
+    "\"El sol se escondió cansado tras las montañas\" es una…",
+    [
+     "personificación",
+     "comparación",
+     "metáfora",
+     "hipérbole"
+    ],
+    "Se le da al sol una cualidad humana: estar cansado."
+   ],
+   [
+    "¿Qué significa el prefijo \"sub-\" en \"submarino\"?",
+    [
+     "debajo de",
+     "encima de",
+     "antes de",
+     "contra"
+    ],
+    "Submarino: que va por debajo del mar."
+   ],
+   [
+    "\"Aquel coche es rojo.\" ¿Qué tipo de palabra es \"aquel\"?",
+    [
+     "determinante demostrativo",
+     "pronombre personal",
+     "adjetivo calificativo",
+     "adverbio"
+    ],
+    "Acompaña al sustantivo e indica distancia."
+   ],
+   [
+    "¿Qué par de palabras son homófonas?",
+    [
+     "vaca / baca",
+     "perro / pero",
+     "mesa / misa",
+     "pala / bala"
+    ],
+    "Suenan igual pero se escriben distinto y significan cosas diferentes."
+   ],
+   [
+    "¿Cuántas sílabas tiene \"aéreo\"?",
+    [
+     "4",
+     "3",
+     "2",
+     "5"
+    ],
+    "a-é-re-o: tiene dos hiatos."
+   ],
+   [
+    "¿En qué oración están bien usadas las tildes?",
+    [
+     "Tú tienes mi libro.",
+     "Tu tienes mi libro.",
+     "Tú tienes mí libro.",
+     "Tu tienes mí libro."
+    ],
+    "Tú (pronombre) lleva tilde; mi (posesivo) no."
+   ]
+  ],
+  "maths": [
+   [
+    "(6 + 4) × 3 − 5² = ?",
+    [
+     "5",
+     "25",
+     "55",
+     "30"
+    ],
+    "Brackets: 10. Indices: 25. Then 10 × 3 = 30, and 30 − 25 = 5."
+   ],
+   [
+    "What is 35% of 60?",
+    [
+     "21",
+     "18",
+     "24",
+     "35"
+    ],
+    "10% = 6, so 30% = 18 and 5% = 3. Total: 21."
+   ],
+   [
+    "Which of these is a prime number?",
+    [
+     "59",
+     "51",
+     "57",
+     "63"
+    ],
+    "51 = 3 × 17, 57 = 3 × 19, 63 = 7 × 9."
+   ],
+   [
+    "2/3 + 1/4 = ?",
+    [
+     "11/12",
+     "3/7",
+     "3/12",
+     "5/6"
+    ],
+    "8/12 + 3/12 = 11/12."
+   ],
+   [
+    "Two angles of a triangle are 48° and 67°. What is the third angle?",
+    [
+     "65°",
+     "75°",
+     "55°",
+     "115°"
+    ],
+    "180 − 48 − 67 = 65."
+   ],
+   [
+    "A parallelogram has a base of 9 cm and a height of 4 cm. What is its area?",
+    [
+     "36 cm²",
+     "18 cm²",
+     "26 cm²",
+     "13 cm²"
+    ],
+    "Area = base × height."
+   ],
+   [
+    "3n − 4 = 17. What is n?",
+    [
+     "7",
+     "6",
+     "21",
+     "13"
+    ],
+    "3n = 21, so n = 7."
+   ],
+   [
+    "The temperature falls from 4 °C to −7 °C. How many degrees has it fallen?",
+    [
+     "11",
+     "3",
+     "7",
+     "−3"
+    ],
+    "4 down to 0 is 4, and 0 down to −7 is 7: 11 in total."
+   ],
+   [
+    "The mean of 5 numbers is 8. What is their total?",
+    [
+     "40",
+     "13",
+     "8",
+     "45"
+    ],
+    "Total = mean × how many numbers: 8 × 5."
+   ],
+   [
+    "A circle has a diameter of 15 cm. What is its radius?",
+    [
+     "7.5 cm",
+     "30 cm",
+     "15 cm",
+     "5 cm"
+    ],
+    "The radius is half the diameter."
+   ],
+   [
+    "Share 35 sweets in the ratio 2 : 5. How many are in the larger share?",
+    [
+     "25",
+     "10",
+     "20",
+     "14"
+    ],
+    "2 + 5 = 7 parts. 35 ÷ 7 = 5, and 5 × 5 = 25."
+   ],
+   [
+    "A cube has edges of 3 cm. What is its volume?",
+    [
+     "27 cm³",
+     "9 cm³",
+     "18 cm³",
+     "12 cm³"
+    ],
+    "3 × 3 × 3 = 27."
+   ],
+   [
+    "How many millilitres are there in 2.35 litres?",
+    [
+     "2,350 ml",
+     "235 ml",
+     "23,500 ml",
+     "2,035 ml"
+    ],
+    "1 litre = 1,000 ml."
+   ],
+   [
+    "2/5 ÷ 2 = ?",
+    [
+     "1/5",
+     "4/5",
+     "1/10",
+     "2/7"
+    ],
+    "Half of 2/5 is 1/5."
+   ]
+  ],
+  "english": [
+   [
+    "Rewrite in the passive: \"The storm damaged the roof.\"",
+    [
+     "The roof was damaged by the storm.",
+     "The storm was damaged by the roof.",
+     "The roof damaged the storm.",
+     "The roof is damaging the storm."
+    ],
+    "In the passive, the object (the roof) becomes the subject."
+   ],
+   [
+    "Where should the semi-colon go? \"I love reading my brother prefers football\"",
+    [
+     "after \"reading\"",
+     "after \"love\"",
+     "after \"brother\"",
+     "after \"prefers\""
+    ],
+    "It joins two main clauses: I love reading; my brother prefers football."
+   ],
+   [
+    "\"Her smile was sunshine on a cloudy day.\" This is a…",
+    [
+     "metaphor",
+     "simile",
+     "personification",
+     "onomatopoeia"
+    ],
+    "It says her smile IS sunshine, without \"like\" or \"as\"."
+   ],
+   [
+    "Which sentence contains personification?",
+    [
+     "The angry sea swallowed the boat.",
+     "The sea was as blue as the sky.",
+     "The boat was huge.",
+     "Splash! went the waves."
+    ],
+    "The sea is given human actions and feelings."
+   ],
+   [
+    "Which sentence contains a relative clause?",
+    [
+     "The book, which I borrowed, is great.",
+     "I borrowed a great book.",
+     "Borrowing books is great.",
+     "The book is great because I borrowed it."
+    ],
+    "\"which I borrowed\" is a relative clause."
+   ],
+   [
+    "Which modal verb shows the most certainty?",
+    [
+     "will",
+     "might",
+     "could",
+     "may"
+    ],
+    "\"Will\" is certain; the others show possibility."
+   ],
+   [
+    "Which is the most formal way to say \"find out\"?",
+    [
+     "discover",
+     "get",
+     "look up",
+     "figure out"
+    ],
+    "Formal writing uses single, precise verbs."
+   ],
+   [
+    "Complete with the subjunctive: \"The teacher insisted that he ___ on time.\"",
+    [
+     "be",
+     "is",
+     "was",
+     "being"
+    ],
+    "After \"insist that\", the subjunctive uses the base form \"be\"."
+   ],
+   [
+    "Which word is a synonym of \"reluctant\"?",
+    [
+     "unwilling",
+     "eager",
+     "tired",
+     "careful"
+    ],
+    "Reluctant means not wanting to do something."
+   ],
+   [
+    "Which word is an antonym of \"expand\"?",
+    [
+     "contract",
+     "increase",
+     "stretch",
+     "grow"
+    ],
+    "Expand = get bigger; contract = get smaller."
+   ],
+   [
+    "Which phrase is correctly hyphenated?",
+    [
+     "a well-known author",
+     "a well known-author",
+     "a-well known author",
+     "a well known author"
+    ],
+    "\"Well-known\" works as one adjective before the noun."
+   ],
+   [
+    "Which word is spelled correctly?",
+    [
+     "accommodate",
+     "accomodate",
+     "acommodate",
+     "accommadate"
+    ],
+    "Double c and double m."
+   ]
+  ],
+  "science": [
+   [
+    "Which are the tiniest blood vessels, connecting arteries and veins?",
+    [
+     "capillaries",
+     "veins",
+     "arteries",
+     "nerves"
+    ],
+    "Capillaries are thinner than a hair."
+   ],
+   [
+    "Which side of the heart pumps blood to the lungs?",
+    [
+     "the right side",
+     "the left side",
+     "both sides equally",
+     "neither side"
+    ],
+    "The right side sends blood to the lungs; the left side sends it to the body."
+   ],
+   [
+    "On which islands did Darwin study finches?",
+    [
+     "the Galápagos Islands",
+     "the Canary Islands",
+     "the British Isles",
+     "Hawaii"
+    ],
+    "The finches had different beaks for different foods."
+   ],
+   [
+    "Which of these is a light source?",
+    [
+     "a candle flame",
+     "the Moon",
+     "a mirror",
+     "a white page"
+    ],
+    "The Moon only reflects light from the Sun."
+   ],
+   [
+    "A shadow gets bigger when the object moves…",
+    [
+     "closer to the light source",
+     "further from the light source",
+     "to the left",
+     "upside down"
+    ],
+    "Closer to the light, it blocks more light."
+   ],
+   [
+    "What do the mirrors in a periscope do?",
+    [
+     "reflect light so you can see over things",
+     "make light",
+     "absorb light",
+     "split light into colours"
+    ],
+    "Two mirrors reflect the light into your eyes."
+   ],
+   [
+    "Which group do spiders belong to?",
+    [
+     "arachnids",
+     "insects",
+     "crustaceans",
+     "reptiles"
+    ],
+    "Arachnids have 8 legs."
+   ],
+   [
+    "Which change would make a bulb dimmer?",
+    [
+     "removing one of the cells",
+     "adding another cell",
+     "using a shorter wire",
+     "adding a second switch that is closed"
+    ],
+    "Less voltage makes the bulb dimmer."
+   ],
+   [
+    "Which of these is a helpful use of micro-organisms?",
+    [
+     "making bread rise",
+     "giving people colds",
+     "making food go mouldy",
+     "causing tooth decay"
+    ],
+    "Yeast is a micro-organism that makes bread rise."
+   ],
+   [
+    "What do fossils tell us?",
+    [
+     "living things have changed over time",
+     "rocks are alive",
+     "dinosaurs still exist",
+     "plants never change"
+    ],
+    "Fossils are evidence for evolution."
+   ],
+   [
+    "What does the circulatory system carry to the body's cells?",
+    [
+     "oxygen and nutrients",
+     "only water",
+     "bones",
+     "air bubbles"
+    ],
+    "Blood carries oxygen and nutrients, and takes away waste."
+   ],
+   [
+    "Which of these is a mammal?",
+    [
+     "whale",
+     "shark",
+     "penguin",
+     "crocodile"
+    ],
+    "Whales breathe air and feed their babies milk."
+   ]
+  ],
+  "hisgeo": [
+   [
+    "¿Desde qué puerto salió Colón en 1492?",
+    [
+     "Palos de la Frontera",
+     "Cádiz",
+     "Málaga",
+     "Barcelona"
+    ],
+    "Salió de Palos (Huelva) el 3 de agosto de 1492."
+   ],
+   [
+    "¿Qué ciudad fue la capital del califato de Al-Ándalus?",
+    [
+     "Córdoba",
+     "Granada",
+     "Sevilla",
+     "Toledo"
+    ],
+    "Su mezquita es uno de los monumentos más famosos."
+   ],
+   [
+    "¿Cómo se llamaba la ciudad romana que hoy es Mérida?",
+    [
+     "Emerita Augusta",
+     "Hispalis",
+     "Malaca",
+     "Tarraco"
+    ],
+    "Hispalis era Sevilla, Malaca era Málaga y Tarraco era Tarragona."
+   ],
+   [
+    "Which Anglo-Saxon king fought the Vikings and is known as \"the Great\"?",
+    [
+     "Alfred",
+     "Arthur",
+     "Harold",
+     "Edward"
+    ],
+    "Alfred the Great was king of Wessex."
+   ],
+   [
+    "¿En qué país actual está Chichén Itzá, la ciudad maya?",
+    [
+     "México",
+     "Perú",
+     "Guatemala",
+     "Egipto"
+    ],
+    "Está en la península de Yucatán."
+   ],
+   [
+    "¿En qué isla está el Teide, la montaña más alta de España?",
+    [
+     "Tenerife",
+     "Gran Canaria",
+     "Lanzarote",
+     "Mallorca"
+    ],
+    "Mide unos 3.715 m."
+   ],
+   [
+    "¿Qué país pequeño está entre España y Francia, en los Pirineos?",
+    [
+     "Andorra",
+     "Mónaco",
+     "Luxemburgo",
+     "Portugal"
+    ],
+    "Su capital es Andorra la Vella."
+   ],
+   [
+    "¿Cuál fue el último reino musulmán de la Península?",
+    [
+     "el reino nazarí de Granada",
+     "el reino de Castilla",
+     "el reino de Aragón",
+     "el califato de Córdoba"
+    ],
+    "Los Reyes Católicos lo conquistaron en 1492."
+   ],
+   [
+    "¿Qué etapa de la Prehistoria es la más antigua?",
+    [
+     "el Paleolítico",
+     "el Neolítico",
+     "la Edad de los Metales",
+     "la Edad Antigua"
+    ],
+    "Paleolítico significa \"piedra antigua\"."
+   ],
+   [
+    "Who was the British Prime Minister for most of World War II?",
+    [
+     "Winston Churchill",
+     "Margaret Thatcher",
+     "Henry VIII",
+     "Queen Victoria"
+    ],
+    "Churchill led Britain from 1940 to 1945."
+   ],
+   [
+    "¿Qué son los dólmenes, como los de Antequera?",
+    [
+     "tumbas hechas con grandes piedras",
+     "pinturas en cuevas",
+     "herramientas de hueso",
+     "barcos de madera"
+    ],
+    "Son construcciones megalíticas de la Prehistoria."
+   ],
+   [
+    "¿Cuál es el río más largo que nace y desemboca en España?",
+    [
+     "el Ebro",
+     "el Tajo",
+     "el Guadiana",
+     "el Duero"
+    ],
+    "El Tajo es más largo, pero desemboca en Portugal."
+   ]
+  ]
+ },
+ "adult": {
+  "lengua": [
+   [
+    "¿Cuál es el plural de \"el régimen\"?",
+    [
+     "los regímenes",
+     "los régimenes",
+     "los regimenes",
+     "los régimen"
+    ],
+    "Al añadir -es, la sílaba tónica sigue siendo la misma (gi), que pasa a ser antepenúltima."
+   ],
+   [
+    "Completa: \"Espero que no ___ problemas.\"",
+    [
+     "haya",
+     "halla",
+     "aya",
+     "allá"
+    ],
+    "Haya es del verbo haber; halla es del verbo hallar."
+   ],
+   [
+    "¿Cuál es la forma correcta?",
+    [
+     "dijeron",
+     "dijieron",
+     "dicieron",
+     "decieron"
+    ],
+    "El pretérito de decir es dijeron, sin i."
+   ],
+   [
+    "Además de \"imprimido\", ¿qué otro participio de \"imprimir\" admite la RAE?",
+    [
+     "impreso",
+     "imprimado",
+     "imprento",
+     "imprimisto"
+    ],
+    "Imprimir tiene dos participios válidos: imprimido e impreso."
+   ],
+   [
+    "\"Érase un hombre a una nariz pegado\" (Quevedo). ¿Qué figura literaria predomina?",
+    [
+     "hipérbole",
+     "anáfora",
+     "onomatopeya",
+     "aliteración"
+    ],
+    "Exagera el tamaño de la nariz."
+   ],
+   [
+    "¿Quién escribió \"La casa de Bernarda Alba\"?",
+    [
+     "Federico García Lorca",
+     "Antonio Machado",
+     "Miguel Hernández",
+     "Rafael Alberti"
+    ],
+    "La terminó en 1936, poco antes de morir."
+   ],
+   [
+    "¿Cuál está bien escrita?",
+    [
+     "a gusto",
+     "agusto",
+     "ah gusto",
+     "a-gusto"
+    ],
+    "Se escribe en dos palabras: estar a gusto."
+   ],
+   [
+    "¿Qué significa \"procrastinar\"?",
+    [
+     "aplazar las tareas",
+     "trabajar muy deprisa",
+     "recordar el pasado",
+     "planificar con detalle"
+    ],
+    "Viene del latín \"cras\", mañana."
+   ],
+   [
+    "¿Cuál es el gentilicio de Cádiz?",
+    [
+     "gaditano",
+     "onubense",
+     "hispalense",
+     "malacitano"
+    ],
+    "Onubense es de Huelva, hispalense de Sevilla y malacitano de Málaga."
+   ],
+   [
+    "¿Qué oración contiene un dequeísmo?",
+    [
+     "Pienso de que tienes razón.",
+     "Me alegro de que vengas.",
+     "Estoy seguro de que vendrá.",
+     "Me acuerdo de que llovía."
+    ],
+    "Se piensa algo, no \"de\" algo: \"Pienso que tienes razón\"."
+   ],
+   [
+    "¿Qué obra empieza con \"En un lugar de la Mancha…\"?",
+    [
+     "El Quijote",
+     "La Celestina",
+     "El Lazarillo de Tormes",
+     "El Cantar de mio Cid"
+    ],
+    "Miguel de Cervantes, 1605."
+   ],
+   [
+    "¿Cuál es el imperativo correcto de \"sentarse\" para vosotros?",
+    [
+     "sentaos",
+     "sentaros",
+     "sentados",
+     "sentarse"
+    ],
+    "Se quita la d final: sentad + os = sentaos."
+   ]
+  ],
+  "maths": [
+   [
+    "What is 15% of 240?",
+    [
+     "36",
+     "24",
+     "30",
+     "40"
+    ],
+    "10% = 24 and 5% = 12. Total: 36."
+   ],
+   [
+    "17 × 23 = ?",
+    [
+     "391",
+     "381",
+     "401",
+     "371"
+    ],
+    "17 × 20 = 340, 17 × 3 = 51. Total: 391."
+   ],
+   [
+    "What is √196?",
+    [
+     "14",
+     "13",
+     "16",
+     "98"
+    ],
+    "14 × 14 = 196."
+   ],
+   [
+    "What is the sum of the interior angles of a hexagon?",
+    [
+     "720°",
+     "540°",
+     "360°",
+     "1,080°"
+    ],
+    "(6 − 2) × 180° = 720°."
+   ],
+   [
+    "Solve: 4x − 7 = 2x + 9",
+    [
+     "x = 8",
+     "x = 4",
+     "x = 1",
+     "x = 16"
+    ],
+    "2x = 16, so x = 8."
+   ],
+   [
+    "What is 0.125 as a percentage?",
+    [
+     "12.5%",
+     "1.25%",
+     "125%",
+     "0.125%"
+    ],
+    "0.125 × 100 = 12.5%."
+   ],
+   [
+    "3/8 + 5/12 = ?",
+    [
+     "19/24",
+     "8/20",
+     "2/3",
+     "15/96"
+    ],
+    "9/24 + 10/24 = 19/24."
+   ],
+   [
+    "What is the area of a circle with a radius of 5 cm? (π ≈ 3.14)",
+    [
+     "78.5 cm²",
+     "31.4 cm²",
+     "15.7 cm²",
+     "25 cm²"
+    ],
+    "π × r² = 3.14 × 25."
+   ],
+   [
+    "2⁵ × 2³ = ?",
+    [
+     "256",
+     "128",
+     "1,024",
+     "64"
+    ],
+    "2⁵ × 2³ = 2⁸ = 256."
+   ],
+   [
+    "A car travels 150 km in 1 hour 15 minutes. What is its average speed?",
+    [
+     "120 km/h",
+     "150 km/h",
+     "112.5 km/h",
+     "130 km/h"
+    ],
+    "150 ÷ 1.25 = 120."
+   ],
+   [
+    "What comes next? 1, 1, 2, 3, 5, 8, 13, …",
+    [
+     "21",
+     "18",
+     "20",
+     "26"
+    ],
+    "Fibonacci: each number is the sum of the previous two."
+   ],
+   [
+    "How many prime numbers are there between 1 and 20?",
+    [
+     "8",
+     "7",
+     "9",
+     "10"
+    ],
+    "2, 3, 5, 7, 11, 13, 17 and 19."
+   ]
+  ],
+  "english": [
+   [
+    "Choose the correct word: \"There were ___ people than expected.\"",
+    [
+     "fewer",
+     "less",
+     "lesser",
+     "least"
+    ],
+    "Use \"fewer\" with things you can count."
+   ],
+   [
+    "What is the past participle of \"lie\" (to recline)?",
+    [
+     "lain",
+     "laid",
+     "lied",
+     "lay"
+    ],
+    "Lie – lay – lain. (Lay – laid – laid means to put something down.)"
+   ],
+   [
+    "Which word is spelled correctly?",
+    [
+     "embarrass",
+     "embarass",
+     "embarras",
+     "emmbarrass"
+    ],
+    "Double r and double s."
+   ],
+   [
+    "What does \"ubiquitous\" mean?",
+    [
+     "found everywhere",
+     "very rare",
+     "very old",
+     "unfriendly"
+    ],
+    "Smartphones are ubiquitous."
+   ],
+   [
+    "Which sentence uses \"whom\" correctly?",
+    [
+     "To whom should I send the letter?",
+     "Whom is calling?",
+     "Whom did it?",
+     "Whom wants tea?"
+    ],
+    "\"Whom\" is the object form; the others need \"who\"."
+   ],
+   [
+    "What is a palindrome?",
+    [
+     "a word that reads the same backwards",
+     "a word with the opposite meaning",
+     "a word that imitates a sound",
+     "a made-up word"
+    ],
+    "For example: level, racecar."
+   ],
+   [
+    "Who wrote \"Pride and Prejudice\"?",
+    [
+     "Jane Austen",
+     "Charlotte Brontë",
+     "Charles Dickens",
+     "Virginia Woolf"
+    ],
+    "It was published in 1813."
+   ],
+   [
+    "\"It's raining cats and dogs\" is an example of…",
+    [
+     "an idiom",
+     "a simile",
+     "a palindrome",
+     "an oxymoron"
+    ],
+    "Its meaning is not literal."
+   ],
+   [
+    "Which of these is an oxymoron?",
+    [
+     "deafening silence",
+     "very loud",
+     "quiet night",
+     "red rose"
+    ],
+    "It combines two contradictory words."
+   ],
+   [
+    "Choose the correct word: \"The new rules will ___ everyone.\"",
+    [
+     "affect",
+     "effect",
+     "afect",
+     "effects"
+    ],
+    "\"Affect\" is usually the verb; \"effect\" is usually the noun."
+   ],
+   [
+    "What is the collective noun for a group of lions?",
+    [
+     "a pride",
+     "a pack",
+     "a herd",
+     "a school"
+    ],
+    "A pack of wolves, a herd of cows, a school of fish."
+   ],
+   [
+    "In which Shakespeare play does the line \"To be, or not to be\" appear?",
+    [
+     "Hamlet",
+     "Macbeth",
+     "Othello",
+     "King Lear"
+    ],
+    "Hamlet, Act 3."
+   ]
+  ],
+  "science": [
+   [
+    "What is the chemical symbol for gold?",
+    [
+     "Au",
+     "Ag",
+     "Go",
+     "Gd"
+    ],
+    "From the Latin \"aurum\". Ag is silver."
+   ],
+   [
+    "What is the most abundant gas in Earth's atmosphere?",
+    [
+     "nitrogen",
+     "oxygen",
+     "carbon dioxide",
+     "argon"
+    ],
+    "About 78% nitrogen and 21% oxygen."
+   ],
+   [
+    "Which is the hottest planet in the Solar System?",
+    [
+     "Venus",
+     "Mercury",
+     "Mars",
+     "Jupiter"
+    ],
+    "Venus's thick atmosphere traps heat, so it is hotter than Mercury."
+   ],
+   [
+    "Which part of the cell is known as its \"powerhouse\"?",
+    [
+     "mitochondria",
+     "nucleus",
+     "ribosome",
+     "cell membrane"
+    ],
+    "Mitochondria release energy from food."
+   ],
+   [
+    "Approximately how fast does light travel?",
+    [
+     "300,000 km/s",
+     "300,000 km/h",
+     "30,000 km/s",
+     "3,000,000 km/s"
+    ],
+    "About 300,000 kilometres per second."
+   ],
+   [
+    "Which blood type is known as the universal donor?",
+    [
+     "O negative",
+     "AB positive",
+     "A negative",
+     "B positive"
+    ],
+    "It can be given to people of any blood type."
+   ],
+   [
+    "What is H₂O₂?",
+    [
+     "hydrogen peroxide",
+     "water",
+     "heavy water",
+     "hydroxide"
+    ],
+    "It is used as a disinfectant and bleach."
+   ],
+   [
+    "How many bones are there in the adult human body?",
+    [
+     "206",
+     "186",
+     "216",
+     "306"
+    ],
+    "Babies are born with around 300, and some fuse together."
+   ],
+   [
+    "Which scientist formulated the three laws of motion?",
+    [
+     "Isaac Newton",
+     "Galileo Galilei",
+     "Albert Einstein",
+     "Johannes Kepler"
+    ],
+    "Published in 1687."
+   ],
+   [
+    "What is the pH of pure water at 25 °C?",
+    [
+     "7",
+     "0",
+     "14",
+     "1"
+    ],
+    "7 is neutral."
+   ],
+   [
+    "Which part of the brain controls balance and coordination?",
+    [
+     "cerebellum",
+     "cerebrum",
+     "medulla",
+     "hypothalamus"
+    ],
+    "The cerebellum is at the back of the brain."
+   ],
+   [
+    "What type of rock is marble?",
+    [
+     "metamorphic",
+     "igneous",
+     "sedimentary",
+     "volcanic"
+    ],
+    "It forms when limestone is changed by heat and pressure."
+   ]
+  ],
+  "hisgeo": [
+   [
+    "¿En qué año tuvo lugar la batalla de Trafalgar?",
+    [
+     "1805",
+     "1812",
+     "1808",
+     "1588"
+    ],
+    "La flota británica de Nelson venció a la franco-española frente a Cádiz."
+   ],
+   [
+    "¿Cuál es el río más caudaloso del mundo?",
+    [
+     "el Amazonas",
+     "el Nilo",
+     "el Misisipi",
+     "el Yangtsé"
+    ],
+    "El Nilo compite por ser el más largo, pero el Amazonas lleva mucha más agua."
+   ],
+   [
+    "¿Qué rey de España abdicó en 2014?",
+    [
+     "Juan Carlos I",
+     "Felipe VI",
+     "Alfonso XIII",
+     "Carlos IV"
+    ],
+    "Le sucedió su hijo, Felipe VI."
+   ],
+   [
+    "¿Cuál es la capital de Australia?",
+    [
+     "Canberra",
+     "Sídney",
+     "Melbourne",
+     "Perth"
+    ],
+    "Se eligió como término medio entre Sídney y Melbourne."
+   ],
+   [
+    "¿En qué ciudad se celebraron los Juegos Olímpicos de 1992?",
+    [
+     "Barcelona",
+     "Sevilla",
+     "Madrid",
+     "Atlanta"
+    ],
+    "El mismo año, Sevilla celebró la Exposición Universal."
+   ],
+   [
+    "Which royal house replaced the Tudors on the English throne in 1603?",
+    [
+     "the Stuarts",
+     "the Windsors",
+     "the Hanoverians",
+     "the Plantagenets"
+    ],
+    "James VI of Scotland became James I of England."
+   ],
+   [
+    "In which year did the Great Fire of London take place?",
+    [
+     "1666",
+     "1066",
+     "1605",
+     "1766"
+    ],
+    "It started in a bakery on Pudding Lane."
+   ],
+   [
+    "¿Qué pintor malagueño pintó el \"Guernica\"?",
+    [
+     "Pablo Picasso",
+     "Salvador Dalí",
+     "Joan Miró",
+     "Francisco de Goya"
+    ],
+    "Picasso nació en Málaga en 1881."
+   ],
+   [
+    "¿Cuál es el país más grande del mundo por superficie?",
+    [
+     "Rusia",
+     "Canadá",
+     "China",
+     "Estados Unidos"
+    ],
+    "Rusia ocupa más de 17 millones de km²."
+   ],
+   [
+    "¿Qué dinastía gobernó el califato de Córdoba en el siglo X?",
+    [
+     "los omeyas",
+     "los abasíes",
+     "los nazaríes",
+     "los almohades"
+    ],
+    "Abderramán III se proclamó califa en el año 929."
+   ],
+   [
+    "Which British monarch has had the longest reign?",
+    [
+     "Elizabeth II",
+     "Victoria",
+     "George III",
+     "Henry VIII"
+    ],
+    "Elizabeth II reigned for 70 years (1952–2022)."
+   ],
+   [
+    "¿Qué dos mares une el canal de Suez?",
+    [
+     "el Mediterráneo y el Rojo",
+     "el Mediterráneo y el Negro",
+     "el Rojo y el Arábigo",
+     "el Caspio y el Negro"
+    ],
+    "Se inauguró en 1869."
+   ]
+  ]
+ }
+};
+
+/* Preguntas difíciles (Detention y Principal's Office), dentro del nivel de cada curso */
+const HARD = {
+ "y4": {
+  "lengua": [
+   [
+    "¿Cuántas sílabas tiene \"aeropuerto\"?",
+    [
+     "5",
+     "4",
+     "6",
+     "3"
+    ],
+    "a-e-ro-puer-to: \"a-e\" van separadas (hiato) y \"ue\" van juntas (diptongo)."
+   ],
+   [
+    "¿Qué palabra es un sustantivo abstracto?",
+    [
+     "sabiduría",
+     "sabio",
+     "saber",
+     "sabiamente"
+    ],
+    "Sabio es adjetivo, saber es verbo y sabiamente es adverbio."
+   ],
+   [
+    "¿En qué oración hay una falta de ortografía?",
+    [
+     "Ayer bamos al parque.",
+     "Ayer fuimos al parque.",
+     "Mañana iremos al parque.",
+     "Hoy vamos al parque."
+    ],
+    "\"Vamos\" es del verbo ir y se escribe con v."
+   ],
+   [
+    "¿Qué palabra es compuesta?",
+    [
+     "sacapuntas",
+     "puntas",
+     "puntual",
+     "apuntar"
+    ],
+    "Saca + puntas: está formada por dos palabras."
+   ],
+   [
+    "\"Los niños juegan en el patio.\" ¿Cuál es el núcleo del sujeto?",
+    [
+     "niños",
+     "Los",
+     "juegan",
+     "patio"
+    ],
+    "El núcleo del sujeto es el sustantivo principal: niños."
+   ],
+   [
+    "¿Cuál es el antónimo de \"ordenar\" formado con un prefijo?",
+    [
+     "desordenar",
+     "inordenar",
+     "antiordenar",
+     "reordenar"
+    ],
+    "El prefijo des- indica lo contrario."
+   ]
+  ],
+  "maths": [
+   [
+    "The area of a rectangle is 48 cm². One side is 6 cm. What is its perimeter?",
+    [
+     "28 cm",
+     "14 cm",
+     "48 cm",
+     "24 cm"
+    ],
+    "The other side is 48 ÷ 6 = 8 cm. Perimeter: 6 + 8 + 6 + 8 = 28 cm."
+   ],
+   [
+    "A film starts at 17:40 and lasts 1 hour 35 minutes. When does it end?",
+    [
+     "19:15",
+     "19:05",
+     "18:15",
+     "19:25"
+    ],
+    "17:40 + 1 h = 18:40, + 35 min = 19:15."
+   ],
+   [
+    "Round 9,961 to the nearest hundred.",
+    [
+     "10,000",
+     "9,900",
+     "9,960",
+     "9,000"
+    ],
+    "The tens digit is 6, so 9,961 rounds up to 10,000."
+   ],
+   [
+    "A book costs £4.75. How much do 4 books cost?",
+    [
+     "£19.00",
+     "£16.75",
+     "£18.00",
+     "£19.75"
+    ],
+    "£4 × 4 = £16 and 75p × 4 = £3. Total: £19."
+   ],
+   [
+    "What is XCIV in numbers?",
+    [
+     "94",
+     "96",
+     "114",
+     "104"
+    ],
+    "XC = 90 and IV = 4."
+   ],
+   [
+    "0.7 + 0.25 = ?",
+    [
+     "0.95",
+     "0.32",
+     "7.25",
+     "0.725"
+    ],
+    "0.70 + 0.25 = 0.95."
+   ]
+  ],
+  "english": [
+   [
+    "Which sentence uses apostrophes correctly? (several children, several teachers)",
+    [
+     "The children's coats were on the teachers' desks.",
+     "The childrens' coats were on the teachers desks.",
+     "The children's coats were on the teachers desk's.",
+     "The childrens coats were on the teacher's' desks."
+    ],
+    "Children is already plural (children's); teachers ends in s (teachers')."
+   ],
+   [
+    "Which word is spelled correctly?",
+    [
+     "courageous",
+     "couragous",
+     "courageus",
+     "corageous"
+    ],
+    "Keep the e after the g to keep the soft \"j\" sound: courage + ous."
+   ],
+   [
+    "\"When the bell rang, everyone ran outside.\" What is the subordinate clause?",
+    [
+     "When the bell rang",
+     "everyone ran outside",
+     "ran outside",
+     "the bell"
+    ],
+    "It can't make sense on its own."
+   ],
+   [
+    "Which word is a homophone of \"weather\"?",
+    [
+     "whether",
+     "wetter",
+     "feather",
+     "weathered"
+    ],
+    "Weather and whether sound the same."
+   ],
+   [
+    "How many pronouns are there in: \"She gave it to them.\"?",
+    [
+     "3",
+     "1",
+     "2",
+     "4"
+    ],
+    "She, it and them."
+   ],
+   [
+    "Which word contains a prefix meaning \"again\"?",
+    [
+     "rebuild",
+     "ruin",
+     "read",
+     "reason"
+    ],
+    "re- + build = build again. In the others, \"re\" is not a prefix."
+   ]
+  ],
+  "science": [
+   [
+    "What is the correct order of the digestive system?",
+    [
+     "mouth → oesophagus → stomach → small intestine",
+     "mouth → stomach → oesophagus → small intestine",
+     "oesophagus → mouth → stomach → small intestine",
+     "mouth → small intestine → stomach → oesophagus"
+    ],
+    "Food goes down the oesophagus to the stomach, then to the small intestine."
+   ],
+   [
+    "Why can't sound travel in space?",
+    [
+     "there is no air to vibrate",
+     "it is too cold",
+     "it is too dark",
+     "there is too much light"
+    ],
+    "Sound needs something (like air) to travel through."
+   ],
+   [
+    "What is the correct order of the water cycle?",
+    [
+     "evaporation → condensation → precipitation → collection",
+     "condensation → evaporation → collection → precipitation",
+     "precipitation → evaporation → collection → condensation",
+     "collection → condensation → evaporation → precipitation"
+    ],
+    "Water evaporates, forms clouds, falls as rain and collects in rivers and seas."
+   ],
+   [
+    "leaf → caterpillar → bird → cat. What would happen if all the birds disappeared?",
+    [
+     "there would be more caterpillars",
+     "there would be more birds",
+     "there would be more leaves eaten by cats",
+     "nothing would change"
+    ],
+    "Nothing would eat the caterpillars, so there would be more of them."
+   ],
+   [
+    "Which of these will NOT conduct electricity?",
+    [
+     "a glass marble",
+     "a steel spoon",
+     "an aluminium can",
+     "a copper coin"
+    ],
+    "Glass is an insulator."
+   ],
+   [
+    "A vibrating tuning fork is put into water. What happens?",
+    [
+     "the water splashes",
+     "the water freezes",
+     "nothing happens",
+     "the fork melts"
+    ],
+    "The vibrations of the fork make the water move."
+   ]
+  ],
+  "hisgeo": [
+   [
+    "¿Cuál es el río más largo de la Península Ibérica?",
+    [
+     "el Tajo",
+     "el Ebro",
+     "el Guadalquivir",
+     "el Duero"
+    ],
+    "El Tajo mide unos 1.000 km y desemboca en Lisboa."
+   ],
+   [
+    "¿Cuál es la comunidad autónoma más grande de España?",
+    [
+     "Castilla y León",
+     "Andalucía",
+     "Castilla-La Mancha",
+     "Aragón"
+    ],
+    "Andalucía es la más poblada, pero Castilla y León es la más grande."
+   ],
+   [
+    "In which year did the Romans invade Britain under Emperor Claudius?",
+    [
+     "AD 43",
+     "1066",
+     "1492",
+     "AD 410"
+    ],
+    "Claudius conquered Britain in AD 43."
+   ],
+   [
+    "¿Qué río atraviesa la ciudad de Málaga?",
+    [
+     "el Guadalmedina",
+     "el Guadalhorce",
+     "el Guadalquivir",
+     "el Genil"
+    ],
+    "El Guadalhorce desemboca cerca del aeropuerto; el Guadalmedina cruza el centro."
+   ],
+   [
+    "What was the Roman name for London?",
+    [
+     "Londinium",
+     "Eboracum",
+     "Aquae Sulis",
+     "Camulodunum"
+    ],
+    "Eboracum was York, Aquae Sulis was Bath and Camulodunum was Colchester."
+   ],
+   [
+    "¿Cuál es el pico más alto de Andalucía?",
+    [
+     "el Mulhacén",
+     "el Teide",
+     "el Aneto",
+     "la Veleta"
+    ],
+    "Está en Sierra Nevada (Granada) y mide unos 3.479 m."
+   ]
+  ]
+ },
+ "y6": {
+  "lengua": [
+   [
+    "¿Qué palabra está bien acentuada?",
+    [
+     "cántaselo",
+     "cantaselo",
+     "cantáselo",
+     "cántasélo"
+    ],
+    "Es sobresdrújula: siempre lleva tilde, en la sílaba tónica."
+   ],
+   [
+    "Pasa a voz pasiva: \"Los alumnos pintaron el mural.\"",
+    [
+     "El mural fue pintado por los alumnos.",
+     "Los alumnos fueron pintados por el mural.",
+     "El mural pintó a los alumnos.",
+     "El mural ha pintado a los alumnos."
+    ],
+    "El complemento directo pasa a ser el sujeto paciente."
+   ],
+   [
+    "\"Di el regalo a Lea.\" ¿Qué función tiene \"a Lea\"?",
+    [
+     "complemento indirecto",
+     "complemento directo",
+     "sujeto",
+     "complemento circunstancial"
+    ],
+    "¿A quién di el regalo? A Lea → le di el regalo."
+   ],
+   [
+    "¿En qué tiempo y modo está \"hubieran salido\"?",
+    [
+     "pretérito pluscuamperfecto de subjuntivo",
+     "pretérito pluscuamperfecto de indicativo",
+     "condicional compuesto",
+     "pretérito perfecto de subjuntivo"
+    ],
+    "Hubiera/hubiese + participio."
+   ],
+   [
+    "\"Jugamos en el parque.\" ¿Qué función tiene \"en el parque\"?",
+    [
+     "complemento circunstancial de lugar",
+     "complemento directo",
+     "complemento indirecto",
+     "atributo"
+    ],
+    "Indica dónde ocurre la acción."
+   ],
+   [
+    "¿Qué palabra lleva tilde para romper un diptongo (hiato)?",
+    [
+     "María",
+     "canción",
+     "árbol",
+     "pájaro"
+    ],
+    "Ma-rí-a: sin tilde, \"ia\" iría junta."
+   ]
+  ],
+  "maths": [
+   [
+    "3 × (8 − 2)² ÷ 4 = ?",
+    [
+     "27",
+     "9",
+     "36",
+     "108"
+    ],
+    "Brackets: 6. Indices: 36. Then 3 × 36 = 108, and 108 ÷ 4 = 27."
+   ],
+   [
+    "What is 0.375 as a fraction in its simplest form?",
+    [
+     "3/8",
+     "375/100",
+     "3/4",
+     "37/100"
+    ],
+    "0.375 = 375/1000 = 3/8."
+   ],
+   [
+    "Which number is both a square number and a cube number?",
+    [
+     "64",
+     "16",
+     "27",
+     "36"
+    ],
+    "64 = 8 × 8 = 4 × 4 × 4."
+   ],
+   [
+    "A £50 price rises by 10% and then falls by 10%. What is the final price?",
+    [
+     "£49.50",
+     "£50",
+     "£45",
+     "£55"
+    ],
+    "£50 → £55. Then 10% of £55 is £5.50, so £55 − £5.50 = £49.50."
+   ],
+   [
+    "The mean of 4 numbers is 12. Three of them are 10, 15 and 9. What is the fourth?",
+    [
+     "14",
+     "12",
+     "16",
+     "48"
+    ],
+    "Total = 4 × 12 = 48. 48 − (10 + 15 + 9) = 14."
+   ],
+   [
+    "n + m = 10 and n − m = 4. What is n?",
+    [
+     "7",
+     "6",
+     "3",
+     "5"
+    ],
+    "n = 7 and m = 3."
+   ],
+   [
+    "What is 2/3 of 3/4?",
+    [
+     "1/2",
+     "5/7",
+     "1/4",
+     "8/9"
+    ],
+    "2/3 × 3/4 = 6/12 = 1/2."
+   ]
+  ],
+  "english": [
+   [
+    "\"Despite the rain, we went out.\" What word class is \"despite\"?",
+    [
+     "preposition",
+     "conjunction",
+     "adverb",
+     "verb"
+    ],
+    "\"Despite\" is a preposition followed by a noun."
+   ],
+   [
+    "Which sentence is in the passive voice?",
+    [
+     "The match had been cancelled before we arrived.",
+     "We had cancelled the match before they arrived.",
+     "The players were cancelling the match.",
+     "They cancel matches when it rains."
+    ],
+    "The subject (the match) receives the action."
+   ],
+   [
+    "\"Running every morning keeps Lea fit.\" What is the subject of the sentence?",
+    [
+     "Running every morning",
+     "Lea",
+     "fit",
+     "keeps"
+    ],
+    "What keeps Lea fit? Running every morning."
+   ],
+   [
+    "Which sentence uses dashes correctly for parenthesis?",
+    [
+     "My cousin – who lives in Leeds – is visiting.",
+     "My cousin who – lives in Leeds – is visiting.",
+     "My cousin – who lives in Leeds is visiting.",
+     "– My cousin who lives in Leeds – is visiting."
+    ],
+    "The extra information goes between the two dashes."
+   ],
+   [
+    "\"I know that you are right.\" What word class is \"that\"?",
+    [
+     "subordinating conjunction",
+     "relative pronoun",
+     "determiner",
+     "adverb"
+    ],
+    "It introduces the subordinate clause \"that you are right\"."
+   ],
+   [
+    "Which sentence uses a colon correctly?",
+    [
+     "I need three things: a pen, a ruler and a rubber.",
+     "I need: three things a pen, a ruler and a rubber.",
+     "I: need three things, a pen, a ruler and a rubber.",
+     "I need three things a pen: a ruler and a rubber."
+    ],
+    "A colon introduces a list after a complete clause."
+   ]
+  ],
+  "science": [
+   [
+    "Which chamber of the heart pumps oxygenated blood to the whole body?",
+    [
+     "left ventricle",
+     "right ventricle",
+     "left atrium",
+     "right atrium"
+    ],
+    "The left ventricle has the thickest wall because it pumps blood all around the body."
+   ],
+   [
+    "Where does oxygen pass into the blood?",
+    [
+     "in the lungs",
+     "in the heart",
+     "in the stomach",
+     "in the veins"
+    ],
+    "In the tiny air sacs of the lungs (alveoli)."
+   ],
+   [
+    "Why did peppered moths become darker in industrial cities?",
+    [
+     "dark moths were better camouflaged on sooty trees",
+     "the smoke painted them",
+     "they ate soot",
+     "they chose to change colour"
+    ],
+    "Birds ate the pale moths more easily: natural selection."
+   ],
+   [
+    "Why does a straw look bent in a glass of water?",
+    [
+     "light changes direction (refraction)",
+     "the water bends the straw",
+     "light stops in water",
+     "shadows form in water"
+    ],
+    "Light bends when it passes from water to air."
+   ],
+   [
+    "In a circuit diagram, what does a circle with a cross inside mean?",
+    [
+     "a bulb (lamp)",
+     "a cell",
+     "a switch",
+     "a buzzer"
+    ],
+    "That is the symbol for a lamp."
+   ],
+   [
+    "Which kingdom do mushrooms belong to?",
+    [
+     "fungi",
+     "plants",
+     "animals",
+     "bacteria"
+    ],
+    "Fungi are not plants: they cannot make their own food."
+   ]
+  ],
+  "hisgeo": [
+   [
+    "¿En qué año empezó la conquista musulmana de la Península?",
+    [
+     "711",
+     "1492",
+     "218 a.C.",
+     "1066"
+    ],
+    "En el año 711 cruzaron el estrecho de Gibraltar."
+   ],
+   [
+    "Who did William the Conqueror defeat at the Battle of Hastings?",
+    [
+     "Harold II",
+     "Alfred the Great",
+     "Henry VIII",
+     "Richard III"
+    ],
+    "Harold II was the last Anglo-Saxon king of England."
+   ],
+   [
+    "¿En qué año se aprobó la Constitución española actual?",
+    [
+     "1978",
+     "1975",
+     "1812",
+     "1492"
+    ],
+    "Se votó en referéndum el 6 de diciembre de 1978."
+   ],
+   [
+    "Who was on the English throne when the Spanish Armada attacked in 1588?",
+    [
+     "Elizabeth I",
+     "Henry VIII",
+     "Mary I",
+     "Edward VI"
+    ],
+    "Elizabeth I was the last Tudor monarch."
+   ],
+   [
+    "¿Qué batalla, hacia el año 722, se considera el inicio de la Reconquista?",
+    [
+     "Covadonga",
+     "Las Navas de Tolosa",
+     "Guadalete",
+     "Trafalgar"
+    ],
+    "Don Pelayo venció en Covadonga (Asturias)."
+   ],
+   [
+    "¿Qué cordillera separa la Submeseta Norte de la Submeseta Sur?",
+    [
+     "el Sistema Central",
+     "los Pirineos",
+     "el Sistema Ibérico",
+     "Sierra Morena"
+    ],
+    "En ella están la Sierra de Gredos y la de Guadarrama."
+   ]
+  ]
+ },
+ "adult": {
+  "lengua": [
+   [
+    "¿Qué oración es correcta?",
+    [
+     "Hubo muchos problemas.",
+     "Hubieron muchos problemas.",
+     "Habían muchos problemas.",
+     "Han habido muchos problemas."
+    ],
+    "Haber como existencia es impersonal: siempre en singular."
+   ],
+   [
+    "Según la ortografía de 2010, ¿qué palabra NO lleva tilde?",
+    [
+     "guion",
+     "canción",
+     "árbol",
+     "lápiz"
+    ],
+    "Guion es monosílaba a efectos ortográficos."
+   ],
+   [
+    "¿Qué es el leísmo?",
+    [
+     "usar \"le\" como complemento directo en lugar de \"lo\" o \"la\"",
+     "usar \"la\" como complemento indirecto",
+     "usar \"lo\" como complemento indirecto",
+     "usar \"le\" en lugar de \"les\""
+    ],
+    "Por ejemplo: \"A Juan le vi\" en lugar de \"lo vi\". (Con personas masculinas en singular, la RAE lo admite.)"
+   ],
+   [
+    "¿Quién escribió \"Platero y yo\"?",
+    [
+     "Juan Ramón Jiménez",
+     "Antonio Machado",
+     "Gustavo Adolfo Bécquer",
+     "Pío Baroja"
+    ],
+    "Juan Ramón Jiménez, nacido en Moguer (Huelva), Premio Nobel en 1956."
+   ],
+   [
+    "¿Cuántas sílabas métricas tiene un verso endecasílabo?",
+    [
+     "11",
+     "8",
+     "12",
+     "14"
+    ],
+    "Endeca- viene del griego \"once\"."
+   ],
+   [
+    "¿Qué tipo de conector es \"sin embargo\"?",
+    [
+     "adversativo",
+     "causal",
+     "consecutivo",
+     "temporal"
+    ],
+    "Introduce una idea que se opone a la anterior."
+   ]
+  ],
+  "maths": [
+   [
+    "What is 12.5% of 12.5% of 6,400?",
+    [
+     "100",
+     "800",
+     "50",
+     "200"
+    ],
+    "12.5% of 6,400 = 800, and 12.5% of 800 = 100."
+   ],
+   [
+    "x² − 5x + 6 = 0. What is the sum of the two solutions?",
+    [
+     "5",
+     "6",
+     "−5",
+     "1"
+    ],
+    "The solutions are 2 and 3."
+   ],
+   [
+    "After a 20% discount, a price is £60. What was the original price?",
+    [
+     "£75",
+     "£72",
+     "£80",
+     "£48"
+    ],
+    "£60 is 80% of the price: 60 ÷ 0.8 = 75."
+   ],
+   [
+    "What is the probability of rolling a total of 7 with two dice?",
+    [
+     "1/6",
+     "1/12",
+     "7/36",
+     "1/36"
+    ],
+    "6 of the 36 combinations add up to 7."
+   ],
+   [
+    "How many diagonals does a hexagon have?",
+    [
+     "9",
+     "6",
+     "12",
+     "15"
+    ],
+    "n(n − 3) ÷ 2 = 6 × 3 ÷ 2 = 9."
+   ],
+   [
+    "111,111,111 × 9 = ?",
+    [
+     "999,999,999",
+     "1,000,000,000",
+     "999,999,991",
+     "111,111,119"
+    ],
+    "111,111,111 × 9 = 999,999,999."
+   ]
+  ],
+  "english": [
+   [
+    "Which sentence is grammatically correct?",
+    [
+     "Between you and me, it's a secret.",
+     "Between you and I, it's a secret.",
+     "Between yourself and I, it's a secret.",
+     "Between you and myself, it's a secret."
+    ],
+    "After a preposition, use the object pronoun \"me\"."
+   ],
+   [
+    "What does \"sanguine\" usually mean?",
+    [
+     "optimistic",
+     "angry",
+     "sleepy",
+     "jealous"
+    ],
+    "\"She was sanguine about her chances.\""
+   ],
+   [
+    "Which word is a synonym of \"obsequious\"?",
+    [
+     "servile",
+     "generous",
+     "stubborn",
+     "clumsy"
+    ],
+    "Too eager to please or obey."
+   ],
+   [
+    "\"I've told you a million times.\" Which figure of speech is this?",
+    [
+     "hyperbole",
+     "litotes",
+     "metonymy",
+     "irony"
+    ],
+    "It is a deliberate exaggeration."
+   ],
+   [
+    "Which spelling is correct?",
+    [
+     "millennium",
+     "millenium",
+     "milennium",
+     "millennim"
+    ],
+    "Double l and double n."
+   ],
+   [
+    "\"The pen is mightier than the sword.\" What figure of speech is \"the pen\"?",
+    [
+     "metonymy",
+     "simile",
+     "onomatopoeia",
+     "alliteration"
+    ],
+    "\"The pen\" stands for writing and ideas."
+   ]
+  ],
+  "science": [
+   [
+    "What is the atomic number of carbon?",
+    [
+     "6",
+     "12",
+     "8",
+     "14"
+    ],
+    "Carbon has 6 protons. 12 is its mass number."
+   ],
+   [
+    "Which element has the chemical symbol K?",
+    [
+     "potassium",
+     "krypton",
+     "calcium",
+     "sodium"
+    ],
+    "From the Latin \"kalium\". Kr is krypton."
+   ],
+   [
+    "What is the unit of electrical resistance?",
+    [
+     "ohm",
+     "volt",
+     "ampere",
+     "watt"
+    ],
+    "Named after Georg Ohm."
+   ],
+   [
+    "Which vitamin does the skin produce when exposed to sunlight?",
+    [
+     "vitamin D",
+     "vitamin C",
+     "vitamin A",
+     "vitamin B12"
+    ],
+    "Vitamin D helps the body absorb calcium."
+   ],
+   [
+    "Approximately how long does sunlight take to reach Earth?",
+    [
+     "8 minutes",
+     "8 seconds",
+     "1 hour",
+     "1 day"
+    ],
+    "About 8 minutes and 20 seconds."
+   ],
+   [
+    "Which organelle carries out photosynthesis?",
+    [
+     "chloroplast",
+     "mitochondrion",
+     "nucleus",
+     "vacuole"
+    ],
+    "Chloroplasts contain chlorophyll."
+   ]
+  ],
+  "hisgeo": [
+   [
+    "¿En qué año se firmó el Tratado de Tordesillas?",
+    [
+     "1494",
+     "1492",
+     "1512",
+     "1588"
+    ],
+    "Castilla y Portugal se repartieron las nuevas tierras."
+   ],
+   [
+    "¿Qué reina de Castilla es conocida como \"la Loca\"?",
+    [
+     "Juana I",
+     "Isabel II",
+     "Isabel la Católica",
+     "Mariana de Austria"
+    ],
+    "Hija de los Reyes Católicos y madre de Carlos I."
+   ],
+   [
+    "Which document, sealed by King John in 1215, limited the power of the English king?",
+    [
+     "Magna Carta",
+     "the Bill of Rights",
+     "the Domesday Book",
+     "the Act of Union"
+    ],
+    "It was sealed at Runnymede."
+   ],
+   [
+    "¿Cuál es el lago más grande de África?",
+    [
+     "el lago Victoria",
+     "el lago Tanganica",
+     "el lago Malaui",
+     "el lago Chad"
+    ],
+    "Lo comparten Uganda, Kenia y Tanzania."
+   ],
+   [
+    "In which year did the Acts of Union join England and Scotland to form Great Britain?",
+    [
+     "1707",
+     "1603",
+     "1801",
+     "1066"
+    ],
+    "In 1603 they only shared a king; in 1707 they became one kingdom."
+   ],
+   [
+    "¿Cuál es el punto más meridional de la Europa continental?",
+    [
+     "la punta de Tarifa",
+     "el cabo de Gata",
+     "Gibraltar",
+     "el cabo de San Vicente"
+    ],
+    "Está en Cádiz, frente a Marruecos."
+   ]
+  ]
+ }
+};
+
+/* ================= TABLERO ================= */
+const NS='http://www.w3.org/2000/svg';
+const svg=document.getElementById('board');
+const el=(tag,attrs={},parent=svg)=>{const e=document.createElementNS(NS,tag);for(const k in attrs)e.setAttribute(k,attrs[k]);parent.appendChild(e);return e;};
+const stxt=(parent,x,y,str,attrs={})=>{const t=el('text',Object.assign({x,y,'text-anchor':'middle'},attrs),parent);t.textContent=str;return t;};
+
+const M=65, L=1000-2*M, GAP=120, TH=GAP*0.8, PITCH=70, GAPT=8;
+const pts=(()=>{const dirs=[[1,0],[0,-1],[-1,0],[0,1]], lens=[L-GAP,L,L,L-GAP,L-GAP,L-2*GAP,L-2*GAP,L-3*GAP];
+  let x=M+GAP,y=1000-M; const p=[[x,y]]; lens.forEach((len,i)=>{const[dx,dy]=dirs[i%4];x+=dx*len;y+=dy*len;p.push([x,y]);}); return p;})();
+const pos=[];
+for(let i=0;i<pts.length-1 && pos.length<TOTAL;i++){
+  const [x0,y0]=pts[i],[x1,y1]=pts[i+1];
+  const len=Math.hypot(x1-x0,y1-y0), ux=(x1-x0)/len, uy=(y1-y0)/len;
+  const startPad=i===0?-PITCH/2:TH/2, space=len-startPad-TH/2, k=Math.floor(space/PITCH), pitch=space/k;
+  for(let j=0;j<k && pos.length<TOTAL;j++){
+    const d=startPad+pitch*(j+.5);
+    pos.push({x:x0+ux*d,y:y0+uy*d,w:Math.abs(ux)*(pitch-GAPT)+Math.abs(uy)*TH,h:Math.abs(uy)*(pitch-GAPT)+Math.abs(ux)*TH,corner:false});
+  }
+  if(i<pts.length-2 && pos.length<TOTAL) pos.push({x:x1,y:y1,w:TH,h:TH,corner:true});
+}
+const posOf = n => pos[TOTAL-n];
+// Los 6 pupitres del aula: un asiento por color (negro, granate, oro, crema, teal, pistacho)
+const SEATS = [0,1,2,3,4,5].map(i=>{ const c=i%3, r=Math.floor(i/3), x=430+c*100, y=615+r*62; return {x:x+27, y:y+22, w:40, h:40}; });
+const seatOf = colorId => SEATS[COLORS.findIndex(c=>c.id===colorId)];
+
+function buildBoard(){
+  svg.innerHTML='';
+  const defs=el('defs');
+  defs.innerHTML=`
+    <pattern id="floor" width="80" height="80" patternUnits="userSpaceOnUse">
+      <rect width="80" height="80" fill="#E9E2D2"/><rect width="40" height="40" fill="#DDD4C0"/><rect x="40" y="40" width="40" height="40" fill="#DDD4C0"/>
+    </pattern>
+    <pattern id="wood" width="120" height="30" patternUnits="userSpaceOnUse">
+      <rect width="120" height="30" fill="#E2B67C"/><line x1="0" y1="29" x2="120" y2="29" stroke="#C99A5E" stroke-width="2"/><line x1="70" y1="0" x2="70" y2="30" stroke="#C99A5E" stroke-width="2"/>
+    </pattern>
+    <linearGradient id="split" x1="0" y1="0" x2="1" y2="1"><stop offset="0.5" stop-color="#2E7BD6"/><stop offset="0.5" stop-color="#E3000F"/></linearGradient>
+    <filter id="drop" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="4" stdDeviation="0" flood-color="#3B3326" flood-opacity=".35"/></filter>`;
+  el('rect',{x:0,y:0,width:1000,height:1000,fill:'url(#floor)'});
+
+  // alfombra del pasillo
+  const lastP=pos[pos.length-1];
+  let road=`M${pts[0][0]-60} ${pts[0][1]}`;
+  for(let i=1;i<pts.length;i++){
+    const [x,y]=pts[i],[px,py]=pts[i-1];
+    const on=(Math.abs(lastP.x-px)<1&&Math.abs(lastP.x-x)<1&&(lastP.y-py)*(lastP.y-y)<=0)||(Math.abs(lastP.y-py)<1&&Math.abs(lastP.y-y)<1&&(lastP.x-px)*(lastP.x-x)<=0);
+    if(on){road+=` L${lastP.x} ${lastP.y}`;break;} road+=` L${x} ${y}`;
+  }
+  el('path',{d:road,fill:'none',stroke:'#9DB7D6','stroke-opacity':.55,'stroke-width':TH+22,'stroke-linejoin':'round'});
+
+  // aula
+  const g=el('g');
+  el('rect',{x:250,y:250,width:500,height:500,rx:18,fill:'url(#wood)',stroke:'#7A5230','stroke-width':6},g);
+  el('rect',{x:253,y:253,width:494,height:210,rx:14,fill:'#F4E9C9'},g);
+  el('line',{x1:253,y1:463,x2:747,y2:463,stroke:'#B98B55','stroke-width':6},g);
+  el('rect',{x:292,y:282,width:370,height:160,rx:6,fill:'#8B5A2B'},g);
+  el('rect',{x:302,y:292,width:350,height:140,rx:3,fill:'#2F5B48'},g);
+  el('rect',{x:300,y:434,width:354,height:10,rx:3,fill:'#A0703E'},g);
+  el('rect',{x:330,y:430,width:22,height:6,rx:2,fill:'#fff'},g);
+  el('rect',{x:590,y:430,width:30,height:8,rx:2,fill:'#F5D06E'},g);
+  const chalk={'font-family':"'Gochi Hand','Comic Sans MS',cursive",fill:'rgba(255,255,255,.92)'};
+  stxt(g,477,352,'¡Escapa del cole!',Object.assign({'font-size':44},chalk));
+  stxt(g,370,405,'7 × 8 = 56',Object.assign({'font-size':24},chalk));
+  stxt(g,480,405,'ABC',Object.assign({'font-size':24},chalk));
+  stxt(g,585,405,'H₂O',Object.assign({'font-size':24},chalk));
+  el('circle',{cx:708,cy:320,r:26,fill:'#fff',stroke:'#1D2B45','stroke-width':5},g);
+  el('line',{x1:708,y1:320,x2:708,y2:302,stroke:'#1D2B45','stroke-width':4,'stroke-linecap':'round'},g);
+  el('line',{x1:708,y1:320,x2:721,y2:326,stroke:'#C0392B','stroke-width':3,'stroke-linecap':'round'},g);
+  el('rect',{x:420,y:500,width:170,height:24,rx:4,fill:'#8B5A2B',stroke:'#5C3A1A','stroke-width':3},g);
+  el('rect',{x:430,y:524,width:24,height:40,fill:'#7A4E24'},g);
+  el('rect',{x:556,y:524,width:24,height:40,fill:'#7A4E24'},g);
+  el('circle',{cx:445,cy:490,r:12,fill:'#E53935'},g);
+  el('path',{d:'M445 478 q4 -8 10 -6',stroke:'#2E7D32','stroke-width':3,fill:'none'},g);
+  el('rect',{x:510,y:484,width:60,height:8,fill:'#2E7BD6'},g);
+  el('rect',{x:514,y:476,width:54,height:8,fill:'#E0930F'},g);
+  el('rect',{x:508,y:468,width:58,height:8,fill:'#8E44AD'},g);
+  el('rect',{x:652,y:568,width:36,height:8,rx:3,fill:'#5C3A1A'},g);
+  el('line',{x1:670,y1:568,x2:670,y2:548,stroke:'#5C3A1A','stroke-width':5},g);
+  el('circle',{cx:670,cy:520,r:30,fill:'#4FA3E0',stroke:'#1D2B45','stroke-width':3},g);
+  el('path',{d:'M652 508 q10 -12 22 -4 q6 10 -6 16 q-8 4 -16 -2 Z M676 526 q10 -4 14 6 q-4 12 -14 8 Z',fill:'#43A047'},g);
+  for(let r=0;r<2;r++) for(let c=0;c<3;c++){
+    const x=430+c*100, y=615+r*62;
+    el('rect',{x:x-6,y:y+28,width:66,height:11,rx:4,fill:'#6B7FA8'},g);
+    el('rect',{x,y,width:54,height:28,rx:5,fill:'#C98A4B',stroke:'#7A5230','stroke-width':3},g);
+  }
+  const p1=posOf(1);
+  el('rect',{x:250,y:p1.y-40,width:14,height:80,fill:'#8B5A2B',stroke:'#5C3A1A','stroke-width':3},g);
+  const tag=el('g',{transform:`translate(300 ${p1.y})`},g);
+  el('rect',{x:-30,y:-15,width:60,height:30,rx:8,fill:'#FFD000',stroke:'#1D2B45','stroke-width':3},tag);
+  stxt(tag,0,7,'Aula',{'font-family':"'Baloo 2',sans-serif",'font-weight':800,'font-size':19,fill:'#1D2B45'});
+  // alumnos sentados de los colores que no juegan
+  COLORS.forEach(c=>{
+    if(S && S.players.some(p=>p.color===c.id)) return;
+    const st=seatOf(c.id), a=el('g',{transform:`translate(${st.x} ${st.y})`,opacity:.9},g);
+    el('circle',{r:20,fill:'#fff'},a);
+    el('circle',{r:17,fill:c.hex,stroke:'#1D2B45','stroke-width':3},a);
+    const f=textOn(c.hex);
+    el('circle',{cx:-5,cy:-3,r:2.2,fill:f},a); el('circle',{cx:5,cy:-3,r:2.2,fill:f},a);
+    el('path',{d:'M-6 5 q6 5 12 0',fill:'none',stroke:f,'stroke-width':2,'stroke-linecap':'round'},a);
+  });
+
+  // salida
+  const e=el('g',{transform:'translate(72 930)'});
+  el('rect',{x:-52,y:-50,width:104,height:112,fill:'#fff',stroke:'#1D2B45','stroke-width':4},e);
+  el('rect',{x:-44,y:-18,width:42,height:76,fill:'#5C7FA8',stroke:'#1D2B45','stroke-width':3},e);
+  el('rect',{x:2,y:-18,width:42,height:76,fill:'#5C7FA8',stroke:'#1D2B45','stroke-width':3},e);
+  el('rect',{x:-36,y:-10,width:26,height:30,fill:'#BFE3FA'},e);
+  el('rect',{x:10,y:-10,width:26,height:30,fill:'#BFE3FA'},e);
+  el('rect',{x:-8,y:22,width:6,height:14,rx:2,fill:'#FFD000'},e);
+  el('rect',{x:2,y:22,width:6,height:14,rx:2,fill:'#FFD000'},e);
+  el('rect',{x:-48,y:-46,width:96,height:24,rx:3,fill:'#1E9E5A'},e);
+  stxt(e,0,-27,'EXIT 🏃',{'font-family':"'Baloo 2',sans-serif",'font-weight':800,'font-size':19,fill:'#fff'});
+
+  // casillas
+  const layer=el('g');
+  SQUARES.forEach(s=>{
+    const p=posOf(s.n);
+    const t=el('g',{class:'tile',tabindex:0,role:'button','data-n':s.n,transform:`translate(${p.x.toFixed(1)} ${p.y.toFixed(1)})`},layer);
+    let fill='#FFF4DA', stroke='#1D2B45', nf='#1D2B45', label='';
+    if(s.type==='subject'){fill=s.subj.color;stroke='#FFFFFF';nf='#FFFFFF';label=s.subj.name;}
+    if(s.type==='special'){label=SPECIALS[s.key].name; const v=SPECIALS[s.key]; if(v.bg){ fill=v.bg2?'url(#split)':v.bg; nf=textOn(v.bg); }}
+    if(s.type==='goal'){fill='#FFD000';label='Exit, la salida';}
+    t.setAttribute('aria-label',`Casilla ${s.n}: ${label}`);
+    el('rect',{class:'plank',x:-p.w/2,y:-p.h/2,width:p.w,height:p.h,rx:p.corner?24:13,fill,stroke,'stroke-width':4.5,filter:'url(#drop)'},t);
+    stxt(t,0,-10,s.n,{'font-family':"'Baloo 2',sans-serif",'font-weight':800,'font-size':26,fill:nf});
+    const icon=s.type==='subject'?s.subj.icon:s.type==='special'?SPECIALS[s.key].icon:'🚪';
+    const isT=icon==='×2';
+    stxt(t,0,isT?26:25,icon,{'font-size':isT?30:26,'font-family':isT?"'Baloo 2',sans-serif":"'Noto Color Emoji',sans-serif",'font-weight':800,fill:isT?nf:'#1D2B45'});
+    t.addEventListener('click',()=>showSquareInfo(s.n));
+    t.addEventListener('keydown',ev=>{if(ev.key==='Enter'||ev.key===' '){ev.preventDefault();showSquareInfo(s.n);}});
+  });
+  el('g',{id:'tokenLayer'});
+  el('rect',{x:3,y:3,width:994,height:994,rx:22,fill:'none',stroke:'#1D2B45','stroke-width':6,'pointer-events':'none'});
+}
+
+function showSquareInfo(n){
+  document.querySelectorAll('.tile.sel').forEach(t=>t.classList.remove('sel'));
+  document.querySelector(`.tile[data-n="${n}"]`)?.classList.add('sel');
+  const s=SQUARES[n-1], info=document.getElementById('info');
+  if(s.type==='subject') info.innerHTML=`<div class="kind" style="color:${s.subj.color}">Casilla ${n} · ${s.subj.icon} ${s.subj.name}</div><p>Pregunta de ${s.subj.name}. Si aciertas, te quedas. Si fallas, vuelves a la casilla donde empezaste el turno.</p>`;
+  else if(s.type==='special'){const v=SPECIALS[s.key]; info.innerHTML=`<div class="kind">Casilla ${n} · ${v.icon} ${v.name} (${v.sub})</div><p>${v.desc}</p>`;}
+  else info.innerHTML=`<div class="kind">Casilla ${n} · 🚪 Exit</div><p>${GOAL_DESC}</p>`;
+}
+
+/* ================= UTILIDADES ================= */
+const $=s=>document.querySelector(s);
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+const shuffle=a=>{a=[...a];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;};
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const rand=a=>a[Math.floor(Math.random()*a.length)];
+const pawnHTML=p=>`<span class="pawn" style="background:${COL[p.color].hex};color:${textOn(COL[p.color].hex)}">${esc(p.name.charAt(0).toUpperCase())}</span>`;
+
+const decks={};
+function draw(bank,tag,level,subj){
+  const key=tag+level+subj;
+  if(!decks[key]||!decks[key].length) decks[key]=shuffle(bank[level][subj].map((_,i)=>i));
+  return bank[level][subj][decks[key].pop()];
+}
+
+/* ================= PANTALLA INICIAL ================= */
+let setupPlayers=[
+  {name:'Teo', level:'y4', color:'teal'},
+  {name:'Lea', level:'y6', color:'granate'}
+];
+function renderSetup(){
+  const used=setupPlayers.map(p=>p.color);
+  $('#playerRows').innerHTML=setupPlayers.map((p,i)=>`
+    <div class="prow-set">
+      ${pawnHTML({name:p.name||'?',color:p.color})}
+      <input value="${esc(p.name)}" data-i="${i}" data-f="name" maxlength="14" aria-label="Nombre del jugador ${i+1}">
+      <select data-i="${i}" data-f="level" aria-label="Curso del jugador ${i+1}">
+        ${Object.entries(LEVELS).map(([k,v])=>`<option value="${k}" ${p.level===k?'selected':''}>${v.label}</option>`).join('')}
+      </select>
+      ${setupPlayers.length>1?`<button class="icon-btn" data-del="${i}" aria-label="Quitar jugador ${i+1}">✕</button>`:'<span></span>'}
+      <div class="swatches" role="group" aria-label="Color de ficha">
+        ${COLORS.map(c=>`<button class="sw ${p.color===c.id?'on':''}" data-i="${i}" data-c="${c.id}" ${used.includes(c.id)&&p.color!==c.id?'disabled':''}><i style="background:${c.hex}"></i>${c.name}</button>`).join('')}
+      </div>
+    </div>`).join('');
+  $('#addPlayer').classList.toggle('hidden',setupPlayers.length>=6);
+}
+$('#playerRows').addEventListener('input',e=>{
+  const {i,f}=e.target.dataset; if(i==null||!f) return;
+  setupPlayers[i][f]=e.target.value;
+  if(f==='name'){ const pw=e.target.parentElement.querySelector('.pawn'); pw.textContent=(e.target.value.charAt(0)||'?').toUpperCase(); }
+});
+$('#playerRows').addEventListener('click',e=>{
+  const sw=e.target.closest('.sw'); if(sw&&!sw.disabled){ setupPlayers[sw.dataset.i].color=sw.dataset.c; renderSetup(); return; }
+  const d=e.target.closest('[data-del]'); if(d){ setupPlayers.splice(+d.dataset.del,1); renderSetup(); }
+});
+$('#addPlayer').onclick=()=>{
+  if(setupPlayers.length>=6) return;
+  const free=COLORS.find(c=>!setupPlayers.some(p=>p.color===c.id));
+  setupPlayers.push({name:'Jugador '+(setupPlayers.length+1), level:'y4', color:free.id});
+  renderSetup();
+};
+$('#startBtn').onclick=startGame;
+
+/* ================= ESTADO ================= */
+let S=null;
+function startGame(){
+  S={players:setupPlayers.map((p,i)=>({
+      name:(p.name||'').trim()||('Jugador '+(i+1)), level:p.level, color:p.color,
+      pos:0, right:0, total:0, skip:0, office:null, exitDone:new Set(), escaped:false
+    })), turn:0, busy:false, over:false, log:[]};
+  $('#setup').classList.add('hidden'); $('#game').classList.remove('hidden');
+  buildBoard(); setDie(1);
+  S.log=[]; addLog(`¡Empieza la partida! Le toca a ${S.players[0].name}.`);
+  render(); window.scrollTo(0,0);
+}
+const cur=()=>S.players[S.turn];
+const others=p=>S.players.filter(q=>q!==p);
+function addLog(m){ S.log.unshift(m); S.log=S.log.slice(0,8); $('#log').innerHTML=S.log.map(x=>`<li>${esc(x)}</li>`).join(''); }
+
+/* ================= RENDER ================= */
+function tokenSpots(k,box){
+  if(k===1) return {r:19,spots:[[0,0]]};
+  const cols=box.w>=box.h?3:2, rows=Math.ceil(k/cols), r=k<=2?16:13;
+  const sx=Math.min(box.w/cols,34), sy=Math.min(box.h/rows,34), out=[];
+  for(let i=0;i<k;i++){ const c=i%cols, rr=Math.floor(i/cols); const inRow=Math.min(cols,k-rr*cols);
+    out.push([(c-(inRow-1)/2)*sx,(rr-(rows-1)/2)*sy]); }
+  return {r,spots:out};
+}
+function renderTokens(slow){
+  const layer=document.getElementById('tokenLayer'); if(!layer) return;
+  if(layer.children.length!==S.players.length){
+    layer.innerHTML='';
+    S.players.forEach((p,i)=>{
+      const g=el('g',{class:'token','data-i':i},layer);
+      el('circle',{class:'halo',r:20,fill:'none',stroke:'#FFD000','stroke-width':5},g);
+      el('circle',{class:'ring',r:22,fill:'#fff'},g);
+      el('circle',{class:'body',r:19,fill:COL[p.color].hex,stroke:'#1D2B45','stroke-width':3},g);
+      const t=el('text',{'text-anchor':'middle',y:7,'font-family':"'Baloo 2',sans-serif",'font-weight':800,'font-size':20,fill:textOn(COL[p.color].hex)},g);
+      t.textContent=p.name.charAt(0).toUpperCase();
+    });
+  }
+  const key=p=>p.pos===0?'seat-'+p.color:p.pos;
+  const groups={}; S.players.forEach((p,i)=>(groups[key(p)]=groups[key(p)]||[]).push(i));
+  S.players.forEach((p,i)=>{
+    const g=layer.querySelector(`.token[data-i="${i}"]`), box=p.pos===0?seatOf(p.color):posOf(p.pos);
+    const grp=groups[key(p)], {r,spots}=tokenSpots(grp.length,box), [ox,oy]=spots[grp.indexOf(i)];
+    g.classList.toggle('slow',!!slow);
+    g.style.transform=`translate(${box.x+ox}px,${box.y+oy}px)`;
+    g.querySelector('.body').setAttribute('r',r); g.querySelector('.ring').setAttribute('r',r+3);
+    g.querySelector('.halo').setAttribute('r',r+1);
+    const t=g.querySelector('text'); t.setAttribute('font-size',r+1); t.setAttribute('y',r*0.36);
+    g.querySelector('.halo').style.display=(i===S.turn&&!S.over)?'':'none';
+  });
+  const c=layer.querySelector(`.token[data-i="${S.turn}"]`); if(c) layer.appendChild(c);   // el del turno, encima
+}
+function statusOf(p){
+  if(p.escaped) return '🏆 ¡Ha escapado!';
+  if(p.office) return `🔒 En el despacho (intento ${p.office.tries+1} de 3)`;
+  if(p.skip>0) return '🎒 Castigado: pierde este turno';
+  if(p.pos===TOTAL) return `🚪 En la salida: le faltan ${5-p.exitDone.size} asignaturas`;
+  return p.pos===0?'Sentado en su pupitre, listo para salir':`En la casilla ${p.pos}`;
+}
+function actionLabel(p){
+  if(p.skip>0) return 'Cumplir castigo';
+  if(p.office) return 'Intentar salir';
+  if(p.pos===TOTAL) return 'Preguntas de salida';
+  return 'Tirar dado';
+}
+function render(){
+  const p=cur();
+  $('#turnWho').innerHTML=S.over?'¡Fin de la partida!':`${pawnHTML(p)} ${esc(p.name)}`;
+  $('#turnLvl').textContent=S.over?'':LEVELS[p.level].label;
+  $('#turnStatus').textContent=S.over?'':statusOf(p);
+  $('#actBtn').textContent=actionLabel(p);
+  $('#actBtn').disabled=S.busy||S.over;
+  $('#plist').innerHTML=S.players.map((q,i)=>{
+    const badges=[];
+    if(q.office) badges.push(`<span class="badge">🔒 despacho ${q.office.tries}/3</span>`);
+    if(q.skip) badges.push('<span class="badge">🎒 castigado</span>');
+    if(q.pos===TOTAL||q.exitDone.size) badges.push(`<span class="badge">salida <span class="exitdots">${SUBJECTS.map(s=>`<b class="${q.exitDone.has(s.id)?'on':''}" style="--sc:${s.color}" title="${s.name}"></b>`).join('')}</span></span>`);
+    return `<div class="pl ${i===S.turn&&!S.over?'now':''}">
+      ${pawnHTML(q)}
+      <div><div class="nm">${esc(q.name)}</div>
+        <div class="meta">${LEVELS[q.level].short} · ${q.right}/${q.total} aciertos</div>
+        ${badges.length?`<div class="badges">${badges.join('')}</div>`:''}</div>
+      <div class="where">${q.pos===0?'Aula':q.pos===TOTAL?'🚪':q.pos}<small>${q.pos===0||q.pos===TOTAL?'':'casilla'}</small></div>
+    </div>`;}).join('');
+  renderTokens(false);
+}
+
+/* ================= DADO Y MOVIMIENTO ================= */
+const PIPS={1:[4],2:[0,8],3:[0,4,8],4:[0,2,6,8],5:[0,2,4,6,8],6:[0,2,3,5,6,8]};
+function setDie(v){ $('#die').innerHTML=[...Array(9)].map((_,i)=>`<i class="${PIPS[v].includes(i)?'on':''}"></i>`).join(''); }
+async function rollDie(){
+  const d=$('#die'); d.classList.add('rolling');
+  for(let i=0;i<9;i++){ setDie(1+Math.floor(Math.random()*6)); await sleep(65); }
+  const v=1+Math.floor(Math.random()*6); setDie(v); d.classList.remove('rolling'); return v;
+}
+async function goTo(p,target){
+  if(target===0){ p.pos=0; renderTokens(true); render(); await sleep(800); return; }
+  await moveBy(p,target-p.pos);
+}
+async function moveBy(p,steps){
+  const dir=Math.sign(steps);
+  for(let i=0;i<Math.abs(steps);i++){
+    const next=p.pos+dir;
+    if(next>TOTAL||next<1) break;
+    p.pos=next; renderTokens(false); render(); await sleep(220);
+  }
+  await sleep(200);
+}
+
+/* ================= VENTANAS ================= */
+const modal=$('#modal'), card=$('#card');
+function openCard(head,body,color){
+  card.style.setProperty('--sc',color||'#1D2B45');
+  card.style.setProperty('--hc',color?textOn(color):'#fff');
+  card.innerHTML=`<div class="card-head">${head}</div><div class="card-body">${body}</div>`;
+  modal.classList.remove('hidden');
+}
+const closeCard=()=>modal.classList.add('hidden');
+const headHTML=(icon,title,sub,extra='')=>`<span class="big">${icon}</span><div><div class="t">${title}</div>${sub?`<div class="s">${sub}</div>`:''}</div>${extra}`;
+
+function message({icon='ℹ️',title,sub='',body='',color,buttons=[{label:'Continuar',value:true,cls:'btn-primary'}]}){
+  return new Promise(res=>{
+    openCard(headHTML(icon,title,sub),`${body}<div class="foot">${buttons.map((b,i)=>`<button class="btn ${b.cls||''}" data-b="${i}">${b.label}</button>`).join('')}</div>`,color);
+    card.querySelectorAll('[data-b]').forEach(b=>b.onclick=()=>{closeCard();res(buttons[+b.dataset.b].value);});
+    card.querySelector('[data-b]')?.focus();
+  });
+}
+function chooseSubject(title,body,list=SUBJECTS){
+  if(list.length===1) return Promise.resolve(list[0]);
+  return new Promise(res=>{
+    openCard(headHTML('📚',title,''),`${body?`<p>${body}</p>`:''}<div class="pick">${list.map(s=>`<button class="subj" style="--sc:${s.color}" data-s="${s.id}">${s.icon} ${s.name}</button>`).join('')}</div>`);
+    card.querySelectorAll('[data-s]').forEach(b=>b.onclick=()=>{closeCard();res(SUBJECTS.find(s=>s.id===b.dataset.s));});
+    card.querySelector('[data-s]').focus();
+  });
+}
+function choosePlayer(title,body,list){
+  if(list.length===1) return Promise.resolve(list[0]);
+  return new Promise(res=>{
+    openCard(headHTML('⚔️',title,''),`${body?`<p>${body}</p>`:''}<div class="pick">${list.map((q,i)=>`<button data-p="${i}">${pawnHTML(q)} ${esc(q.name)} <span style="margin-left:auto;color:var(--muted)">${q.pos===0?'Aula':'casilla '+q.pos}</span></button>`).join('')}</div>`);
+    card.querySelectorAll('[data-p]').forEach(b=>b.onclick=()=>{closeCard();res(list[+b.dataset.p]);});
+    card.querySelector('[data-p]').focus();
+  });
+}
+/* Pregunta: devuelve true si acierta */
+function ask(p,subj,{hard=false,context=''}={}){
+  return new Promise(res=>{
+    const [q,opts,expl]=hard?draw(HARD,'h',p.level,subj.id):draw(QB,'n',p.level,subj.id);
+    const correct=opts[0], shown=shuffle(opts);
+    openCard(headHTML(subj.icon,subj.name+(hard?' · difícil':''),`Pregunta para ${esc(p.name)} · ${LEVELS[p.level].short}`),`
+      ${context?`<div class="situation">${context}</div>`:''}
+      <p class="question">${esc(q)}</p>
+      <div class="options">${shown.map((o,i)=>`<button class="opt" data-o="${i}"><span class="k">${'ABCD'[i]}</span><span>${esc(o)}</span></button>`).join('')}</div>
+      <div id="fb"></div>`,subj.color);
+    card.querySelector('.opt').focus();
+    card.querySelectorAll('.opt').forEach(btn=>btn.onclick=()=>{
+      const choice=shown[+btn.dataset.o], ok=choice===correct;
+      card.querySelectorAll('.opt').forEach(b=>{ b.disabled=true; const v=shown[+b.dataset.o]; if(v===correct) b.classList.add('right'); else if(b===btn) b.classList.add('wrong'); });
+      p.total++; if(ok) p.right++;
+      addLog(`${ok?'✅':'❌'} ${p.name} ${ok?'acierta':'falla'} en ${subj.name}${hard?' (difícil)':''}.`);
+      $('#fb').innerHTML=`<div class="feedback ${ok?'good':'badf'}"><b>${ok?'¡Correcto! 🎉':'¡Uy! No es esa.'}</b><br>
+        ${ok?'':`La respuesta correcta es: <u>${esc(correct)}</u>.<br>`}${esc(expl)}</div>
+        <div class="foot"><button class="btn btn-primary" id="contBtn">Continuar</button></div>`;
+      const cb=$('#contBtn'); cb.focus(); cb.onclick=()=>{closeCard();render();res(ok);};
+    });
+  });
+}
+/* Speed Run: devuelve el número de aciertos */
+function speedRun(p){
+  return new Promise(res=>{
+    let left=60, hits=0, tries=0, done=false, locked=false, timer=null;
+    const finish=()=>{ if(done) return; done=true; clearInterval(timer);
+      card.querySelector('.card-body').innerHTML=`<p class="question">¡Tiempo!</p><p>Has acertado <b>${hits}</b> de ${tries} preguntas.</p><div class="foot"><button class="btn btn-go" id="srEnd">Avanzar ${hits} casilla${hits===1?'':'s'}</button></div>`;
+      $('#srEnd').focus(); $('#srEnd').onclick=()=>{closeCard();res(hits);};
+    };
+    const next=()=>{
+      if(done) return;
+      const subj=rand(SUBJECTS), [q,opts]=draw(QB,'n',p.level,subj.id), correct=opts[0], shown=shuffle(opts);
+      card.style.setProperty('--sc',subj.color);
+      card.querySelector('.card-body').innerHTML=`<div class="score">${subj.icon} ${subj.name} · aciertos: ${hits}</div>
+        <p class="question">${esc(q)}</p>
+        <div class="options">${shown.map((o,i)=>`<button class="opt" data-o="${i}"><span class="k">${'ABCD'[i]}</span><span>${esc(o)}</span></button>`).join('')}</div>`;
+      locked=false;
+      card.querySelectorAll('.opt').forEach(btn=>btn.onclick=()=>{
+        if(locked) return; locked=true;
+        const ok=shown[+btn.dataset.o]===correct; tries++; p.total++; if(ok){hits++;p.right++;}
+        card.querySelectorAll('.opt').forEach(b=>{b.disabled=true; if(shown[+b.dataset.o]===correct) b.classList.add('right'); else if(b===btn) b.classList.add('wrong');});
+        setTimeout(()=>{ if(left<=0) finish(); else next(); }, ok?450:1100);
+      });
+    };
+    openCard(headHTML('⏱️','Speed Run',`${esc(p.name)} · ${LEVELS[p.level].short}`,`<span class="timer" id="srT">60</span>`),
+      `<p>Tienes <b>60 segundos</b> para responder todas las preguntas que puedas. Avanzarás una casilla por cada acierto.</p><div class="foot"><button class="btn btn-go btn-big" id="srGo">¡Empezar!</button></div>`,'#1D2B45');
+    $('#srGo').focus();
+    $('#srGo').onclick=()=>{
+      timer=setInterval(()=>{ left--; const t=$('#srT'); if(t) t.textContent=Math.max(0,left); if(left<=0){ clearInterval(timer); if(!locked) finish(); } },1000);
+      next();
+    };
+  });
+}
+/* Cuenta atrás para retos de la caja sorpresa */
+function countdownButton(seconds){
+  const b=$('#cdBtn'); if(!b) return;
+  b.onclick=()=>{ let s=seconds; b.disabled=true; b.textContent=s+' s';
+    const t=setInterval(()=>{ s--; b.textContent=s>0?s+' s':'¡Tiempo!'; if(s<=0) clearInterval(t); },1000); };
+}
+
+/* ================= TURNO ================= */
+$('#actBtn').onclick=async()=>{
+  if(!S||S.busy||S.over) return;
+  S.busy=true; render();
+  const p=cur();
+  p.turnStart=p.pos;
+  try{
+    if(p.skip>0){
+      p.skip--; addLog(`🎒 ${p.name} cumple su castigo.`);
+      await message({icon:'🎒',title:'Castigado',body:`<p>${esc(p.name)} pierde este turno.</p>`});
+      return endTurn();
+    }
+    if(p.office) return await officeTurn(p);
+    if(p.pos===TOTAL) return await exitChallenge(p);
+    const d=await rollDie(); addLog(`${p.name} saca un ${d}.`);
+    await moveBy(p,d); await afterMove(p);
+  }catch(err){ console.error(err); closeCard(); endTurn(); }
+};
+
+async function afterMove(p){
+  await landOn(p);
+  if(S.over) return;
+  if(p.pos===TOTAL && !p.office && !p.escaped) return await exitChallenge(p);
+  endTurn();
+}
+function endTurn(){
+  if(S.over) return;
+  S.turn=(S.turn+1)%S.players.length; S.busy=false; render();
+}
+
+async function rollAgain(p){
+  const d=await rollDie(); addLog(`🎲 ${p.name} vuelve a tirar: ${d}.`);
+  await moveBy(p,d); await landOn(p);
+}
+
+async function landOn(p){
+  const n=p.pos; if(n<1||n>=TOTAL) return;
+  const sq=SQUARES[n-1];
+  if(sq.type==='subject'){
+    const from=p.turnStart??0, where=from===0?'a tu pupitre':`a la casilla ${from}`;
+    const ok=await ask(p,sq.subj,{context:`Casilla ${n}. Si aciertas, te quedas aquí. Si fallas, vuelves ${where}.`});
+    if(!ok && from!==n){ addLog(`↩️ ${p.name} vuelve ${from===0?'a su pupitre':where}.`); await goTo(p,from); }
+    return;
+  }
+  const v=SPECIALS[sq.key], head={icon:v.icon,title:v.name,sub:`Casilla ${n} · ${v.sub}`};
+  switch(sq.key){
+    case 'fwd':
+    case 'back':{
+      const step=sq.key==='fwd'?2:-1, from=p.turnStart??n;
+      await message({...head,body:`<p>${v.desc}</p>`,buttons:[{label:step>0?'Avanzar 2':'Retroceder 1',value:1,cls:step>0?'btn-go':'btn-no'}]});
+      addLog(`${v.icon} ${p.name} ${step>0?'avanza 2':'retrocede 1'}.`);
+      await moveBy(p,step);
+      const t=SQUARES[p.pos-1], subj=t.type==='subject'?t.subj:rand(SUBJECTS);
+      const where=from===0?'a tu pupitre':`a la casilla ${from}`;
+      const ok=await ask(p,subj,{context:`Casilla ${p.pos}. Si aciertas, te quedas aquí. Si fallas, vuelves ${where}.`});
+      if(!ok){ addLog(`↩️ ${p.name} vuelve ${from===0?'a su pupitre':where}.`); await goTo(p,from); }
+      break;}
+    case 'recess':
+      addLog(`⚽ ${p.name} está en el recreo.`);
+      await message({...head,body:`<p>${v.desc}</p>`}); break;
+    case 'again':{
+      await message({...head,body:`<p>${v.desc}</p>`,buttons:[{label:'🎲 Tirar otra vez',value:1,cls:'btn-primary'}]});
+      await rollAgain(p);
+      break;}
+    case 'detention':{
+      await message({...head,body:`<p>${v.desc}</p>`,buttons:[{label:'Intentar librarme',value:1,cls:'btn-primary'}]});
+      const ok=await ask(p,rand(SUBJECTS),{hard:true,context:'🎒 Detention: si aciertas, te libras del castigo.'});
+      if(ok) addLog(`🎒 ${p.name} se libra del castigo.`); else { p.skip=1; addLog(`🎒 ${p.name} pierde su próximo turno.`); }
+      break;}
+    case 'principal':
+      p.office={tries:0}; addLog(`🔒 ${p.name} va al despacho del director.`);
+      await message({...head,body:`<p>${v.desc}</p>`}); break;
+    case 'double':{
+      await message({...head,body:`<p>${v.desc}</p>`,buttons:[{label:'Tirar dado',value:1,cls:'btn-primary'}]});
+      const d=await rollDie(); addLog(`×2 ${p.name} saca un ${d}.`);
+      const ok=await ask(p,rand(SUBJECTS),{context:`×2 Doble o nada: has sacado un ${d}. Si aciertas, avanzas ${d*2}. Si fallas, retrocedes ${d}.`});
+      if(!ok){ addLog(`×2 ${p.name} retrocede ${d}.`); await moveBy(p,-d); break; }
+      addLog(`×2 ${p.name} avanza ${d*2}.`);
+      await moveBy(p,d*2);
+      // Casilla de asignatura: no se pregunta. Casilla especial: se activa (con su pregunta si la tiene).
+      const t=SQUARES[p.pos-1];
+      if(p.pos<TOTAL && t.type==='special'){ p.turnStart=n; await landOn(p); }
+      break;}
+    case 'speed':{
+      const hits=await speedRun(p); addLog(`⏱️ ${p.name} acierta ${hits} en el Speed Run.`);
+      await moveBy(p,hits); break;}
+    case 'vs': await versus(p); break;
+    case 'mystery':
+      addLog(`🎁 ${p.name} abre la caja sorpresa.`);
+      await message({...head,body:`<p>${v.desc}</p>`}); break;
+  }
+}
+
+async function versus(p){
+  const rivals=others(p);
+  if(!rivals.length){ await message({icon:'⚔️',title:'VS',body:'<p>No hay nadie a quien retar. ¡Sigues jugando!</p>'}); return; }
+  const opp=await choosePlayer('VS: ¿a quién retas?',`${esc(p.name)}, elige a tu rival. Quien acierte avanza 3 y quien falle retrocede 3.`,rivals);
+  const subj=await chooseSubject('VS: elige la asignatura',`${esc(p.name)} elige la asignatura del duelo contra ${esc(opp.name)}.`);
+  const ok1=await ask(p,subj,{context:`⚔️ Duelo contra ${esc(opp.name)}. Responde ${esc(p.name)}.`});
+  await message({icon:'⚔️',title:`Turno de ${esc(opp.name)}`,body:`<p>Pasa el dispositivo a ${esc(opp.name)}.</p>`,buttons:[{label:'Estoy listo',value:1,cls:'btn-primary'}]});
+  const ok2=await ask(opp,subj,{context:`⚔️ Duelo contra ${esc(p.name)}. Responde ${esc(opp.name)}.`});
+  const r=(q,ok)=>`<p>${pawnHTML(q)} <b>${esc(q.name)}</b> ${ok?'acierta y avanza 3':'falla y retrocede 3'}.</p>`;
+  await message({icon:'⚔️',title:'Resultado del duelo',body:r(p,ok1)+r(opp,ok2)});
+  addLog(`⚔️ VS: ${p.name} ${ok1?'+3':'−3'}, ${opp.name} ${ok2?'+3':'−3'}.`);
+  await moveBy(p,ok1?3:-3);
+  if(opp.pos>0) await moveBy(opp,ok2?3:-3); else if(ok2) await moveBy(opp,3);
+}
+
+async function officeTurn(p){
+  const chooser = S.players.length>1 ? S.players[(S.turn+1)%S.players.length] : null;
+  const subj = chooser
+    ? await chooseSubject("Principal's Office",`${esc(chooser.name)}, elige la asignatura de la pregunta difícil para ${esc(p.name)}.`)
+    : rand(SUBJECTS);
+  const tryN=p.office.tries+1;
+  const ok=await ask(p,subj,{hard:true,context:`🔒 Intento ${tryN} de 3. Si aciertas, sales del despacho y tiras el dado.`});
+  if(ok){
+    p.office=null; addLog(`🔒 ${p.name} sale del despacho.`);
+    await message({icon:'🔓',title:'¡Libre!',body:`<p>${esc(p.name)} sale del despacho y tira el dado.</p>`,buttons:[{label:'Tirar dado',value:1,cls:'btn-primary'}]});
+    const d=await rollDie(); addLog(`${p.name} saca un ${d}.`);
+    await moveBy(p,d); return await afterMove(p);
+  }
+  p.office.tries++;
+  if(p.office.tries>=3){
+    p.office=null; addLog(`🔒 ${p.name} agota los 3 intentos: saldrá en su próximo turno.`);
+    await message({icon:'🔓',title:'Se acabó el castigo',body:`<p>${esc(p.name)} ha agotado los 3 intentos. En su próximo turno sale del despacho y tira normal.</p>`});
+  }
+  endTurn();
+}
+
+async function exitChallenge(p){
+  const missing=SUBJECTS.filter(s=>!p.exitDone.has(s.id));
+  await message({icon:'🚪',title:'¡La salida!',sub:esc(p.name),
+    body:`<p>Para escapar tienes que acertar una pregunta de cada asignatura. Te ${missing.length===1?'falta':'faltan'}: <b>${missing.map(s=>s.name).join(', ')}</b>.</p>`,
+    buttons:[{label:'¡Vamos!',value:1,cls:'btn-go'}],color:'#FFD000'});
+  let i=0;
+  for(const s of missing){
+    i++;
+    const ok=await ask(p,s,{context:`🚪 Salida · pregunta ${i} de ${missing.length}`});
+    if(ok) p.exitDone.add(s.id);
+    render();
+  }
+  if(p.exitDone.size===5) return win(p);
+  const still=SUBJECTS.filter(s=>!p.exitDone.has(s.id));
+  addLog(`🚪 A ${p.name} le faltan ${still.length} asignaturas para escapar.`);
+  await message({icon:'🚪',title:'¡Casi!',body:`<p>Te ${still.length===1?'falta':'faltan'} <b>${still.map(s=>s.name).join(', ')}</b>. En tu próximo turno solo responderás ${still.length===1?'esa':'esas'}.</p>`});
+  endTurn();
+}
+
+/* ================= FINAL ================= */
+function win(p){
+  p.escaped=true; S.over=true; S.busy=false;
+  addLog(`🏆 ¡${p.name} escapa del cole!`); render(); confetti();
+  const rest=others(p).sort((a,b)=>b.exitDone.size-a.exitDone.size||b.pos-a.pos||b.right-a.right);
+  const row=(q,i)=>`<li><span>${i+1}. ${pawnHTML(q)} ${esc(q.name)}</span><span>${q===p?'🏆 escapa':q.pos===0?'aula':'casilla '+q.pos} · ${q.right}/${q.total} aciertos</span></li>`;
+  openCard(headHTML('🏆',`¡${esc(p.name)} escapa del cole!`,'Ha acertado una pregunta de cada asignatura'),
+    `<ul class="win-list">${[p,...rest].map(row).join('')}</ul>
+     <div class="foot"><button class="btn" id="chgBtn">Cambiar jugadores</button><button class="btn btn-primary" id="againBtn">Jugar otra vez</button></div>`,'#FFD000');
+  $('#againBtn').onclick=()=>{closeCard();startGame();};
+  $('#chgBtn').onclick=()=>{closeCard();goSetup();};
+}
+function confetti(){
+  const cols=['#E4572E','#2E7BD6','#8E44AD','#1F9E5B','#E0930F','#FFD000'];
+  for(let i=0;i<90;i++){ const d=document.createElement('div'); d.className='confetti';
+    d.style.left=Math.random()*100+'vw'; d.style.background=cols[i%cols.length];
+    d.style.animationDuration=(1.8+Math.random()*2)+'s'; d.style.animationDelay=(Math.random()*.6)+'s';
+    document.body.appendChild(d); setTimeout(()=>d.remove(),4600); }
+}
+function goSetup(){ $('#game').classList.add('hidden'); $('#setup').classList.remove('hidden'); renderSetup(); }
+$('#newGameBtn').onclick=()=>{ if(S&&!S.over&&!confirm('¿Empezar una partida nueva? Se perderá la actual.')) return; closeCard(); goSetup(); };
+
+/* Leyenda */
+$('#legend').innerHTML=SUBJECTS.map(s=>`<li><span class="ic" style="background:${s.color};color:#fff">${s.icon}</span><span><b>${s.name}</b>: pregunta. Si aciertas, te quedas; si fallas, vuelves a donde empezaste el turno.</span></li>`).join('')
+  +Object.values(SPECIALS).map(v=>`<li><span class="ic" style="${v.bg?`background:${v.bg2?`linear-gradient(135deg,${v.bg} 50%,${v.bg2} 50%)`:v.bg};color:${textOn(v.bg)}`:''}">${v.icon}</span><span><b>${v.name}</b> (${v.sub}): ${v.desc}</span></li>`).join('')
+  +`<li><span class="ic" style="background:#FFD000">🚪</span><span><b>Exit</b>: ${GOAL_DESC}</span></li>`;
+
+renderSetup();
+</script>
+</body>
+</html>
