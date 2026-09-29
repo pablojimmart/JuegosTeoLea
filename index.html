@@ -14,8 +14,8 @@
   padding-bottom:env(safe-area-inset-bottom,0px);
   --bg:#F3EEE3;--surface:#FFFFFF;--ink:#1D2B45;--muted:#5E6780;--line:#DDD3C0;--soft:#F7F2E7;
   --ok:#1E9E5A;--bad:#D64545;--accent:#2E7BD6;
-  --display:'Baloo 2','Noto Color Emoji','Trebuchet MS',system-ui,sans-serif;
-  --body:'Nunito','Noto Color Emoji','Segoe UI',system-ui,sans-serif;
+  --display:'Baloo 2','Trebuchet MS',system-ui,sans-serif,'Noto Color Emoji';
+  --body:'Nunito','Segoe UI',system-ui,sans-serif,'Noto Color Emoji';
 }
 @media (prefers-color-scheme:dark){
   :root:not([data-theme="light"]){--bg:#17191F;--surface:#22252E;--ink:#EEF1F7;--muted:#A6ADBF;--line:#353A47;--soft:#1B1E25}
@@ -50,11 +50,11 @@ h1{font-family:var(--display);font-weight:800;line-height:1;margin:0}
 @media (max-width:560px){.prow-set{grid-template-columns:48px minmax(0,1fr) auto}.prow-set select{grid-column:2/-1}}
 .pawn{width:44px;height:44px;border-radius:50%;border:3px solid #1D2B45;box-shadow:0 0 0 3px #fff inset;display:grid;place-items:center;font-family:var(--display);font-weight:800;font-size:1.3rem}
 .prow-set input,.prow-set select{width:100%;min-width:0;border:2px solid var(--line);border-radius:10px;padding:9px 10px;font:inherit;font-weight:700;background:var(--surface);color:var(--ink)}
-.swatches{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:6px}
-.sw{display:flex;align-items:center;gap:6px;border:2px solid var(--line);border-radius:999px;padding:3px 10px 3px 4px;background:var(--surface);font-weight:700;font-size:.85rem}
-.sw i{width:20px;height:20px;border-radius:50%;border:2px solid #1D2B45;display:block}
-.sw.on{border-color:var(--ink);box-shadow:0 0 0 2px var(--ink) inset}
-.sw:disabled{opacity:.35;cursor:not-allowed}
+.swatches{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:10px}
+.sw{display:grid;place-items:center;border:3px solid transparent;border-radius:50%;padding:3px;background:none}
+.sw i{width:30px;height:30px;border-radius:50%;border:2px solid #1D2B45;display:block}
+.sw.on{border-color:var(--ink)}
+.sw:disabled{opacity:.25;cursor:not-allowed}
 .icon-btn{border:none;background:none;font-size:1.2rem;padding:6px;color:var(--muted)}
 .rules{margin:0;padding-left:1.1em;line-height:1.5}
 .rules li{margin-bottom:6px}
@@ -148,6 +148,16 @@ details.legend summary{font-family:var(--display);font-weight:800;font-size:1.1r
 .win-list .pawn{width:30px;height:30px;font-size:.9rem}
 .confetti{position:fixed;top:-20px;width:10px;height:14px;z-index:30;pointer-events:none;animation:fall linear forwards}
 @keyframes fall{to{transform:translateY(110vh) rotate(720deg)}}
+
+/* ----- Intro ----- */
+.intro{position:fixed;inset:0;z-index:40;background:#fff;display:grid;place-items:center;padding:calc(24px + env(safe-area-inset-top,0px)) 24px calc(24px + env(safe-area-inset-bottom,0px));opacity:0;transition:opacity .9s ease;cursor:pointer}
+.intro.show{opacity:1}
+.intro-text{max-width:760px;text-align:center;font-family:var(--display);font-weight:700;font-size:clamp(1.35rem,3.6vw,2.2rem);line-height:1.35;color:#1D2B45;opacity:0;transition:opacity .9s ease}
+.intro-text.show{opacity:1}
+.intro-text .who{display:block;font-size:3rem;margin-bottom:10px}
+.intro-hint{position:absolute;left:0;right:0;bottom:calc(22px + env(safe-area-inset-bottom,0px));text-align:center;color:#8A93A8;font-weight:700;font-size:.95rem}
+.intro-skip{position:absolute;top:calc(16px + env(safe-area-inset-top,0px));right:16px;border:2px solid #C9D0DD;background:#fff;color:#5E6780;border-radius:999px;padding:6px 14px;font-weight:800;font-size:.9rem}
+@media (prefers-reduced-motion:reduce){.intro,.intro-text{transition:opacity .2s}}
 @media (prefers-reduced-motion:reduce){.token,.token.slow{transition:none}.halo,.die.rolling,.card{animation:none}.confetti{display:none}}
 </style>
 </head>
@@ -173,8 +183,8 @@ details.legend summary{font-family:var(--display);font-weight:800;font-size:1.1r
       <ol class="rules">
         <li>Todos empiezan en el aula. Tira el dado y avanza por la espiral.</li>
         <li>En las casillas de color respondes una pregunta de esa asignatura. Si aciertas, te quedas. Si fallas, vuelves a la casilla donde empezaste el turno.</li>
-        <li>Las casillas blancas son especiales: atajos, retos, castigos, el recreo…</li>
-        <li>Si un evento te mueve a otra casilla, esa casilla no se activa. Excepción: en el Atajo y el Pasillo equivocado respondes la pregunta de donde caigas y, si fallas, vuelves a donde empezaste el turno.</li>
+        <li>Las demás casillas son especiales: atajos, retos, castigos, Recess…</li>
+        <li>Si un evento te mueve a otra casilla, esa casilla no se activa. Excepción: tras el Atajo y el Pasillo equivocado, la casilla donde caes sí se activa (si es de asignatura y fallas, vuelves a donde empezaste el turno).</li>
         <li>Para escapar por la salida (75) hay que acertar una pregunta de cada asignatura. Las que aciertes ya no se repiten.</li>
       </ol>
       <p style="color:var(--muted);font-weight:700;margin:10px 0 0">Cada jugador elige su nivel de preguntas: Year 5, Year 7 o Adulto.</p>
@@ -210,6 +220,11 @@ details.legend summary{font-family:var(--display);font-weight:800;font-size:1.1r
   </div>
 </div>
 
+<div id="intro" class="intro hidden" role="dialog" aria-modal="true" aria-label="Introducción">
+  <button class="intro-skip" id="introSkip">Saltar</button>
+  <div class="intro-text" id="introText" aria-live="polite"></div>
+  <div class="intro-hint">Toca para continuar</div>
+</div>
 <div id="modal" class="modal hidden"><div class="card" id="card" role="dialog" aria-modal="true"></div></div>
 <script>
 /* ================= DATOS ================= */
@@ -239,33 +254,33 @@ const textOn = hex => { const n=parseInt(hex.slice(1),16), r=n>>16, g=(n>>8)&255
 
 const SPECIALS = {
   fwd:      {g:'mov',    icon:'⏩', name:'¡Atajo!',             sub:'Avanza 2', bg:'#9FE3C8',
-             desc:'¡Has encontrado un atajo por el pasillo! Avanza 2 casillas y responde la pregunta de la casilla donde caigas. Si fallas, vuelves a la casilla donde empezaste el turno.'},
+             desc:'¡Has encontrado un atajo por el pasillo! Avanza 2 casillas.'},
   back:     {g:'mov',    icon:'⏪', name:'Pasillo equivocado',  sub:'Retrocede 1', bg:'#F2B8B5',
-             desc:'¡Te has equivocado de pasillo! Retrocede 1 casilla y responde la pregunta de la casilla donde caigas. Si fallas, vuelves a la casilla donde empezaste el turno.'},
-  again:    {g:'mov',    icon:'🎲', name:'Roll again',          sub:'Tira otra vez', bg:'#1B2A5C',
+             desc:'¡Te has equivocado de pasillo! Retrocede 1 casilla.'},
+  again:    {g:'mov',    icon:'🎲', name:'Roll again',          sub:'', bg:'#1B2A5C',
              desc:'¡Tirada gratis! Vuelves a tirar el dado.'},
   detention:{g:'mov',    icon:'📝', name:'Detention',           sub:'Pierdes un turno', bg:'#E3000F',
              desc:'¡Te has olvidado los deberes en la taquilla! Te quedas castigado un turno… salvo que aciertes una pregunta difícil.'},
   speed:    {g:'reto',   icon:'⏱️', name:'Speed Run',           sub:'60 segundos', bg:'#FFF3A6',
-             desc:'Tienes 60 segundos para responder todas las preguntas que puedas, de cualquier asignatura. Avanzas una casilla por cada acierto.'},
+             desc:'Tienes 60 segundos para responder todas las preguntas que puedas, de cualquier asignatura. Avanzas una casilla por cada acierto y retrocedes una por cada 2 fallos.'},
   vs:       {g:'reto',   icon:'⚔️', name:'VS',                  sub:'Reta a otro jugador', bg:'#A7ACB2',
-             desc:'Retas a otro jugador. El retador elige la asignatura y cada uno responde una pregunta: quien acierte avanza 3, quien falle retrocede 3.'},
-  principal:{g:'suerte', icon:'🧑‍🏫', name:"Principal's Office",  sub:'Despacho del director', bg:'#1E1E1E',
-             desc:'Te quedas encerrado en el despacho, como mucho 3 turnos. En cada turno otro jugador elige la asignatura y respondes una pregunta difícil. Si aciertas, sales y tiras el dado en ese mismo turno. Si fallas los 3 intentos, sales en tu siguiente turno y tiras normal.'},
-  double:   {g:'suerte', icon:'×2', name:'Double or Nothing',   sub:'Doble o nada', bg:'#2E7BD6', bg2:'#E3000F',
-             desc:'Tiras el dado en ese momento y respondes una pregunta. Si aciertas, avanzas el doble de lo que saques: si caes en una casilla de asignatura no respondes nada más, y si caes en una especial, se activa. Si fallas, retrocedes lo que hayas sacado.'},
-  mystery:  {g:'suerte', icon:'🎁', name:'Mystery Box',         sub:'Caja sorpresa', bg:'#7B3FB5',
+             desc:'Retas a otro jugador. El retador elige la asignatura y cada uno responde una pregunta difícil: quien acierte avanza 3, quien falle retrocede 3.'},
+  principal:{g:'suerte', icon:'🧑‍🏫', name:"Principal's Office",  sub:'', bg:'#1E1E1E',
+             desc:'Te quedas encerrado como mucho 3 turnos. En cada turno otro jugador elige la asignatura y respondes una pregunta difícil. Si aciertas, sales y tiras el dado en ese mismo turno. Si fallas los 3 intentos, sales en tu siguiente turno y tiras normal.'},
+  double:   {g:'suerte', icon:'×2', name:'Double or Nothing',   sub:'', bg:'#2E7BD6', bg2:'#E3000F',
+             desc:'Tiras el dado en ese momento y respondes una pregunta. Si aciertas, avanzas el doble de lo que saques. Si fallas, retrocedes lo que hayas sacado.'},
+  mystery:  {g:'suerte', icon:'🎁', name:'Mystery Box',         sub:'', bg:'#7B3FB5',
              desc:'Abre una caja sorpresa.'},
-  recess:   {g:'suerte', icon:'⚽', name:'Recess',              sub:'Recreo', bg:'#FFFFFF',
-             desc:'¡Recreo! Aquí no tienes que responder ninguna pregunta.'}
+  recess:   {g:'suerte', icon:'⚽', name:'Recess',              sub:'', bg:'#FFFFFF',
+             desc:'Aquí no tienes que responder ninguna pregunta.'}
 };
 const LAYOUT = {
    5:'fwd',      8:'again',    10:'double',   12:'back',     15:'speed',
   17:'recess',  19:'detention',21:'mystery',  23:'fwd',      26:'vs',
   30:'again',   34:'recess',   38:'back',     41:'principal',44:'speed',
   46:'mystery', 48:'fwd',      50:'recess',   52:'detention',55:'vs',
-  57:'again',   61:'recess',   63:'double',   66:'back',     68:'principal',
-  70:'vs',      73:'recess'
+  57:'again',   61:'recess',   63:'double',   66:'fwd',      68:'principal',
+  70:'vs',      71:'mystery',  73:'recess'
 };
 const GOAL_DESC='La salida del colegio. Para escapar tienes que acertar una pregunta de cada asignatura. Las que aciertes quedan superadas; en los turnos siguientes solo respondes las que te falten.';
 
@@ -3235,6 +3250,12 @@ function buildBoard(){
     stxt(t,0,-10,s.n,{'font-family':"'Baloo 2',sans-serif",'font-weight':800,'font-size':26,fill:nf});
     const icon=s.type==='subject'?s.subj.icon:s.type==='special'?SPECIALS[s.key].icon:'🚪';
     const isT=icon==='×2';
+    if(s.type==='special' && (s.key==='fwd'||s.key==='back')){
+      // la flecha apunta hacia donde se mueve la ficha en el tablero
+      const to=posOf(s.key==='fwd'?s.n+1:s.n-1), ang=Math.round(Math.atan2(to.y-p.y,to.x-p.x)*2/Math.PI)*90;
+      const base=s.key==='fwd'?0:180;   // ⏩ apunta a la derecha, ⏪ a la izquierda
+      stxt(t,0,16,icon,{'font-size':26,'font-family':"'Noto Color Emoji',sans-serif",'dominant-baseline':'central',transform:`rotate(${ang-base} 0 16)`});
+    } else
     stxt(t,0,isT?26:25,icon,{'font-size':isT?30:26,'font-family':isT?"'Baloo 2',sans-serif":"'Noto Color Emoji',sans-serif",'font-weight':800,fill:isT?nf:'#1D2B45'});
     t.addEventListener('click',()=>showSquareInfo(s.n));
     t.addEventListener('keydown',ev=>{if(ev.key==='Enter'||ev.key===' '){ev.preventDefault();showSquareInfo(s.n);}});
@@ -3248,7 +3269,7 @@ function showSquareInfo(n){
   document.querySelector(`.tile[data-n="${n}"]`)?.classList.add('sel');
   const s=SQUARES[n-1], info=document.getElementById('info');
   if(s.type==='subject') info.innerHTML=`<div class="kind" style="color:${s.subj.color}">Casilla ${n} · ${s.subj.icon} ${s.subj.name}</div><p>Pregunta de ${s.subj.name}. Si aciertas, te quedas. Si fallas, vuelves a la casilla donde empezaste el turno.</p>`;
-  else if(s.type==='special'){const v=SPECIALS[s.key]; info.innerHTML=`<div class="kind">Casilla ${n} · ${v.icon} ${v.name} (${v.sub})</div><p>${v.desc}</p>`;}
+  else if(s.type==='special'){const v=SPECIALS[s.key]; info.innerHTML=`<div class="kind">Casilla ${n} · ${v.icon} ${v.name}${v.sub?` (${v.sub})`:''}</div><p>${v.desc}</p>`;}
   else info.innerHTML=`<div class="kind">Casilla ${n} · 🚪 Exit</div><p>${GOAL_DESC}</p>`;
 }
 
@@ -3283,7 +3304,7 @@ function renderSetup(){
       </select>
       ${setupPlayers.length>1?`<button class="icon-btn" data-del="${i}" aria-label="Quitar jugador ${i+1}">✕</button>`:'<span></span>'}
       <div class="swatches" role="group" aria-label="Color de ficha">
-        ${COLORS.map(c=>`<button class="sw ${p.color===c.id?'on':''}" data-i="${i}" data-c="${c.id}" ${used.includes(c.id)&&p.color!==c.id?'disabled':''}><i style="background:${c.hex}"></i>${c.name}</button>`).join('')}
+        ${COLORS.map(c=>`<button class="sw ${p.color===c.id?'on':''}" data-i="${i}" data-c="${c.id}" aria-label="${c.name}" title="${c.name}" ${used.includes(c.id)&&p.color!==c.id?'disabled':''}><i style="background:${c.hex}"></i></button>`).join('')}
       </div>
     </div>`).join('');
   $('#addPlayer').classList.toggle('hidden',setupPlayers.length>=6);
@@ -3303,7 +3324,37 @@ $('#addPlayer').onclick=()=>{
   setupPlayers.push({name:'Jugador '+(setupPlayers.length+1), level:'y4', color:free.id});
   renderSetup();
 };
-$('#startBtn').onclick=startGame;
+/* ----- Intro de la partida ----- */
+const INTRO=[
+  '<span class="who">👩‍🏫</span>Ms Petunia os ha pillado copiando en un examen de recreo. Dice que os estabais comiendo el bocadillo exactamente igual que vuestro compañero… Por eso, vuestro castigo será no salir de clase hasta que os sepáis <i>El Quijote</i> de memoria…',
+  '<span class="who">🏃</span>Ms Petunia ha ido a regañar a unos niños por respirar muy fuerte en el pasillo. ¡Aprovechad la oportunidad para escapar!'
+];
+async function playScenes(lines, atWhite){
+  const box=$('#intro'), tx=$('#introText'); let skip=false, next=null;
+  const advance=()=>{ if(next){ const f=next; next=null; f(); } };
+  const wait=ms=>new Promise(r=>{ next=r; setTimeout(()=>{ if(next===r){ next=null; r(); } },ms); });
+  box.onclick=e=>{ if(e.target.id!=='introSkip') advance(); };
+  $('#introSkip').onclick=e=>{ e.stopPropagation(); skip=true; advance(); };
+  const key=e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); advance(); } if(e.key==='Escape'){ skip=true; advance(); } };
+  document.addEventListener('keydown',key);
+  tx.classList.remove('show'); box.classList.remove('hidden'); box.offsetWidth; box.classList.add('show');
+  await sleep(900);
+  for(const line of lines){
+    if(skip) break;
+    tx.innerHTML=line; tx.offsetWidth; tx.classList.add('show');
+    await sleep(700);
+    if(!skip) await wait(Math.max(5000, line.replace(/<[^>]+>/g,'').length*75));
+    tx.classList.remove('show');
+    await sleep(skip?300:900);
+  }
+  document.removeEventListener('keydown',key);
+  if(atWhite) atWhite();
+  box.classList.remove('show');
+  await sleep(900);
+  box.classList.add('hidden');
+}
+const playIntro=()=>playScenes(INTRO, startGame);
+$('#startBtn').onclick=playIntro;
 
 /* ================= ESTADO ================= */
 let S=null;
@@ -3359,7 +3410,7 @@ function renderTokens(slow){
 }
 function statusOf(p){
   if(p.escaped) return '🏆 ¡Ha escapado!';
-  if(p.office) return `🔒 En el despacho (intento ${p.office.tries+1} de 3)`;
+  if(p.office) return `🧑‍🏫 En Principal's Office (intento ${p.office.tries+1} de 3)`;
   if(p.skip>0) return '🎒 Castigado: pierde este turno';
   if(p.pos===TOTAL) return `🚪 En la salida: le faltan ${5-p.exitDone.size} asignaturas`;
   return p.pos===0?'Sentado en su pupitre, listo para salir':`En la casilla ${p.pos}`;
@@ -3379,8 +3430,8 @@ function render(){
   $('#actBtn').disabled=S.busy||S.over;
   $('#plist').innerHTML=S.players.map((q,i)=>{
     const badges=[];
-    if(q.office) badges.push(`<span class="badge">🔒 despacho ${q.office.tries}/3</span>`);
-    if(q.skip) badges.push('<span class="badge">🎒 castigado</span>');
+    if(q.office) badges.push(`<span class="badge">🧑‍🏫 Principal's Office ${q.office.tries}/3</span>`);
+    if(q.skip) badges.push('<span class="badge">📝 Detention</span>');
     if(q.pos===TOTAL||q.exitDone.size) badges.push(`<span class="badge">salida <span class="exitdots">${SUBJECTS.map(s=>`<b class="${q.exitDone.has(s.id)?'on':''}" style="--sc:${s.color}" title="${s.name}"></b>`).join('')}</span></span>`);
     return `<div class="pl ${i===S.turn&&!S.over?'now':''}">
       ${pawnHTML(q)}
@@ -3476,14 +3527,16 @@ function speedRun(p){
   return new Promise(res=>{
     let left=60, hits=0, tries=0, done=false, locked=false, timer=null;
     const finish=()=>{ if(done) return; done=true; clearInterval(timer);
-      card.querySelector('.card-body').innerHTML=`<p class="question">¡Tiempo!</p><p>Has acertado <b>${hits}</b> de ${tries} preguntas.</p><div class="foot"><button class="btn btn-go" id="srEnd">Avanzar ${hits} casilla${hits===1?'':'s'}</button></div>`;
-      $('#srEnd').focus(); $('#srEnd').onclick=()=>{closeCard();res(hits);};
+      const misses=tries-hits, back=Math.floor(misses/2), net=hits-back;
+      const lbl = net>0 ? `Avanzar ${net} casilla${net===1?'':'s'}` : net<0 ? `Retroceder ${-net} casilla${net===-1?'':'s'}` : 'Continuar';
+      card.querySelector('.card-body').innerHTML=`<p class="question">¡Tiempo!</p><p>Aciertos: <b>${hits}</b> (avanzas ${hits}). Fallos: <b>${misses}</b> (retrocedes ${back}).</p><p><b>Total: ${net>0?'+':''}${net} casilla${Math.abs(net)===1?'':'s'}.</b></p><div class="foot"><button class="btn ${net<0?'btn-no':'btn-go'}" id="srEnd">${lbl}</button></div>`;
+      $('#srEnd').focus(); $('#srEnd').onclick=()=>{closeCard();res({hits,misses,net});};
     };
     const next=()=>{
       if(done) return;
       const subj=rand(SUBJECTS), [q,opts]=draw(QB,'n',p.level,subj.id), correct=opts[0], shown=shuffle(opts);
       card.style.setProperty('--sc',subj.color);
-      card.querySelector('.card-body').innerHTML=`<div class="score">${subj.icon} ${subj.name} · aciertos: ${hits}</div>
+      card.querySelector('.card-body').innerHTML=`<div class="score">${subj.icon} ${subj.name} · aciertos: ${hits} · fallos: ${tries-hits}</div>
         <p class="question">${esc(q)}</p>
         <div class="options">${shown.map((o,i)=>`<button class="opt" data-o="${i}"><span class="k">${'ABCD'[i]}</span><span>${esc(o)}</span></button>`).join('')}</div>`;
       locked=false;
@@ -3495,7 +3548,7 @@ function speedRun(p){
       });
     };
     openCard(headHTML('⏱️','Speed Run',`${esc(p.name)} · ${LEVELS[p.level].short}`,`<span class="timer" id="srT">60</span>`),
-      `<p>Tienes <b>60 segundos</b> para responder todas las preguntas que puedas. Avanzarás una casilla por cada acierto.</p><div class="foot"><button class="btn btn-go btn-big" id="srGo">¡Empezar!</button></div>`,'#1D2B45');
+      `<p>Tienes <b>60 segundos</b> para responder todas las preguntas que puedas. Avanzarás una casilla por cada acierto y retrocederás una por cada 2 fallos.</p><div class="foot"><button class="btn btn-go btn-big" id="srGo">¡Empezar!</button></div>`,'#1D2B45');
     $('#srGo').focus();
     $('#srGo').onclick=()=>{
       timer=setInterval(()=>{ left--; const t=$('#srT'); if(t) t.textContent=Math.max(0,left); if(left<=0){ clearInterval(timer); if(!locked) finish(); } },1000);
@@ -3518,7 +3571,7 @@ $('#actBtn').onclick=async()=>{
   p.turnStart=p.pos;
   try{
     if(p.skip>0){
-      p.skip--; addLog(`🎒 ${p.name} cumple su castigo.`);
+      p.skip--; addLog(`📝 ${p.name} cumple su Detention.`);
       await message({icon:'🎒',title:'Castigado',body:`<p>${esc(p.name)} pierde este turno.</p>`});
       return endTurn();
     }
@@ -3554,7 +3607,7 @@ async function landOn(p){
     if(!ok && from!==n){ addLog(`↩️ ${p.name} vuelve ${from===0?'a su pupitre':where}.`); await goTo(p,from); }
     return;
   }
-  const v=SPECIALS[sq.key], head={icon:v.icon,title:v.name,sub:`Casilla ${n} · ${v.sub}`};
+  const v=SPECIALS[sq.key], head={icon:v.icon,title:v.name,sub:`Casilla ${n}${v.sub?' · '+v.sub:''}`};
   switch(sq.key){
     case 'fwd':
     case 'back':{
@@ -3562,30 +3615,32 @@ async function landOn(p){
       await message({...head,body:`<p>${v.desc}</p>`,buttons:[{label:step>0?'Avanzar 2':'Retroceder 1',value:1,cls:step>0?'btn-go':'btn-no'}]});
       addLog(`${v.icon} ${p.name} ${step>0?'avanza 2':'retrocede 1'}.`);
       await moveBy(p,step);
-      const t=SQUARES[p.pos-1], subj=t.type==='subject'?t.subj:rand(SUBJECTS);
+      const t=SQUARES[p.pos-1];
+      if(t.type!=='subject'){ await landOn(p); break; }   // casilla especial: se activa (el recreo no tiene pregunta)
       const where=from===0?'a tu pupitre':`a la casilla ${from}`;
-      const ok=await ask(p,subj,{context:`Casilla ${p.pos}. Si aciertas, te quedas aquí. Si fallas, vuelves ${where}.`});
+      const ok=await ask(p,t.subj,{context:`Casilla ${p.pos}. Si aciertas, te quedas aquí. Si fallas, vuelves ${where}.`});
       if(!ok){ addLog(`↩️ ${p.name} vuelve ${from===0?'a su pupitre':where}.`); await goTo(p,from); }
       break;}
     case 'recess':
-      addLog(`⚽ ${p.name} está en el recreo.`);
+      addLog(`⚽ ${p.name} está en Recess.`);
       await message({...head,body:`<p>${v.desc}</p>`}); break;
     case 'again':{
       await message({...head,body:`<p>${v.desc}</p>`,buttons:[{label:'🎲 Tirar otra vez',value:1,cls:'btn-primary'}]});
+      p.turnStart=n;   // si falla tras la tirada extra, vuelve a esta casilla
       await rollAgain(p);
       break;}
     case 'detention':{
       await message({...head,body:`<p>${v.desc}</p>`,buttons:[{label:'Intentar librarme',value:1,cls:'btn-primary'}]});
-      const ok=await ask(p,rand(SUBJECTS),{hard:true,context:'🎒 Detention: si aciertas, te libras del castigo.'});
-      if(ok) addLog(`🎒 ${p.name} se libra del castigo.`); else { p.skip=1; addLog(`🎒 ${p.name} pierde su próximo turno.`); }
+      const ok=await ask(p,rand(SUBJECTS),{hard:true,context:'📝 Detention: si aciertas, no pierdes el turno.'});
+      if(ok) addLog(`📝 ${p.name} se libra de Detention.`); else { p.skip=1; addLog(`📝 ${p.name} pierde su próximo turno.`); }
       break;}
     case 'principal':
-      p.office={tries:0}; addLog(`🔒 ${p.name} va al despacho del director.`);
+      p.office={tries:0}; addLog(`🧑‍🏫 ${p.name} va a Principal's Office.`);
       await message({...head,body:`<p>${v.desc}</p>`}); break;
     case 'double':{
       await message({...head,body:`<p>${v.desc}</p>`,buttons:[{label:'Tirar dado',value:1,cls:'btn-primary'}]});
       const d=await rollDie(); addLog(`×2 ${p.name} saca un ${d}.`);
-      const ok=await ask(p,rand(SUBJECTS),{context:`×2 Doble o nada: has sacado un ${d}. Si aciertas, avanzas ${d*2}. Si fallas, retrocedes ${d}.`});
+      const ok=await ask(p,rand(SUBJECTS),{context:`×2 Double or Nothing: has sacado un ${d}. Si aciertas, avanzas ${d*2}. Si fallas, retrocedes ${d}.`});
       if(!ok){ addLog(`×2 ${p.name} retrocede ${d}.`); await moveBy(p,-d); break; }
       addLog(`×2 ${p.name} avanza ${d*2}.`);
       await moveBy(p,d*2);
@@ -3594,11 +3649,11 @@ async function landOn(p){
       if(p.pos<TOTAL && t.type==='special'){ p.turnStart=n; await landOn(p); }
       break;}
     case 'speed':{
-      const hits=await speedRun(p); addLog(`⏱️ ${p.name} acierta ${hits} en el Speed Run.`);
-      await moveBy(p,hits); break;}
+      const r=await speedRun(p); addLog(`⏱️ Speed Run: ${p.name} acierta ${r.hits} y falla ${r.misses} (${r.net>=0?'+':''}${r.net}).`);
+      await moveBy(p,r.net); break;}
     case 'vs': await versus(p); break;
     case 'mystery':
-      addLog(`🎁 ${p.name} abre la caja sorpresa.`);
+      addLog(`🎁 ${p.name} abre una Mystery Box.`);
       await message({...head,body:`<p>${v.desc}</p>`}); break;
   }
 }
@@ -3608,9 +3663,9 @@ async function versus(p){
   if(!rivals.length){ await message({icon:'⚔️',title:'VS',body:'<p>No hay nadie a quien retar. ¡Sigues jugando!</p>'}); return; }
   const opp=await choosePlayer('VS: ¿a quién retas?',`${esc(p.name)}, elige a tu rival. Quien acierte avanza 3 y quien falle retrocede 3.`,rivals);
   const subj=await chooseSubject('VS: elige la asignatura',`${esc(p.name)} elige la asignatura del duelo contra ${esc(opp.name)}.`);
-  const ok1=await ask(p,subj,{context:`⚔️ Duelo contra ${esc(opp.name)}. Responde ${esc(p.name)}.`});
+  const ok1=await ask(p,subj,{hard:true,context:`⚔️ Duelo contra ${esc(opp.name)}. Responde ${esc(p.name)}.`});
   await message({icon:'⚔️',title:`Turno de ${esc(opp.name)}`,body:`<p>Pasa el dispositivo a ${esc(opp.name)}.</p>`,buttons:[{label:'Estoy listo',value:1,cls:'btn-primary'}]});
-  const ok2=await ask(opp,subj,{context:`⚔️ Duelo contra ${esc(p.name)}. Responde ${esc(opp.name)}.`});
+  const ok2=await ask(opp,subj,{hard:true,context:`⚔️ Duelo contra ${esc(p.name)}. Responde ${esc(opp.name)}.`});
   const r=(q,ok)=>`<p>${pawnHTML(q)} <b>${esc(q.name)}</b> ${ok?'acierta y avanza 3':'falla y retrocede 3'}.</p>`;
   await message({icon:'⚔️',title:'Resultado del duelo',body:r(p,ok1)+r(opp,ok2)});
   addLog(`⚔️ VS: ${p.name} ${ok1?'+3':'−3'}, ${opp.name} ${ok2?'+3':'−3'}.`);
@@ -3624,17 +3679,17 @@ async function officeTurn(p){
     ? await chooseSubject("Principal's Office",`${esc(chooser.name)}, elige la asignatura de la pregunta difícil para ${esc(p.name)}.`)
     : rand(SUBJECTS);
   const tryN=p.office.tries+1;
-  const ok=await ask(p,subj,{hard:true,context:`🔒 Intento ${tryN} de 3. Si aciertas, sales del despacho y tiras el dado.`});
+  const ok=await ask(p,subj,{hard:true,context:`🧑‍🏫 Intento ${tryN} de 3. Si aciertas, sales de Principal's Office y tiras el dado.`});
   if(ok){
-    p.office=null; addLog(`🔒 ${p.name} sale del despacho.`);
-    await message({icon:'🔓',title:'¡Libre!',body:`<p>${esc(p.name)} sale del despacho y tira el dado.</p>`,buttons:[{label:'Tirar dado',value:1,cls:'btn-primary'}]});
+    p.office=null; addLog(`🧑‍🏫 ${p.name} sale de Principal's Office.`);
+    await message({icon:'🔓',title:'¡Libre!',body:`<p>${esc(p.name)} sale de Principal's Office y tira el dado.</p>`,buttons:[{label:'Tirar dado',value:1,cls:'btn-primary'}]});
     const d=await rollDie(); addLog(`${p.name} saca un ${d}.`);
     await moveBy(p,d); return await afterMove(p);
   }
   p.office.tries++;
   if(p.office.tries>=3){
     p.office=null; addLog(`🔒 ${p.name} agota los 3 intentos: saldrá en su próximo turno.`);
-    await message({icon:'🔓',title:'Se acabó el castigo',body:`<p>${esc(p.name)} ha agotado los 3 intentos. En su próximo turno sale del despacho y tira normal.</p>`});
+    await message({icon:'🔓',title:'Fin del castigo',body:`<p>${esc(p.name)} ha agotado los 3 intentos. En su próximo turno sale de Principal's Office y tira normal.</p>`});
   }
   endTurn();
 }
@@ -3659,9 +3714,15 @@ async function exitChallenge(p){
 }
 
 /* ================= FINAL ================= */
-function win(p){
+async function win(p){
   p.escaped=true; S.over=true; S.busy=false;
-  addLog(`🏆 ¡${p.name} escapa del cole!`); render(); confetti();
+  addLog(`🏆 ¡${p.name} escapa del cole!`); render();
+  const nm=esc(p.name);
+  const outro=[`<span class="who">🏆</span>${nm} ha conseguido escapar del colegio…`];
+  if(S.players.length>1) outro.push('<span class="who">👩‍🏫</span>Ms Petunia ha pillado a todos los demás. Ahora nunca podrán salir de la clase: dormirán bajo el pupitre hasta que puedan recitar de memoria todos los libros de la biblioteca…');
+  outro.push(`<span class="who">🔎</span>Buena suerte, ${nm}. Ahora estás en la lista de los más buscados de Ms Petunia.`);
+  await playScenes(outro);
+  confetti();
   const rest=others(p).sort((a,b)=>b.exitDone.size-a.exitDone.size||b.pos-a.pos||b.right-a.right);
   const row=(q,i)=>`<li><span>${i+1}. ${pawnHTML(q)} ${esc(q.name)}</span><span>${q===p?'🏆 escapa':q.pos===0?'aula':'casilla '+q.pos} · ${q.right}/${q.total} aciertos</span></li>`;
   openCard(headHTML('🏆',`¡${esc(p.name)} escapa del cole!`,'Ha acertado una pregunta de cada asignatura'),
@@ -3682,7 +3743,7 @@ $('#newGameBtn').onclick=()=>{ if(S&&!S.over&&!confirm('¿Empezar una partida nu
 
 /* Leyenda */
 $('#legend').innerHTML=SUBJECTS.map(s=>`<li><span class="ic" style="background:${s.color};color:#fff">${s.icon}</span><span><b>${s.name}</b>: pregunta. Si aciertas, te quedas; si fallas, vuelves a donde empezaste el turno.</span></li>`).join('')
-  +Object.values(SPECIALS).map(v=>`<li><span class="ic" style="${v.bg?`background:${v.bg2?`linear-gradient(135deg,${v.bg} 50%,${v.bg2} 50%)`:v.bg};color:${textOn(v.bg)}`:''}">${v.icon}</span><span><b>${v.name}</b> (${v.sub}): ${v.desc}</span></li>`).join('')
+  +Object.values(SPECIALS).map(v=>`<li><span class="ic" style="${v.bg?`background:${v.bg2?`linear-gradient(135deg,${v.bg} 50%,${v.bg2} 50%)`:v.bg};color:${textOn(v.bg)}`:''}">${v.icon}</span><span><b>${v.name}</b>${v.sub?` (${v.sub})`:''}: ${v.desc}</span></li>`).join('')
   +`<li><span class="ic" style="background:#FFD000">🚪</span><span><b>Exit</b>: ${GOAL_DESC}</span></li>`;
 
 renderSetup();
