@@ -71,6 +71,13 @@ svg#board{display:block;width:100%;height:auto;border-radius:22px;box-shadow:0 6
 .tile:focus{outline:none}
 .tile.sel .plank{stroke:#FFD000;stroke-width:8}
 .token{transition:transform .23s ease}
+.petunia{transition:transform 1s linear}
+.pet-rot{transition:transform .35s ease-in-out}
+#petunia{pointer-events:none}
+.petunia.angry .pet-body{filter:url(#angryRed);animation:angryShake .12s linear infinite}
+@keyframes angryShake{25%{transform:translate(-2px,0)}75%{transform:translate(2px,0)}}
+.petunia.walking .pet-body{animation:petwalk .32s ease-in-out infinite alternate}
+@keyframes petwalk{from{transform:translateY(0) rotate(-3deg)}to{transform:translateY(-6px) rotate(3deg)}}
 .token.slow{transition:transform .7s cubic-bezier(.5,0,.3,1)}
 .halo{transform-box:fill-box;transform-origin:center;animation:halo 1.1s ease-out infinite}
 @keyframes halo{from{transform:scale(1);opacity:.9}to{transform:scale(1.7);opacity:0}}
@@ -149,6 +156,17 @@ details.legend summary{font-family:var(--display);font-weight:800;font-size:1.1r
 .confetti{position:fixed;top:-20px;width:10px;height:14px;z-index:30;pointer-events:none;animation:fall linear forwards}
 @keyframes fall{to{transform:translateY(110vh) rotate(720deg)}}
 
+
+/* ----- Comodín ----- */
+.joker-sec{border:2px solid var(--line);border-radius:14px;padding:12px 14px;margin-bottom:12px}
+.joker-sec h3{font-family:var(--display);font-size:1.15rem;margin:0 0 4px}
+.joker-sec p{margin:0 0 10px;color:var(--muted);font-weight:700;font-size:.92rem}
+.joker-players{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px}
+.joker-players button{border:3px solid transparent;border-radius:50%;padding:2px;background:none}
+.joker-players button.on{border-color:var(--ink)}
+.stepper{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.stepper button.st{width:44px;height:44px;border-radius:12px;border:2.5px solid #1D2B45;background:var(--surface);font-family:var(--display);font-size:1.5rem;font-weight:800;line-height:1}
+.stepper input{width:80px;text-align:center;font-family:var(--display);font-size:1.4rem;font-weight:800;border:2.5px solid var(--line);border-radius:12px;padding:6px;background:var(--surface);color:var(--ink)}
 /* ----- Intro ----- */
 .intro{position:fixed;inset:0;z-index:40;background:#fff;display:grid;place-items:center;padding:calc(24px + env(safe-area-inset-top,0px)) 24px calc(24px + env(safe-area-inset-bottom,0px));opacity:0;transition:opacity .9s ease;cursor:pointer}
 .intro.show{opacity:1}
@@ -158,7 +176,7 @@ details.legend summary{font-family:var(--display);font-weight:800;font-size:1.1r
 .intro-hint{position:absolute;left:0;right:0;bottom:calc(22px + env(safe-area-inset-bottom,0px));text-align:center;color:#8A93A8;font-weight:700;font-size:.95rem}
 .intro-skip{position:absolute;top:calc(16px + env(safe-area-inset-top,0px));right:16px;border:2px solid #C9D0DD;background:#fff;color:#5E6780;border-radius:999px;padding:6px 14px;font-weight:800;font-size:.9rem}
 @media (prefers-reduced-motion:reduce){.intro,.intro-text{transition:opacity .2s}}
-@media (prefers-reduced-motion:reduce){.token,.token.slow{transition:none}.halo,.die.rolling,.card{animation:none}.confetti{display:none}}
+@media (prefers-reduced-motion:reduce){.petunia.walking .pet-body{animation:none}.token,.token.slow{transition:none}.halo,.die.rolling,.card{animation:none}.confetti{display:none}}
 </style>
 </head>
 <body>
@@ -185,7 +203,8 @@ details.legend summary{font-family:var(--display);font-weight:800;font-size:1.1r
         <li>En las casillas de color respondes una pregunta de esa asignatura. Si aciertas, te quedas. Si fallas, vuelves a la casilla donde empezaste el turno.</li>
         <li>Las demás casillas son especiales: atajos, retos, castigos, Recess…</li>
         <li>Si un evento te mueve a otra casilla, esa casilla no se activa. Excepción: tras el Atajo y el Pasillo equivocado, la casilla donde caes sí se activa (si es de asignatura y fallas, vuelves a donde empezaste el turno).</li>
-        <li>Para escapar por la salida (75) hay que acertar una pregunta de cada asignatura. Las que aciertes ya no se repiten.</li>
+        <li>Desde la tercera ronda, Ms Petunia patrulla el tablero: si caes en su casilla, te lleva a Detention.</li>
+        <li>Para escapar por la salida (100) hay que acertar una pregunta de cada asignatura. Las que aciertes ya no se repiten.</li>
       </ol>
       <p style="color:var(--muted);font-weight:700;margin:10px 0 0">Cada jugador elige su nivel de preguntas: Year 5, Year 7 o Adulto.</p>
     </div>
@@ -200,7 +219,7 @@ details.legend summary{font-family:var(--display);font-weight:800;font-size:1.1r
   </div>
   <div class="layout">
     <div class="board-box">
-      <svg id="board" viewBox="0 0 1000 1000" role="img" aria-label="Tablero en espiral de 75 casillas: se empieza en el aula del centro y se escapa hacia la salida del colegio"></svg>
+      <svg id="board" viewBox="0 0 1000 1000" role="img" aria-label="Tablero en espiral de 100 casillas: se empieza en el aula del centro y se escapa hacia la salida del colegio"></svg>
     </div>
     <aside class="panel">
       <div class="box turn">
@@ -210,6 +229,7 @@ details.legend summary{font-family:var(--display);font-weight:800;font-size:1.1r
         <div class="dice-row">
           <div class="die" id="die"></div>
           <button class="btn btn-primary btn-big" id="actBtn">Tirar dado</button>
+          <button class="btn btn-big" id="jokerBtn">⚡ Acciones</button>
         </div>
       </div>
       <div class="box plist" id="plist"></div>
@@ -228,13 +248,13 @@ details.legend summary{font-family:var(--display);font-weight:800;font-size:1.1r
 <div id="modal" class="modal hidden"><div class="card" id="card" role="dialog" aria-modal="true"></div></div>
 <script>
 /* ================= DATOS ================= */
-const TOTAL = 75;
+const TOTAL = 100;
 const SUBJECTS = [
-  {id:'lengua',  name:'Lengua',  icon:'🇪🇸', color:'#E4572E'},
-  {id:'maths',   name:'Maths',   icon:'➗', color:'#2E7BD6'},
-  {id:'english', name:'English', icon:'🇬🇧', color:'#E84A8A'},
-  {id:'science', name:'Science', icon:'🔬', color:'#1F9E5B'},
-  {id:'hisgeo',  name:'Historia y Geografía', icon:'🌍', color:'#E0930F'}
+  {id:'lengua',  name:'Lengua',  icon:'🇪🇸', color:'#C8553D'},
+  {id:'maths',   name:'Maths',   icon:'➗', color:'#4A7FA7'},
+  {id:'english', name:'English', icon:'🇬🇧', color:'#C77D9A'},
+  {id:'science', name:'Science', icon:'🔬', color:'#6A994E'},
+  {id:'hisgeo',  name:'Historia y Geografía', icon:'🌍', color:'#D4A24C'}
 ];
 const LEVELS = {
   y4:{label:'Year 5', short:'Year 5'},
@@ -253,34 +273,37 @@ const COL = Object.fromEntries(COLORS.map(c=>[c.id,c]));
 const textOn = hex => { const n=parseInt(hex.slice(1),16), r=n>>16, g=(n>>8)&255, b=n&255; return (0.299*r+0.587*g+0.114*b)>150 ? '#1D2B45' : '#FFFFFF'; };
 
 const SPECIALS = {
-  fwd:      {g:'mov',    icon:'⏩', name:'¡Atajo!',             sub:'Avanza 2', bg:'#9FE3C8',
+  fwd:      {g:'mov',    icon:'⏩', name:'¡Atajo!',             sub:'Avanza 2', bg:'#B8D8C8',
              desc:'¡Has encontrado un atajo por el pasillo! Avanza 2 casillas.'},
-  back:     {g:'mov',    icon:'⏪', name:'Pasillo equivocado',  sub:'Retrocede 1', bg:'#F2B8B5',
+  back:     {g:'mov',    icon:'⏪', name:'Pasillo equivocado',  sub:'Retrocede 1', bg:'#E8C4BC',
              desc:'¡Te has equivocado de pasillo! Retrocede 1 casilla.'},
-  again:    {g:'mov',    icon:'🎲', name:'Roll again',          sub:'', bg:'#1B2A5C',
+  again:    {g:'mov',    icon:'🎲', name:'Roll again',          sub:'', bg:'#2F3E46',
              desc:'¡Tirada gratis! Vuelves a tirar el dado.'},
-  detention:{g:'mov',    icon:'📝', name:'Detention',           sub:'Pierdes un turno', bg:'#E3000F',
+  detention:{g:'mov',    icon:'📝', name:'Detention',           sub:'Pierdes un turno', bg:'#B23A2E',
              desc:'¡Te has olvidado los deberes en la taquilla! Te quedas castigado un turno… salvo que aciertes una pregunta difícil.'},
-  speed:    {g:'reto',   icon:'⏱️', name:'Speed Run',           sub:'60 segundos', bg:'#FFF3A6',
+  speed:    {g:'reto',   icon:'⏱️', name:'Speed Run',           sub:'60 segundos', bg:'#F2E3A3',
              desc:'Tienes 60 segundos para responder todas las preguntas que puedas, de cualquier asignatura. Avanzas una casilla por cada acierto y retrocedes una por cada 2 fallos.'},
-  vs:       {g:'reto',   icon:'⚔️', name:'VS',                  sub:'Reta a otro jugador', bg:'#A7ACB2',
-             desc:'Retas a otro jugador. El retador elige la asignatura y cada uno responde una pregunta difícil: quien acierte avanza 3, quien falle retrocede 3.'},
-  principal:{g:'suerte', icon:'🧑‍🏫', name:"Principal's Office",  sub:'', bg:'#1E1E1E',
+  vs:       {g:'reto',   icon:'⚔️', name:'VS',                  sub:'Reta a otro jugador', bg:'#9AA5A8',
+             desc:'Retas a otro jugador. El retador elige la asignatura y cada uno responde una pregunta difícil: quien acierte avanza 5, quien falle retrocede 5.'},
+  principal:{g:'suerte', icon:'🧑‍🏫', name:"Principal's Office",  sub:'', bg:'#22272B',
              desc:'Te quedas encerrado como mucho 3 turnos. En cada turno otro jugador elige la asignatura y respondes una pregunta difícil. Si aciertas, sales y tiras el dado en ese mismo turno. Si fallas los 3 intentos, sales en tu siguiente turno y tiras normal.'},
-  double:   {g:'suerte', icon:'×2', name:'Double or Nothing',   sub:'', bg:'#2E7BD6', bg2:'#E3000F',
+  double:   {g:'suerte', icon:'×2', name:'Double or Nothing',   sub:'', bg:'#4A7FA7', bg2:'#C8553D',
              desc:'Tiras el dado en ese momento y respondes una pregunta. Si aciertas, avanzas el doble de lo que saques. Si fallas, retrocedes lo que hayas sacado.'},
-  mystery:  {g:'suerte', icon:'🎁', name:'Mystery Box',         sub:'', bg:'#7B3FB5',
+  mystery:  {g:'suerte', icon:'🎁', name:'Mystery Box',         sub:'', bg:'#7D5BA6',
              desc:'Abre una caja sorpresa.'},
-  recess:   {g:'suerte', icon:'⚽', name:'Recess',              sub:'', bg:'#FFFFFF',
+  recess:   {g:'suerte', icon:'⚽', name:'Recess',              sub:'', bg:'#FBF7EE',
              desc:'Aquí no tienes que responder ninguna pregunta.'}
 };
 const LAYOUT = {
-   5:'fwd',      8:'again',    10:'double',   12:'back',     15:'speed',
-  17:'recess',  19:'detention',21:'mystery',  23:'fwd',      26:'vs',
-  30:'again',   34:'recess',   38:'back',     41:'principal',44:'speed',
-  46:'mystery', 48:'fwd',      50:'recess',   52:'detention',55:'vs',
-  57:'again',   61:'recess',   63:'double',   66:'fwd',      68:'principal',
-  70:'vs',      71:'mystery',  73:'recess'
+   5:'fwd',       7:'mystery',   8:'again',     10:'double',   12:'back',
+  14:'speed',    16:'recess',   18:'detention', 20:'mystery',  23:'fwd',
+  26:'vs',       29:'mystery',  31:'again',     34:'recess',   35:'detention', 39:'mystery',
+  40:'back',     42:'principal',44:'speed',     45:'fwd',      47:'vs',
+  49:'mystery',  50:'recess',   52:'detention', 55:'again',    58:'mystery',
+  61:'double',   64:'recess',   66:'vs',        67:'back',     68:'detention', 69:'mystery',
+  70:'principal',72:'fwd',      74:'speed',     77:'mystery',  80:'again',
+  82:'recess',   84:'detention',86:'vs',        87:'mystery',  88:'fwd',
+  90:'principal',92:'back',     94:'mystery',   97:'recess'
 };
 const GOAL_DESC='La salida del colegio. Para escapar tienes que acertar una pregunta de cada asignatura. Las que aciertes quedan superadas; en los turnos siguientes solo respondes las que te falten.';
 
@@ -417,6 +440,246 @@ const QB = {
      "Vivo en Málaga Desde el lunes."
     ],
     "Mayúscula al principio y en nombres propios. Los días de la semana van en minúscula."
+   ],
+   [
+    "¿Qué palabra es un sustantivo propio?",
+    [
+     "Guadalquivir",
+     "río",
+     "agua",
+     "corriente"
+    ],
+    "Los nombres propios de ríos, ciudades o personas van con mayúscula."
+   ],
+   [
+    "¿Cuál es el antónimo de \"valiente\"?",
+    [
+     "cobarde",
+     "fuerte",
+     "listo",
+     "alto"
+    ],
+    "Valiente y cobarde son contrarios."
+   ],
+   [
+    "¿Cuál es un sinónimo de \"comenzar\"?",
+    [
+     "empezar",
+     "terminar",
+     "parar",
+     "seguir"
+    ],
+    "Comenzar y empezar significan lo mismo."
+   ],
+   [
+    "¿Cuántas sílabas tiene \"chocolate\"?",
+    [
+     "4",
+     "3",
+     "5",
+     "2"
+    ],
+    "cho-co-la-te: 4 sílabas."
+   ],
+   [
+    "¿Cuál está bien escrita?",
+    [
+     "girasol",
+     "jirasol",
+     "guirasol",
+     "hirasol"
+    ],
+    "Girasol se escribe con g."
+   ],
+   [
+    "¿Cuál está bien escrita?",
+    [
+     "llave",
+     "yave",
+     "lave",
+     "llabe"
+    ],
+    "Llave se escribe con ll y v."
+   ],
+   [
+    "¿Cuál es el plural de \"el rey\"?",
+    [
+     "los reyes",
+     "los reys",
+     "los reies",
+     "los rey"
+    ],
+    "Las palabras acabadas en -y añaden -es: reyes."
+   ],
+   [
+    "¿Qué palabra es un verbo en infinitivo?",
+    [
+     "dormir",
+     "dormido",
+     "duermo",
+     "dormía"
+    ],
+    "Los infinitivos acaban en -ar, -er o -ir."
+   ],
+   [
+    "¿Qué palabra es un artículo?",
+    [
+     "la",
+     "casa",
+     "bonita",
+     "correr"
+    ],
+    "El, la, los, las, un, una… son artículos."
+   ],
+   [
+    "¿Cuál es el diminutivo de \"perro\"?",
+    [
+     "perrito",
+     "perrazo",
+     "perrera",
+     "perruno"
+    ],
+    "Los diminutivos indican tamaño pequeño: -ito, -ita."
+   ],
+   [
+    "¿Qué palabra es de la familia de \"flor\"?",
+    [
+     "florero",
+     "flotar",
+     "flojo",
+     "flecha"
+    ],
+    "Florero viene de flor."
+   ],
+   [
+    "¿Cuál es el femenino de \"rey\"?",
+    [
+     "reina",
+     "reya",
+     "reyna",
+     "princesa"
+    ],
+    "El rey, la reina."
+   ],
+   [
+    "\"Las niñas juegan.\" ¿En qué número está el sujeto?",
+    [
+     "plural",
+     "singular",
+     "masculino",
+     "femenino"
+    ],
+    "Son varias niñas: plural."
+   ],
+   [
+    "¿Qué signo se pone al principio de una pregunta en español?",
+    [
+     "¿",
+     "?",
+     "¡",
+     "«"
+    ],
+    "En español las preguntas se abren con ¿ y se cierran con ?."
+   ],
+   [
+    "¿Cuál está bien escrita?",
+    [
+     "brazo",
+     "vrazo",
+     "brazzo",
+     "braso"
+    ],
+    "Brazo se escribe con b y z."
+   ],
+   [
+    "¿Qué palabra es un adjetivo de color?",
+    [
+     "amarillo",
+     "amar",
+     "arriba",
+     "alegría"
+    ],
+    "Amarillo dice cómo es algo."
+   ],
+   [
+    "¿Cuál es el aumentativo de \"zapato\"?",
+    [
+     "zapatón",
+     "zapatito",
+     "zapatería",
+     "zapatero"
+    ],
+    "El aumentativo indica tamaño grande: -ón."
+   ],
+   [
+    "¿Qué palabra rima con \"canción\"?",
+    [
+     "ratón",
+     "cantar",
+     "casa",
+     "cama"
+    ],
+    "Canción y ratón acaban igual: -ón."
+   ],
+   [
+    "¿Qué palabra va primero en el diccionario?",
+    [
+     "gafas",
+     "gallo",
+     "garra",
+     "gato"
+    ],
+    "Todas empiezan por ga-; se mira la tercera letra: f, l, r, t."
+   ],
+   [
+    "\"El perro ladra.\" ¿Cuál es el verbo?",
+    [
+     "ladra",
+     "el",
+     "perro",
+     "ninguna"
+    ],
+    "Ladra es la acción."
+   ],
+   [
+    "¿Qué tipo de palabra es \"nosotros\"?",
+    [
+     "pronombre",
+     "sustantivo",
+     "verbo",
+     "adjetivo"
+    ],
+    "Nosotros sustituye a un nombre: es un pronombre personal."
+   ],
+   [
+    "¿Cuál es el antónimo de \"entrar\"?",
+    [
+     "salir",
+     "pasar",
+     "abrir",
+     "venir"
+    ],
+    "Entrar y salir son contrarios."
+   ],
+   [
+    "¿Cuál es un sinónimo de \"hermoso\"?",
+    [
+     "bello",
+     "feo",
+     "grande",
+     "rápido"
+    ],
+    "Hermoso y bello significan lo mismo."
+   ],
+   [
+    "¿Cuál está bien escrita?",
+    [
+     "sofá",
+     "sofa",
+     "sófa",
+     "sóffa"
+    ],
+    "So-FÁ es aguda acabada en vocal: lleva tilde."
    ]
   ],
   "maths": [
@@ -559,6 +822,246 @@ const QB = {
      "24 cm²"
     ],
     "Area = length × width = 28 cm²."
+   ],
+   [
+    "6 × 8 = ?",
+    [
+     "48",
+     "42",
+     "56",
+     "54"
+    ],
+    "6 × 8 = 48."
+   ],
+   [
+    "11 × 7 = ?",
+    [
+     "77",
+     "71",
+     "87",
+     "67"
+    ],
+    "11 × 7 = 77."
+   ],
+   [
+    "12 × 9 = ?",
+    [
+     "108",
+     "98",
+     "118",
+     "106"
+    ],
+    "12 × 9 = 108."
+   ],
+   [
+    "72 ÷ 8 = ?",
+    [
+     "9",
+     "8",
+     "7",
+     "12"
+    ],
+    "8 × 9 = 72."
+   ],
+   [
+    "56 ÷ 7 = ?",
+    [
+     "8",
+     "7",
+     "9",
+     "6"
+    ],
+    "7 × 8 = 56."
+   ],
+   [
+    "Round 2,348 to the nearest ten.",
+    [
+     "2,350",
+     "2,340",
+     "2,300",
+     "2,400"
+    ],
+    "The ones digit is 8, so we round up."
+   ],
+   [
+    "Round 7,501 to the nearest thousand.",
+    [
+     "8,000",
+     "7,000",
+     "7,500",
+     "7,600"
+    ],
+    "The hundreds digit is 5, so we round up."
+   ],
+   [
+    "What is LX in numbers?",
+    [
+     "60",
+     "40",
+     "110",
+     "15"
+    ],
+    "L = 50 and X = 10."
+   ],
+   [
+    "What is XL in numbers?",
+    [
+     "40",
+     "60",
+     "11",
+     "90"
+    ],
+    "X before L means 50 − 10 = 40."
+   ],
+   [
+    "Which fraction is equivalent to 2/5?",
+    [
+     "4/10",
+     "2/10",
+     "4/5",
+     "5/2"
+    ],
+    "Multiply top and bottom by 2."
+   ],
+   [
+    "What is 3/10 as a decimal?",
+    [
+     "0.3",
+     "0.03",
+     "3.10",
+     "30"
+    ],
+    "3 tenths = 0.3."
+   ],
+   [
+    "What is 45 hundredths as a decimal?",
+    [
+     "0.45",
+     "4.5",
+     "0.045",
+     "45.0"
+    ],
+    "45 hundredths = 0.45."
+   ],
+   [
+    "3,456 + 2,789 = ?",
+    [
+     "6,245",
+     "5,245",
+     "6,145",
+     "6,235"
+    ],
+    "3,456 + 2,789 = 6,245."
+   ],
+   [
+    "8,000 − 3,650 = ?",
+    [
+     "4,350",
+     "4,450",
+     "5,350",
+     "4,250"
+    ],
+    "8,000 − 3,650 = 4,350."
+   ],
+   [
+    "124 × 3 = ?",
+    [
+     "372",
+     "362",
+     "312",
+     "382"
+    ],
+    "100 × 3 + 24 × 3 = 300 + 72."
+   ],
+   [
+    "How many centimetres are in 4 metres?",
+    [
+     "400",
+     "40",
+     "4,000",
+     "44"
+    ],
+    "1 m = 100 cm."
+   ],
+   [
+    "How many grams are in 2 kilograms?",
+    [
+     "2,000",
+     "200",
+     "20",
+     "20,000"
+    ],
+    "1 kg = 1,000 g."
+   ],
+   [
+    "What is 14:15 in 12-hour time?",
+    [
+     "2:15 pm",
+     "4:15 pm",
+     "2:15 am",
+     "12:15 pm"
+    ],
+    "14 − 12 = 2, in the afternoon."
+   ],
+   [
+    "How many days are there in 3 weeks?",
+    [
+     "21",
+     "18",
+     "24",
+     "30"
+    ],
+    "7 × 3 = 21."
+   ],
+   [
+    "A square has sides of 7 cm. What is its perimeter?",
+    [
+     "28 cm",
+     "14 cm",
+     "49 cm",
+     "21 cm"
+    ],
+    "4 × 7 = 28."
+   ],
+   [
+    "How many degrees is a right angle?",
+    [
+     "90°",
+     "45°",
+     "180°",
+     "120°"
+    ],
+    "A right angle is 90°."
+   ],
+   [
+    "What is 1/3 of 27?",
+    [
+     "9",
+     "3",
+     "24",
+     "81"
+    ],
+    "27 ÷ 3 = 9."
+   ],
+   [
+    "What is 2/5 of 20?",
+    [
+     "8",
+     "4",
+     "10",
+     "40"
+    ],
+    "20 ÷ 5 = 4, and 4 × 2 = 8."
+   ],
+   [
+    "Which number is a multiple of both 6 and 8?",
+    [
+     "24",
+     "14",
+     "32",
+     "36"
+    ],
+    "24 = 6 × 4 = 8 × 3."
    ]
   ],
   "english": [
@@ -681,6 +1184,246 @@ const QB = {
      "seprate"
     ],
     "There is \"a rat\" in sep-A-RAT-e."
+   ],
+   [
+    "Which word is a verb?",
+    [
+     "jump",
+     "table",
+     "green",
+     "softly"
+    ],
+    "A verb is an action word."
+   ],
+   [
+    "What is the plural of \"tooth\"?",
+    [
+     "teeth",
+     "tooths",
+     "teeths",
+     "toothes"
+    ],
+    "\"Tooth\" has an irregular plural."
+   ],
+   [
+    "What is the plural of \"box\"?",
+    [
+     "boxes",
+     "boxs",
+     "boxies",
+     "boxen"
+    ],
+    "Words ending in -x add -es."
+   ],
+   [
+    "What is the past tense of \"run\"?",
+    [
+     "ran",
+     "runned",
+     "runs",
+     "rane"
+    ],
+    "Yesterday I ran."
+   ],
+   [
+    "What is the past tense of \"buy\"?",
+    [
+     "bought",
+     "buyed",
+     "brought",
+     "boughted"
+    ],
+    "Yesterday I bought. (\"Brought\" comes from \"bring\".)"
+   ],
+   [
+    "Which word is an adjective?",
+    [
+     "enormous",
+     "eat",
+     "quickly",
+     "under"
+    ],
+    "An adjective describes a noun."
+   ],
+   [
+    "Which word is an adverb?",
+    [
+     "slowly",
+     "slow",
+     "slowness",
+     "slower"
+    ],
+    "Many adverbs end in -ly."
+   ],
+   [
+    "Choose the correct word: \"We ___ going to the beach tomorrow.\"",
+    [
+     "are",
+     "is",
+     "am",
+     "be"
+    ],
+    "We are."
+   ],
+   [
+    "Choose the correct word: \"Put your coat over ___.\"",
+    [
+     "there",
+     "their",
+     "they're",
+     "thier"
+    ],
+    "\"There\" tells us a place."
+   ],
+   [
+    "Which word always needs a capital letter?",
+    [
+     "london",
+     "table",
+     "river",
+     "school"
+    ],
+    "London is a proper noun."
+   ],
+   [
+    "Which word has the prefix \"re-\" meaning \"again\"?",
+    [
+     "redo",
+     "read",
+     "red",
+     "reach"
+    ],
+    "Redo = do again."
+   ],
+   [
+    "Which word is a noun made from \"happy\"?",
+    [
+     "happiness",
+     "happily",
+     "happier",
+     "happiest"
+    ],
+    "The suffix -ness makes nouns."
+   ],
+   [
+    "What is the opposite of \"ancient\"?",
+    [
+     "modern",
+     "old",
+     "huge",
+     "broken"
+    ],
+    "Ancient = very old; modern = new."
+   ],
+   [
+    "Which word is a synonym of \"shout\"?",
+    [
+     "yell",
+     "whisper",
+     "sing",
+     "walk"
+    ],
+    "Shout and yell mean the same."
+   ],
+   [
+    "Choose the correct determiner: \"___ elephant is huge.\"",
+    [
+     "An",
+     "A",
+     "Some",
+     "Those"
+    ],
+    "Use \"an\" before a vowel sound."
+   ],
+   [
+    "Which word is a conjunction?",
+    [
+     "or",
+     "run",
+     "very",
+     "blue"
+    ],
+    "\"Or\" joins words or clauses."
+   ],
+   [
+    "Which sentence is a question?",
+    [
+     "Where is my bag?",
+     "Close the door.",
+     "What a lovely day!",
+     "My bag is blue."
+    ],
+    "Questions end with a question mark."
+   ],
+   [
+    "Which sentence is a command?",
+    [
+     "Close the door.",
+     "Where is my bag?",
+     "What a lovely day!",
+     "My bag is blue."
+    ],
+    "Commands tell someone to do something."
+   ],
+   [
+    "What is the contraction of \"do not\"?",
+    [
+     "don't",
+     "dont",
+     "do'nt",
+     "d'not"
+    ],
+    "The apostrophe replaces the missing o."
+   ],
+   [
+    "What is the contraction of \"I will\"?",
+    [
+     "I'll",
+     "Il'l",
+     "Ill",
+     "I'wll"
+    ],
+    "I will = I'll."
+   ],
+   [
+    "Which word is spelled correctly?",
+    [
+     "island",
+     "iland",
+     "ilsand",
+     "eyeland"
+    ],
+    "Island has a silent s."
+   ],
+   [
+    "Which word is spelled correctly?",
+    [
+     "different",
+     "diffrent",
+     "diferent",
+     "differant"
+    ],
+    "dif-fer-ent."
+   ],
+   [
+    "Which word rhymes with \"light\"?",
+    [
+     "bite",
+     "lit",
+     "list",
+     "late"
+    ],
+    "Light and bite have the same end sound."
+   ],
+   [
+    "\"The cat sat on the mat.\" Which word is a preposition?",
+    [
+     "on",
+     "cat",
+     "sat",
+     "the"
+    ],
+    "\"On\" tells us where."
    ]
   ],
   "science": [
@@ -803,6 +1546,246 @@ const QB = {
      "the drink evaporates"
     ],
     "Water vapour cools on the can and turns into liquid."
+   ],
+   [
+    "Which of these is a gas?",
+    [
+     "oxygen",
+     "milk",
+     "wood",
+     "iron"
+    ],
+    "Oxygen is a gas in the air."
+   ],
+   [
+    "What do we call a liquid turning into a solid?",
+    [
+     "freezing",
+     "melting",
+     "evaporating",
+     "condensing"
+    ],
+    "Water freezes into ice."
+   ],
+   [
+    "What do we call a solid turning into a liquid?",
+    [
+     "melting",
+     "freezing",
+     "condensing",
+     "evaporating"
+    ],
+    "Ice melts into water."
+   ],
+   [
+    "Which part of the body do we use to hear?",
+    [
+     "ears",
+     "eyes",
+     "nose",
+     "tongue"
+    ],
+    "Sound vibrations enter our ears."
+   ],
+   [
+    "Where does food go after the stomach?",
+    [
+     "the small intestine",
+     "the mouth",
+     "the oesophagus",
+     "the lungs"
+    ],
+    "Mouth → oesophagus → stomach → small intestine."
+   ],
+   [
+    "What is the job of the molars?",
+    [
+     "grinding food",
+     "cutting food",
+     "tearing food",
+     "tasting food"
+    ],
+    "Molars are at the back and grind food."
+   ],
+   [
+    "Which animal is a carnivore?",
+    [
+     "lion",
+     "cow",
+     "rabbit",
+     "horse"
+    ],
+    "Carnivores eat meat."
+   ],
+   [
+    "Which animal is a herbivore?",
+    [
+     "cow",
+     "lion",
+     "shark",
+     "wolf"
+    ],
+    "Herbivores eat plants."
+   ],
+   [
+    "In a food chain, which of these is a producer?",
+    [
+     "a plant",
+     "a predator",
+     "a carnivore",
+     "a fox"
+    ],
+    "Plants make their own food."
+   ],
+   [
+    "Which of these is an electrical insulator?",
+    [
+     "plastic",
+     "copper",
+     "iron",
+     "silver"
+    ],
+    "Plastic does not let electricity flow."
+   ],
+   [
+    "What does a switch do in a circuit?",
+    [
+     "opens and closes it",
+     "makes electricity",
+     "stores electricity",
+     "changes the bulb's colour"
+    ],
+    "An open switch breaks the circuit."
+   ],
+   [
+    "What gives the energy to a simple circuit?",
+    [
+     "a battery (cell)",
+     "a wire",
+     "a bulb",
+     "a switch"
+    ],
+    "The cell pushes the electricity round."
+   ],
+   [
+    "Which of these uses electricity?",
+    [
+     "a toaster",
+     "a bicycle",
+     "a spoon",
+     "a book"
+    ],
+    "A toaster needs electricity to work."
+   ],
+   [
+    "How many legs does an insect have?",
+    [
+     "6",
+     "8",
+     "4",
+     "10"
+    ],
+    "Insects have 6 legs; spiders have 8."
+   ],
+   [
+    "Which animal is a mammal?",
+    [
+     "dolphin",
+     "shark",
+     "trout",
+     "crab"
+    ],
+    "Dolphins breathe air and feed their babies milk."
+   ],
+   [
+    "Which animal is a bird?",
+    [
+     "penguin",
+     "bat",
+     "butterfly",
+     "flying fish"
+    ],
+    "Penguins have feathers and lay eggs, even though they can't fly."
+   ],
+   [
+    "What happens to water at 100 °C?",
+    [
+     "it boils",
+     "it freezes",
+     "it melts",
+     "nothing"
+    ],
+    "Water boils at 100 °C."
+   ],
+   [
+    "Why do puddles dry faster on hot days?",
+    [
+     "heat makes water evaporate faster",
+     "the ground drinks more water",
+     "the rain stops",
+     "cold air takes the water"
+    ],
+    "More heat = faster evaporation."
+   ],
+   [
+    "Which of these makes the highest-pitched sound?",
+    [
+     "a small bell",
+     "a big drum",
+     "a lion's roar",
+     "a double bass"
+    ],
+    "Small things vibrate faster: higher pitch."
+   ],
+   [
+    "Which part of a plant takes in water from the soil?",
+    [
+     "roots",
+     "leaves",
+     "flowers",
+     "petals"
+    ],
+    "Roots take in water and hold the plant."
+   ],
+   [
+    "What helps to keep teeth healthy?",
+    [
+     "brushing and eating less sugar",
+     "eating more sweets",
+     "fizzy drinks",
+     "never drinking water"
+    ],
+    "Sugar helps cause tooth decay."
+   ],
+   [
+    "Which of these is a habitat?",
+    [
+     "a pond",
+     "a pencil",
+     "a car",
+     "a chair"
+    ],
+    "A habitat is where a living thing lives."
+   ],
+   [
+    "What do we call animals without a backbone?",
+    [
+     "invertebrates",
+     "vertebrates",
+     "mammals",
+     "reptiles"
+    ],
+    "In- means \"without\"."
+   ],
+   [
+    "Which of these is a liquid at room temperature?",
+    [
+     "water",
+     "ice",
+     "steam",
+     "sand"
+    ],
+    "Ice is solid and steam is a gas."
    ]
   ],
   "hisgeo": [
@@ -925,6 +1908,246 @@ const QB = {
      "un mapa político"
     ],
     "Los planos muestran calles y edificios."
+   ],
+   [
+    "¿Cuál es la capital de Francia?",
+    [
+     "París",
+     "Londres",
+     "Roma",
+     "Berlín"
+    ],
+    "París está a orillas del Sena."
+   ],
+   [
+    "¿Cuál es la capital de Italia?",
+    [
+     "Roma",
+     "Milán",
+     "Madrid",
+     "Atenas"
+    ],
+    "Roma fue el centro del Imperio romano."
+   ],
+   [
+    "What is the capital of the United Kingdom?",
+    [
+     "London",
+     "Edinburgh",
+     "Manchester",
+     "Dublin"
+    ],
+    "London is also the capital of England."
+   ],
+   [
+    "Which river flows through London?",
+    [
+     "the Thames",
+     "the Seine",
+     "the Severn",
+     "the Tagus"
+    ],
+    "The River Thames."
+   ],
+   [
+    "What is the capital of Scotland?",
+    [
+     "Edinburgh",
+     "Glasgow",
+     "Cardiff",
+     "Belfast"
+    ],
+    "Glasgow is bigger, but Edinburgh is the capital."
+   ],
+   [
+    "¿Qué mar está al norte de España?",
+    [
+     "el Cantábrico",
+     "el Mediterráneo",
+     "el Caribe",
+     "el mar Negro"
+    ],
+    "El mar Cantábrico baña Galicia, Asturias, Cantabria y el País Vasco."
+   ],
+   [
+    "¿En qué ciudad está la Alhambra?",
+    [
+     "Granada",
+     "Sevilla",
+     "Málaga",
+     "Córdoba"
+    ],
+    "Fue un palacio de los reyes nazaríes."
+   ],
+   [
+    "¿Qué punto cardinal es el opuesto al norte?",
+    [
+     "el sur",
+     "el este",
+     "el oeste",
+     "el noreste"
+    ],
+    "Norte-sur y este-oeste."
+   ],
+   [
+    "¿Qué es una península?",
+    [
+     "tierra rodeada de agua por todas partes menos por una",
+     "tierra rodeada totalmente de agua",
+     "un río muy largo",
+     "una montaña muy alta"
+    ],
+    "Como la Península Ibérica."
+   ],
+   [
+    "¿Qué es una isla?",
+    [
+     "tierra rodeada de agua por todas partes",
+     "tierra unida a un continente",
+     "un lago grande",
+     "un río pequeño"
+    ],
+    "Como Mallorca o Tenerife."
+   ],
+   [
+    "¿En qué continente está Egipto?",
+    [
+     "África",
+     "Asia",
+     "Europa",
+     "América"
+    ],
+    "Egipto está en el norte de África."
+   ],
+   [
+    "¿Qué río compite con el Amazonas por ser el más largo del mundo?",
+    [
+     "el Nilo",
+     "el Ebro",
+     "el Támesis",
+     "el Sena"
+    ],
+    "El Nilo recorre el norte de África."
+   ],
+   [
+    "What did the Romans build to travel quickly around Britain?",
+    [
+     "straight roads",
+     "canals",
+     "railways",
+     "motorways"
+    ],
+    "Roman roads were famous for being straight."
+   ],
+   [
+    "What language did the Anglo-Saxons speak?",
+    [
+     "Old English",
+     "Latin",
+     "French",
+     "Spanish"
+    ],
+    "Many English words come from Old English."
+   ],
+   [
+    "¿Quién gobernaba el Imperio romano?",
+    [
+     "un emperador",
+     "un faraón",
+     "un presidente",
+     "un sultán"
+    ],
+    "Por ejemplo, Augusto o Adriano."
+   ],
+   [
+    "¿Qué eran los gladiadores?",
+    [
+     "luchadores romanos",
+     "sacerdotes egipcios",
+     "reyes vikingos",
+     "soldados griegos"
+    ],
+    "Luchaban en anfiteatros como el Coliseo."
+   ],
+   [
+    "¿Qué océano está entre Europa y América?",
+    [
+     "el Atlántico",
+     "el Pacífico",
+     "el Índico",
+     "el Ártico"
+    ],
+    "Colón lo cruzó en 1492."
+   ],
+   [
+    "¿Cuál es el continente más grande?",
+    [
+     "Asia",
+     "África",
+     "Europa",
+     "Oceanía"
+    ],
+    "Asia es el más grande y el más poblado."
+   ],
+   [
+    "¿En qué comunidad autónoma está Málaga?",
+    [
+     "Andalucía",
+     "Murcia",
+     "Valencia",
+     "Extremadura"
+    ],
+    "Málaga es una de las 8 provincias andaluzas."
+   ],
+   [
+    "¿Qué país está al oeste de España?",
+    [
+     "Portugal",
+     "Francia",
+     "Italia",
+     "Marruecos"
+    ],
+    "Portugal comparte con España la Península Ibérica."
+   ],
+   [
+    "¿Qué país está al sur de España, cruzando el estrecho?",
+    [
+     "Marruecos",
+     "Argelia",
+     "Egipto",
+     "Portugal"
+    ],
+    "Solo 14 km lo separan de España."
+   ],
+   [
+    "Which Roman leader tried to invade Britain in 55 BC?",
+    [
+     "Julius Caesar",
+     "Claudius",
+     "Hadrian",
+     "Nero"
+    ],
+    "The real conquest came later, under Claudius."
+   ],
+   [
+    "¿Qué forma de gobierno tiene España?",
+    [
+     "monarquía parlamentaria",
+     "república",
+     "imperio",
+     "sultanato"
+    ],
+    "Hay un rey y un Parlamento elegido."
+   ],
+   [
+    "¿Qué mapa muestra todo el mundo reunido en un libro?",
+    [
+     "un atlas",
+     "un plano",
+     "una brújula",
+     "un calendario"
+    ],
+    "Un atlas es un libro de mapas."
    ]
   ]
  },
@@ -1049,6 +2272,246 @@ const QB = {
      "Tu tienes mí libro."
     ],
     "Tú (pronombre) lleva tilde; mi (posesivo) no."
+   ],
+   [
+    "¿Qué palabra es aguda y lleva tilde?",
+    [
+     "café",
+     "mesa",
+     "árbol",
+     "reloj"
+    ],
+    "Aguda acabada en vocal: lleva tilde."
+   ],
+   [
+    "¿Qué palabra es llana y NO lleva tilde?",
+    [
+     "mesa",
+     "café",
+     "lápiz",
+     "pájaro"
+    ],
+    "Llana acabada en vocal: sin tilde."
+   ],
+   [
+    "\"Los niños del barrio juegan en el parque.\" ¿Cuál es el sujeto?",
+    [
+     "Los niños del barrio",
+     "juegan",
+     "en el parque",
+     "del barrio"
+    ],
+    "¿Quién juega? Los niños del barrio."
+   ],
+   [
+    "\"Ana come manzanas rojas.\" ¿Cuál es el núcleo del predicado?",
+    [
+     "come",
+     "Ana",
+     "manzanas",
+     "rojas"
+    ],
+    "El núcleo del predicado es el verbo."
+   ],
+   [
+    "¿En qué tiempo está \"cantaba\"?",
+    [
+     "pretérito imperfecto",
+     "pretérito perfecto simple",
+     "presente",
+     "futuro"
+    ],
+    "Cantaba: acción pasada no terminada."
+   ],
+   [
+    "¿En qué tiempo está \"canté\"?",
+    [
+     "pretérito perfecto simple",
+     "pretérito imperfecto",
+     "futuro",
+     "condicional"
+    ],
+    "Canté: acción pasada y terminada."
+   ],
+   [
+    "¿Qué forma verbal es \"cantando\"?",
+    [
+     "gerundio",
+     "participio",
+     "infinitivo",
+     "imperativo"
+    ],
+    "El gerundio acaba en -ando o -iendo."
+   ],
+   [
+    "¿Qué forma verbal es \"cantado\"?",
+    [
+     "participio",
+     "gerundio",
+     "infinitivo",
+     "presente"
+    ],
+    "El participio acaba en -ado o -ido."
+   ],
+   [
+    "¿Qué tipo de palabra es \"rápidamente\"?",
+    [
+     "adverbio",
+     "adjetivo",
+     "verbo",
+     "sustantivo"
+    ],
+    "Los adverbios acabados en -mente dicen cómo."
+   ],
+   [
+    "\"El libro está sobre la mesa.\" ¿Qué tipo de palabra es \"sobre\"?",
+    [
+     "preposición",
+     "adverbio",
+     "sustantivo",
+     "verbo"
+    ],
+    "a, ante, bajo, con, de, desde, sobre…"
+   ],
+   [
+    "¿Qué frase contiene una comparación?",
+    [
+     "Sus ojos brillan como estrellas.",
+     "Sus ojos son estrellas.",
+     "Las estrellas bailan.",
+     "Brillan, brillan, brillan."
+    ],
+    "La comparación usa \"como\"."
+   ],
+   [
+    "¿Qué palabra engloba a \"rosa, clavel y margarita\"?",
+    [
+     "flor",
+     "jardín",
+     "pétalo",
+     "color"
+    ],
+    "Flor es su hiperónimo."
+   ],
+   [
+    "¿Cuál es el antónimo de \"escaso\"?",
+    [
+     "abundante",
+     "poco",
+     "raro",
+     "pequeño"
+    ],
+    "Escaso y abundante son contrarios."
+   ],
+   [
+    "¿Qué palabra lleva el sufijo \"-ero\"?",
+    [
+     "zapatero",
+     "pero",
+     "cero",
+     "fiero"
+    ],
+    "zapato + -ero: persona que hace zapatos."
+   ],
+   [
+    "¿Qué prefijo significa \"antes\"?",
+    [
+     "pre-",
+     "post-",
+     "sub-",
+     "anti-"
+    ],
+    "Prehistoria: antes de la historia."
+   ],
+   [
+    "¿Qué prefijo significa \"contra\"?",
+    [
+     "anti-",
+     "pre-",
+     "re-",
+     "super-"
+    ],
+    "Antivirus: contra los virus."
+   ],
+   [
+    "Completa: \"¿___ vienes a casa?\"",
+    [
+     "Por qué",
+     "Porque",
+     "Porqué",
+     "Por que"
+    ],
+    "En preguntas: por qué, separado y con tilde."
+   ],
+   [
+    "Completa: \"No vine ___ estaba enfermo.\"",
+    [
+     "porque",
+     "por qué",
+     "porqué",
+     "por que"
+    ],
+    "Para explicar la causa: porque."
+   ],
+   [
+    "¿Qué oración tiene las tildes bien puestas?",
+    [
+     "Él quiere más té.",
+     "El quiere mas te.",
+     "Él quiere mas té.",
+     "El quiere más te."
+    ],
+    "Él (pronombre), más (cantidad) y té (bebida) llevan tilde."
+   ],
+   [
+    "¿Qué palabra tiene un hiato?",
+    [
+     "maíz",
+     "cuidado",
+     "piano",
+     "aire"
+    ],
+    "ma-íz: las vocales van en sílabas distintas."
+   ],
+   [
+    "¿Qué tipo de texto es una receta?",
+    [
+     "instructivo",
+     "narrativo",
+     "poético",
+     "descriptivo"
+    ],
+    "Da instrucciones paso a paso."
+   ],
+   [
+    "¿Qué es un verso?",
+    [
+     "cada línea de un poema",
+     "un párrafo",
+     "un personaje",
+     "un capítulo"
+    ],
+    "Varios versos forman una estrofa."
+   ],
+   [
+    "¿A qué género literario pertenece el teatro?",
+    [
+     "dramático",
+     "lírico",
+     "narrativo",
+     "periodístico"
+    ],
+    "El teatro se escribe para ser representado."
+   ],
+   [
+    "¿Qué palabra es polisémica?",
+    [
+     "cabo",
+     "tomate",
+     "zanahoria",
+     "manzana"
+    ],
+    "Cabo: rango militar, punta de tierra, extremo…"
    ]
   ],
   "maths": [
@@ -1191,6 +2654,246 @@ const QB = {
      "2/7"
     ],
     "Half of 2/5 is 1/5."
+   ],
+   [
+    "4 × (3 + 5) = ?",
+    [
+     "32",
+     "17",
+     "20",
+     "35"
+    ],
+    "Brackets first: 4 × 8 = 32."
+   ],
+   [
+    "18 − 6 ÷ 3 = ?",
+    [
+     "16",
+     "4",
+     "12",
+     "6"
+    ],
+    "Divide first: 6 ÷ 3 = 2, then 18 − 2 = 16."
+   ],
+   [
+    "What is 40% of 150?",
+    [
+     "60",
+     "40",
+     "90",
+     "15"
+    ],
+    "10% = 15, so 40% = 60."
+   ],
+   [
+    "What is 12.5% of 64?",
+    [
+     "8",
+     "12.5",
+     "16",
+     "6.4"
+    ],
+    "12.5% is one eighth: 64 ÷ 8 = 8."
+   ],
+   [
+    "Which of these is a square number?",
+    [
+     "81",
+     "18",
+     "27",
+     "50"
+    ],
+    "9 × 9 = 81."
+   ],
+   [
+    "Which of these is a cube number?",
+    [
+     "125",
+     "25",
+     "100",
+     "150"
+    ],
+    "5 × 5 × 5 = 125."
+   ],
+   [
+    "5/6 − 1/3 = ?",
+    [
+     "1/2",
+     "2/3",
+     "1/6",
+     "5/18"
+    ],
+    "5/6 − 2/6 = 3/6 = 1/2."
+   ],
+   [
+    "2/3 × 6 = ?",
+    [
+     "4",
+     "12",
+     "3",
+     "2/18"
+    ],
+    "6 ÷ 3 = 2, and 2 × 2 = 4."
+   ],
+   [
+    "What is 0.75 as a fraction in its simplest form?",
+    [
+     "3/4",
+     "75/10",
+     "7/5",
+     "1/75"
+    ],
+    "75/100 = 3/4."
+   ],
+   [
+    "Round 3.456 to one decimal place.",
+    [
+     "3.5",
+     "3.4",
+     "3.46",
+     "4"
+    ],
+    "The hundredths digit is 5, so round up."
+   ],
+   [
+    "2.5 × 4 = ?",
+    [
+     "10",
+     "8.5",
+     "6.5",
+     "100"
+    ],
+    "2.5 × 4 = 10."
+   ],
+   [
+    "7.2 ÷ 9 = ?",
+    [
+     "0.8",
+     "8",
+     "0.08",
+     "1.2"
+    ],
+    "72 ÷ 9 = 8, so 7.2 ÷ 9 = 0.8."
+   ],
+   [
+    "Angles around a point add up to…",
+    [
+     "360°",
+     "180°",
+     "90°",
+     "270°"
+    ],
+    "A full turn is 360°."
+   ],
+   [
+    "What is each interior angle of a regular hexagon?",
+    [
+     "120°",
+     "60°",
+     "90°",
+     "108°"
+    ],
+    "720° ÷ 6 = 120°."
+   ],
+   [
+    "What is the area of a rectangle 8.5 cm by 4 cm?",
+    [
+     "34 cm²",
+     "25 cm²",
+     "12.5 cm²",
+     "32 cm²"
+    ],
+    "8.5 × 4 = 34."
+   ],
+   [
+    "How many edges does a cube have?",
+    [
+     "12",
+     "6",
+     "8",
+     "10"
+    ],
+    "A cube has 6 faces, 8 vertices and 12 edges."
+   ],
+   [
+    "How many faces does a square-based pyramid have?",
+    [
+     "5",
+     "4",
+     "6",
+     "8"
+    ],
+    "1 square base + 4 triangles."
+   ],
+   [
+    "If a = 3, what is 4a + 2?",
+    [
+     "14",
+     "9",
+     "12",
+     "34"
+    ],
+    "4 × 3 + 2 = 14."
+   ],
+   [
+    "3 × ☐ = 5.4. What is the missing number?",
+    [
+     "1.8",
+     "2.4",
+     "1.2",
+     "18"
+    ],
+    "5.4 ÷ 3 = 1.8."
+   ],
+   [
+    "−8 + 5 = ?",
+    [
+     "−3",
+     "3",
+     "−13",
+     "13"
+    ],
+    "Start at −8 and move 5 up."
+   ],
+   [
+    "The ratio of boys to girls is 3 : 4. There are 12 boys. How many girls are there?",
+    [
+     "16",
+     "9",
+     "12",
+     "21"
+    ],
+    "12 ÷ 3 = 4, and 4 × 4 = 16."
+   ],
+   [
+    "A bag has 3 red and 5 blue marbles. What fraction of the marbles are red?",
+    [
+     "3/8",
+     "3/5",
+     "5/8",
+     "1/3"
+    ],
+    "3 out of 8 marbles."
+   ],
+   [
+    "How many millimetres are there in 4.2 cm?",
+    [
+     "42",
+     "420",
+     "4.2",
+     "0.42"
+    ],
+    "1 cm = 10 mm."
+   ],
+   [
+    "5 miles is roughly how many kilometres?",
+    [
+     "8",
+     "5",
+     "3",
+     "10"
+    ],
+    "5 miles ≈ 8 km."
    ]
   ],
   "english": [
@@ -1313,6 +3016,246 @@ const QB = {
      "accommadate"
     ],
     "Double c and double m."
+   ],
+   [
+    "Which sentence uses a hyphen correctly?",
+    [
+     "My sister is twenty-one.",
+     "My sister is twenty one-.",
+     "My sister is twen-ty one.",
+     "My-sister is twenty one."
+    ],
+    "Compound numbers from 21 to 99 use a hyphen."
+   ],
+   [
+    "What is the passive form of \"Tom wrote the letter\"?",
+    [
+     "The letter was written by Tom.",
+     "The letter wrote Tom.",
+     "Tom was written by the letter.",
+     "The letter is writing Tom."
+    ],
+    "The object becomes the subject."
+   ],
+   [
+    "Which word is a synonym of \"ancient\"?",
+    [
+     "old",
+     "modern",
+     "fresh",
+     "young"
+    ],
+    "Ancient means very old."
+   ],
+   [
+    "Which word is an antonym of \"transparent\"?",
+    [
+     "opaque",
+     "clear",
+     "bright",
+     "glassy"
+    ],
+    "Opaque: light cannot pass through."
+   ],
+   [
+    "Which sentence uses brackets correctly?",
+    [
+     "The dog (a small terrier) barked.",
+     "The dog a (small terrier) barked.",
+     "(The dog a small) terrier barked.",
+     "The dog a small terrier (barked.)"
+    ],
+    "Brackets hold extra information."
+   ],
+   [
+    "Which is an example of alliteration?",
+    [
+     "Silly Sally sings songs.",
+     "The sun is a ball of fire.",
+     "Bang! went the door.",
+     "As quiet as a mouse."
+    ],
+    "Alliteration repeats the first sound."
+   ],
+   [
+    "Which word is an example of onomatopoeia?",
+    [
+     "buzz",
+     "brave",
+     "bright",
+     "bold"
+    ],
+    "The word sounds like the noise it describes."
+   ],
+   [
+    "What does the prefix \"auto-\" mean?",
+    [
+     "self",
+     "against",
+     "before",
+     "many"
+    ],
+    "Autobiography: a story of your own life."
+   ],
+   [
+    "What does the prefix \"bi-\" mean?",
+    [
+     "two",
+     "half",
+     "many",
+     "around"
+    ],
+    "Bicycle: two wheels."
+   ],
+   [
+    "Which word is spelled correctly?",
+    [
+     "environment",
+     "enviroment",
+     "envirnment",
+     "environmant"
+    ],
+    "Don't forget the n: environ-ment."
+   ],
+   [
+    "Which word is spelled correctly?",
+    [
+     "definitely",
+     "definately",
+     "definitly",
+     "defenitely"
+    ],
+    "It contains the word \"finite\"."
+   ],
+   [
+    "Which word is spelled correctly?",
+    [
+     "rhythm",
+     "rythm",
+     "rhythym",
+     "rhytm"
+    ],
+    "r-h-y-t-h-m."
+   ],
+   [
+    "Which sentence uses a colon correctly?",
+    [
+     "I was tired: I had run 5 km.",
+     "I was: tired I had run 5 km.",
+     "I was tired I had: run 5 km.",
+     "I: was tired I had run 5 km."
+    ],
+    "The colon introduces an explanation."
+   ],
+   [
+    "\"Several children arrived late.\" Which word is a determiner?",
+    [
+     "Several",
+     "children",
+     "arrived",
+     "late"
+    ],
+    "\"Several\" tells us how many."
+   ],
+   [
+    "\"If it rains, we will stay inside.\" What is \"If it rains\"?",
+    [
+     "a subordinate clause",
+     "a main clause",
+     "a relative clause",
+     "a noun phrase"
+    ],
+    "It cannot stand alone."
+   ],
+   [
+    "Which sentence is the most informal?",
+    [
+     "Gonna grab some food, want some?",
+     "I am going to have lunch.",
+     "Would you care to join me?",
+     "Lunch will be served at noon."
+    ],
+    "\"Gonna\" is very informal."
+   ],
+   [
+    "Which punctuation mark shows possession?",
+    [
+     "an apostrophe",
+     "a comma",
+     "a colon",
+     "a hyphen"
+    ],
+    "Lea's book."
+   ],
+   [
+    "Which sentence is a complex sentence?",
+    [
+     "Although it was cold, we went out.",
+     "It was cold.",
+     "It was cold and we went out.",
+     "Cold!"
+    ],
+    "It has a main clause and a subordinate clause."
+   ],
+   [
+    "Which word is an adverb of manner?",
+    [
+     "carefully",
+     "yesterday",
+     "here",
+     "often"
+    ],
+    "It tells us how something is done."
+   ],
+   [
+    "\"Her kindness surprised everyone.\" Which word is a noun?",
+    [
+     "kindness",
+     "her",
+     "surprised",
+     "everyone"
+    ],
+    "Kindness is an abstract noun."
+   ],
+   [
+    "What is the root word of \"unbelievable\"?",
+    [
+     "believe",
+     "able",
+     "un",
+     "belief"
+    ],
+    "un + believe + able."
+   ],
+   [
+    "What does \"to postpone\" mean?",
+    [
+     "to delay",
+     "to cancel",
+     "to hurry",
+     "to begin"
+    ],
+    "The match was postponed until next week."
+   ],
+   [
+    "What is a cliffhanger?",
+    [
+     "an exciting ending that leaves you in suspense",
+     "a type of poem",
+     "a character who climbs",
+     "a happy ending"
+    ],
+    "It makes you want to read on."
+   ],
+   [
+    "What is the name for a word that means the opposite?",
+    [
+     "an antonym",
+     "a synonym",
+     "a homophone",
+     "an acronym"
+    ],
+    "Hot and cold are antonyms."
    ]
   ],
   "science": [
@@ -1435,6 +3378,246 @@ const QB = {
      "crocodile"
     ],
     "Whales breathe air and feed their babies milk."
+   ],
+   [
+    "What does the heart do?",
+    [
+     "pumps blood around the body",
+     "cleans the blood",
+     "digests food",
+     "helps us breathe"
+    ],
+    "It is a muscle that pumps."
+   ],
+   [
+    "Which organs take oxygen into the body?",
+    [
+     "the lungs",
+     "the kidneys",
+     "the liver",
+     "the stomach"
+    ],
+    "We breathe in with our lungs."
+   ],
+   [
+    "What happens to your heart rate when you exercise?",
+    [
+     "it goes up",
+     "it goes down",
+     "it stops",
+     "it stays the same"
+    ],
+    "Muscles need more oxygen."
+   ],
+   [
+    "What is evolution?",
+    [
+     "how living things change over a very long time",
+     "how a caterpillar becomes a butterfly",
+     "how plants grow in spring",
+     "how rocks are made"
+    ],
+    "It takes many generations."
+   ],
+   [
+    "In which type of rock are fossils usually found?",
+    [
+     "sedimentary rock",
+     "igneous rock",
+     "lava",
+     "metal ore"
+    ],
+    "Layers of sediment cover the remains."
+   ],
+   [
+    "Who was Mary Anning?",
+    [
+     "a fossil hunter",
+     "a queen",
+     "an astronaut",
+     "a painter"
+    ],
+    "She found famous fossils in Lyme Regis."
+   ],
+   [
+    "Which animal is well adapted to the desert?",
+    [
+     "camel",
+     "polar bear",
+     "penguin",
+     "walrus"
+    ],
+    "Camels store fat and can go days without water."
+   ],
+   [
+    "Which feature helps a polar bear survive the cold?",
+    [
+     "thick fur and fat",
+     "big ears",
+     "thin skin",
+     "a long tail"
+    ],
+    "They keep its body warm."
+   ],
+   [
+    "What do we call an object that gives out its own light?",
+    [
+     "a light source",
+     "a reflector",
+     "a shadow",
+     "a mirror"
+    ],
+    "Like the Sun or a candle."
+   ],
+   [
+    "What happens when light hits a mirror?",
+    [
+     "it reflects",
+     "it disappears",
+     "it turns into sound",
+     "it is all absorbed"
+    ],
+    "Mirrors reflect light."
+   ],
+   [
+    "Which type of material makes a dark shadow?",
+    [
+     "opaque",
+     "transparent",
+     "translucent",
+     "clear glass"
+    ],
+    "Opaque materials block light."
+   ],
+   [
+    "What does a cell (battery) provide in a circuit?",
+    [
+     "voltage (the push)",
+     "light",
+     "sound",
+     "a switch"
+    ],
+    "More cells = more voltage."
+   ],
+   [
+    "What happens to a bulb if you use a much longer wire?",
+    [
+     "it gets dimmer",
+     "it gets brighter",
+     "it changes colour",
+     "it explodes"
+    ],
+    "Longer wires have more resistance."
+   ],
+   [
+    "What is a buzzer used for in a circuit?",
+    [
+     "to make a sound",
+     "to make light",
+     "to store electricity",
+     "to open the circuit"
+    ],
+    "Buzzers turn electricity into sound."
+   ],
+   [
+    "Which of these is a vertebrate group?",
+    [
+     "fish",
+     "insects",
+     "arachnids",
+     "molluscs"
+    ],
+    "Fish have a backbone."
+   ],
+   [
+    "What do all mammals do?",
+    [
+     "feed their babies milk",
+     "lay eggs",
+     "have scales",
+     "fly"
+    ],
+    "Mammals produce milk."
+   ],
+   [
+    "Which of these is a micro-organism?",
+    [
+     "bacteria",
+     "an ant",
+     "an earthworm",
+     "a spider"
+    ],
+    "You need a microscope to see bacteria."
+   ],
+   [
+    "What does mould feed on?",
+    [
+     "dead or decaying material",
+     "sunlight",
+     "rocks",
+     "air"
+    ],
+    "Mould is a fungus."
+   ],
+   [
+    "What is the circulatory system made of?",
+    [
+     "the heart, blood and blood vessels",
+     "the lungs and trachea",
+     "the stomach and intestines",
+     "the brain and nerves"
+    ],
+    "It moves blood around the body."
+   ],
+   [
+    "Which of these can damage the heart and lungs?",
+    [
+     "tobacco smoke",
+     "water",
+     "fresh fruit",
+     "exercise"
+    ],
+    "Smoking harms the heart and lungs."
+   ],
+   [
+    "Which scientist is famous for his work on gravity?",
+    [
+     "Isaac Newton",
+     "Charles Darwin",
+     "Mary Anning",
+     "Carl Linnaeus"
+    ],
+    "The story says an apple fell on his head."
+   ],
+   [
+    "How long does the Earth take to orbit the Sun?",
+    [
+     "about 365 days",
+     "24 hours",
+     "28 days",
+     "7 days"
+    ],
+    "That is one year."
+   ],
+   [
+    "Why do we have day and night?",
+    [
+     "the Earth spins on its axis",
+     "the Sun moves around the Earth",
+     "the Moon blocks the Sun",
+     "clouds cover the Sun"
+    ],
+    "One spin takes 24 hours."
+   ],
+   [
+    "Which of these is inherited from parents?",
+    [
+     "eye colour",
+     "a scar",
+     "a haircut",
+     "a suntan"
+    ],
+    "Eye colour is passed on in our genes."
    ]
   ],
   "hisgeo": [
@@ -1557,6 +3740,246 @@ const QB = {
      "el Duero"
     ],
     "El Tajo es más largo, pero desemboca en Portugal."
+   ],
+   [
+    "¿Cuál es la capital de Alemania?",
+    [
+     "Berlín",
+     "Múnich",
+     "Viena",
+     "Hamburgo"
+    ],
+    "Berlín estuvo dividida por un muro hasta 1989."
+   ],
+   [
+    "¿Qué río pasa por París?",
+    [
+     "el Sena",
+     "el Rin",
+     "el Danubio",
+     "el Támesis"
+    ],
+    "El Sena atraviesa París."
+   ],
+   [
+    "What is the capital of Wales?",
+    [
+     "Cardiff",
+     "Swansea",
+     "Belfast",
+     "Edinburgh"
+    ],
+    "Cardiff is in the south of Wales."
+   ],
+   [
+    "What is the capital of Northern Ireland?",
+    [
+     "Belfast",
+     "Dublin",
+     "Cardiff",
+     "Derry"
+    ],
+    "Dublin is the capital of the Republic of Ireland."
+   ],
+   [
+    "Which countries make up the United Kingdom?",
+    [
+     "England, Scotland, Wales and Northern Ireland",
+     "England, Scotland, Wales and the Republic of Ireland",
+     "England, France, Wales and Scotland",
+     "England, Scotland, Ireland and Iceland"
+    ],
+    "Four countries."
+   ],
+   [
+    "What was the Blitz?",
+    [
+     "the German bombing of British cities in World War II",
+     "a Viking attack",
+     "a Roman festival",
+     "a Tudor ship"
+    ],
+    "It happened in 1940 and 1941."
+   ],
+   [
+    "What were children sent from cities to the countryside in World War II called?",
+    [
+     "evacuees",
+     "knights",
+     "pilgrims",
+     "sailors"
+    ],
+    "They were sent away to be safe from the bombs."
+   ],
+   [
+    "¿En qué año empezó la Guerra Civil española?",
+    [
+     "1936",
+     "1939",
+     "1914",
+     "1975"
+    ],
+    "Duró hasta 1939."
+   ],
+   [
+    "¿Quién fue el primer emperador romano?",
+    [
+     "Augusto",
+     "Julio César",
+     "Nerón",
+     "Trajano"
+    ],
+    "Julio César no llegó a ser emperador."
+   ],
+   [
+    "¿Qué emperador romano nació en Hispania?",
+    [
+     "Trajano",
+     "Nerón",
+     "Augusto",
+     "Calígula"
+    ],
+    "Nació en Itálica, cerca de Sevilla."
+   ],
+   [
+    "¿Qué pueblo construyó las pirámides de Guiza?",
+    [
+     "los egipcios",
+     "los mayas",
+     "los romanos",
+     "los griegos"
+    ],
+    "Eran tumbas de faraones."
+   ],
+   [
+    "¿En qué año cayó el Imperio romano de Occidente?",
+    [
+     "476",
+     "711",
+     "1492",
+     "44 a.C."
+    ],
+    "Marca el comienzo de la Edad Media."
+   ],
+   [
+    "¿Qué etapa histórica empieza en 1492?",
+    [
+     "la Edad Moderna",
+     "la Edad Media",
+     "la Prehistoria",
+     "la Edad Contemporánea"
+    ],
+    "Empieza con la llegada a América."
+   ],
+   [
+    "¿Qué etapa histórica empieza con la Revolución francesa?",
+    [
+     "la Edad Contemporánea",
+     "la Edad Moderna",
+     "la Edad Media",
+     "la Edad Antigua"
+    ],
+    "La Revolución francesa fue en 1789."
+   ],
+   [
+    "¿Cuál es el río más largo de Europa?",
+    [
+     "el Volga",
+     "el Danubio",
+     "el Rin",
+     "el Tajo"
+    ],
+    "El Volga está en Rusia."
+   ],
+   [
+    "¿Cuál es la montaña más alta de los Alpes?",
+    [
+     "el Mont Blanc",
+     "el Mulhacén",
+     "el Teide",
+     "el Aneto"
+    ],
+    "Está entre Francia e Italia."
+   ],
+   [
+    "¿Cuántos países forman la Unión Europea?",
+    [
+     "27",
+     "28",
+     "25",
+     "30"
+    ],
+    "Eran 28 hasta la salida del Reino Unido."
+   ],
+   [
+    "What currency is used in the United Kingdom?",
+    [
+     "the pound sterling",
+     "the euro",
+     "the dollar",
+     "the peseta"
+    ],
+    "£ is the symbol for the pound."
+   ],
+   [
+    "¿Qué línea imaginaria divide la Tierra en hemisferio este y oeste?",
+    [
+     "el meridiano de Greenwich",
+     "el ecuador",
+     "el trópico de Cáncer",
+     "el círculo polar ártico"
+    ],
+    "Pasa por Londres."
+   ],
+   [
+    "¿Cómo es el clima mediterráneo?",
+    [
+     "veranos calurosos y secos, inviernos suaves",
+     "lluvioso todo el año",
+     "frío todo el año",
+     "cálido y lluvioso todo el año"
+    ],
+    "Es el clima de Málaga."
+   ],
+   [
+    "¿Qué río pasa por Toledo?",
+    [
+     "el Tajo",
+     "el Ebro",
+     "el Guadalquivir",
+     "el Duero"
+    ],
+    "El Tajo rodea la ciudad."
+   ],
+   [
+    "¿Qué ciudad fue la capital del reino visigodo?",
+    [
+     "Toledo",
+     "Córdoba",
+     "Madrid",
+     "Barcelona"
+    ],
+    "Los visigodos gobernaron antes de 711."
+   ],
+   [
+    "What is the name of the great survey of England made after the Norman Conquest?",
+    [
+     "the Domesday Book",
+     "the Magna Carta",
+     "the Bayeux Tapestry",
+     "the Anglo-Saxon Chronicle"
+    ],
+    "It was completed in 1086."
+   ],
+   [
+    "¿Qué océano baña las costas de Galicia?",
+    [
+     "el Atlántico",
+     "el Mediterráneo",
+     "el Índico",
+     "el Pacífico"
+    ],
+    "Galicia está en el noroeste."
    ]
   ]
  },
@@ -1681,6 +4104,246 @@ const QB = {
      "sentarse"
     ],
     "Se quita la d final: sentad + os = sentaos."
+   ],
+   [
+    "¿Cuál es la forma correcta?",
+    [
+     "haya habido",
+     "halla habido",
+     "haiga habido",
+     "aya habido"
+    ],
+    "Haya, del verbo haber."
+   ],
+   [
+    "¿Cuál es la forma correcta?",
+    [
+     "a ver si vienes",
+     "haber si vienes",
+     "aver si vienes",
+     "a haber si vienes"
+    ],
+    "\"A ver\" viene del verbo ver."
+   ],
+   [
+    "¿Qué significa \"inefable\"?",
+    [
+     "que no se puede expresar con palabras",
+     "que no se equivoca",
+     "muy feo",
+     "que no se puede comer"
+    ],
+    "Una alegría inefable."
+   ],
+   [
+    "¿Qué significa \"efímero\"?",
+    [
+     "que dura poco",
+     "eterno",
+     "invisible",
+     "enorme"
+    ],
+    "Un éxito efímero."
+   ],
+   [
+    "¿Quién escribió \"Cien años de soledad\"?",
+    [
+     "Gabriel García Márquez",
+     "Mario Vargas Llosa",
+     "Julio Cortázar",
+     "Pablo Neruda"
+    ],
+    "Publicada en 1967."
+   ],
+   [
+    "¿Quién escribió \"La vida es sueño\"?",
+    [
+     "Calderón de la Barca",
+     "Lope de Vega",
+     "Tirso de Molina",
+     "Francisco de Quevedo"
+    ],
+    "Su protagonista es Segismundo."
+   ],
+   [
+    "¿Quién escribió \"Campos de Castilla\"?",
+    [
+     "Antonio Machado",
+     "Miguel de Unamuno",
+     "Juan Ramón Jiménez",
+     "Federico García Lorca"
+    ],
+    "Publicado en 1912."
+   ],
+   [
+    "¿Qué es un palíndromo?",
+    [
+     "una palabra o frase que se lee igual al revés",
+     "una palabra inventada",
+     "una palabra muy larga",
+     "una palabra extranjera"
+    ],
+    "Por ejemplo: \"reconocer\"."
+   ],
+   [
+    "¿Qué es una aliteración?",
+    [
+     "la repetición de sonidos",
+     "una exageración",
+     "una comparación",
+     "una pregunta sin respuesta"
+    ],
+    "\"Con el ala aleve del leve abanico\"."
+   ],
+   [
+    "¿Cuál es la forma correcta del imperativo?",
+    [
+     "Ve a comprar pan.",
+     "Ves a comprar pan.",
+     "Vés a comprar pan.",
+     "Vayas a comprar pan."
+    ],
+    "El imperativo de ir para \"tú\" es \"ve\"."
+   ],
+   [
+    "¿Qué palabra está bien escrita?",
+    [
+     "exhausto",
+     "exausto",
+     "hexausto",
+     "esxausto"
+    ],
+    "Exhausto lleva h intercalada."
+   ],
+   [
+    "¿Cuál es la forma correcta?",
+    [
+     "prever",
+     "preveer",
+     "preveír",
+     "prevver"
+    ],
+    "Prever se conjuga como ver."
+   ],
+   [
+    "¿Qué significa \"ubicuo\"?",
+    [
+     "que está en todas partes",
+     "que está solo",
+     "antiguo",
+     "dudoso"
+    ],
+    "Los móviles son ubicuos."
+   ],
+   [
+    "¿Cuál es el plural recomendado de \"el currículum\"?",
+    [
+     "los currículums",
+     "los currículumes",
+     "los curriculum",
+     "los currícules"
+    ],
+    "Es lo que recomienda la RAE."
+   ],
+   [
+    "¿Qué es un oxímoron?",
+    [
+     "unir dos palabras de significado opuesto",
+     "repetir una palabra",
+     "exagerar mucho",
+     "comparar con \"como\""
+    ],
+    "\"Un silencio atronador\"."
+   ],
+   [
+    "Completa: \"Ayer ___ en el cine.\"",
+    [
+     "estuve",
+     "estube",
+     "estuvé",
+     "estubé"
+    ],
+    "Estuve se escribe con v."
+   ],
+   [
+    "Completa: \"Te ___ de menos.\"",
+    [
+     "echo",
+     "hecho",
+     "eccho",
+     "hechoo"
+    ],
+    "Echar de menos: sin h."
+   ],
+   [
+    "¿Qué es un leitmotiv?",
+    [
+     "un motivo que se repite en una obra",
+     "el personaje principal",
+     "el final de una novela",
+     "el título de un libro"
+    ],
+    "Viene del alemán."
+   ],
+   [
+    "¿En qué siglos vivió Cervantes?",
+    [
+     "XVI y XVII",
+     "XV",
+     "XVIII",
+     "XIX"
+    ],
+    "Vivió de 1547 a 1616."
+   ],
+   [
+    "¿Qué es un soneto?",
+    [
+     "un poema de 14 versos endecasílabos",
+     "un poema de 8 versos",
+     "una obra de teatro",
+     "una novela corta"
+    ],
+    "Dos cuartetos y dos tercetos."
+   ],
+   [
+    "¿Qué significa \"procaz\"?",
+    [
+     "desvergonzado",
+     "tímido",
+     "rápido",
+     "perezoso"
+    ],
+    "Un comentario procaz."
+   ],
+   [
+    "¿Qué significa \"sempiterno\"?",
+    [
+     "que dura siempre",
+     "que dura poco",
+     "semanal",
+     "pesado"
+    ],
+    "Eterno."
+   ],
+   [
+    "¿Cuál es la forma correcta?",
+    [
+     "Se me olvidó.",
+     "Me se olvidó.",
+     "Me olvidó se.",
+     "Olvidó se me."
+    ],
+    "\"Se\" va delante de \"me\"."
+   ],
+   [
+    "¿Quién escribió \"Don Juan Tenorio\"?",
+    [
+     "José Zorrilla",
+     "Tirso de Molina",
+     "José de Espronceda",
+     "Gustavo Adolfo Bécquer"
+    ],
+    "Se representa en noviembre."
    ]
   ],
   "maths": [
@@ -1803,6 +4466,246 @@ const QB = {
      "10"
     ],
     "2, 3, 5, 7, 11, 13, 17 and 19."
+   ],
+   [
+    "What is 13²?",
+    [
+     "169",
+     "139",
+     "196",
+     "156"
+    ],
+    "13 × 13 = 169."
+   ],
+   [
+    "What is √225?",
+    [
+     "15",
+     "25",
+     "13",
+     "17"
+    ],
+    "15 × 15 = 225."
+   ],
+   [
+    "What is 25% of 25% of 160?",
+    [
+     "10",
+     "40",
+     "20",
+     "5"
+    ],
+    "25% of 160 = 40, and 25% of 40 = 10."
+   ],
+   [
+    "Solve: 5x − 3 = 22",
+    [
+     "x = 5",
+     "x = 4",
+     "x = 3.8",
+     "x = 25"
+    ],
+    "5x = 25."
+   ],
+   [
+    "0.4 × 0.25 = ?",
+    [
+     "0.1",
+     "1",
+     "0.01",
+     "0.65"
+    ],
+    "A quarter of 0.4."
+   ],
+   [
+    "What is 3/7 of 91?",
+    [
+     "39",
+     "13",
+     "21",
+     "42"
+    ],
+    "91 ÷ 7 = 13, and 13 × 3 = 39."
+   ],
+   [
+    "Two angles of a triangle are 50° and 65°. What is the third?",
+    [
+     "65°",
+     "75°",
+     "55°",
+     "115°"
+    ],
+    "180 − 115 = 65."
+   ],
+   [
+    "What is each interior angle of a regular octagon?",
+    [
+     "135°",
+     "120°",
+     "140°",
+     "145°"
+    ],
+    "1,080° ÷ 8 = 135°."
+   ],
+   [
+    "A price rises from £40 to £50. What is the percentage increase?",
+    [
+     "25%",
+     "20%",
+     "10%",
+     "50%"
+    ],
+    "10 is 25% of 40."
+   ],
+   [
+    "What is the next prime number after 89?",
+    [
+     "97",
+     "91",
+     "93",
+     "99"
+    ],
+    "91 = 7 × 13 and 93 = 3 × 31."
+   ],
+   [
+    "How many minutes are there in 1.5 hours?",
+    [
+     "90",
+     "150",
+     "105",
+     "75"
+    ],
+    "1.5 × 60 = 90."
+   ],
+   [
+    "What is the area of a triangle with base 14 cm and height 9 cm?",
+    [
+     "63 cm²",
+     "126 cm²",
+     "23 cm²",
+     "72 cm²"
+    ],
+    "14 × 9 ÷ 2 = 63."
+   ],
+   [
+    "What is the median of 3, 9, 4, 8 and 7?",
+    [
+     "7",
+     "4",
+     "6.2",
+     "8"
+    ],
+    "In order: 3, 4, 7, 8, 9."
+   ],
+   [
+    "What is the mode of 2, 5, 5, 7, 9, 5, 2?",
+    [
+     "5",
+     "2",
+     "7",
+     "9"
+    ],
+    "5 appears most often."
+   ],
+   [
+    "What is 2⁻¹?",
+    [
+     "1/2",
+     "−2",
+     "2",
+     "0"
+    ],
+    "A negative power means 1 divided by the number."
+   ],
+   [
+    "Simplify 12/18.",
+    [
+     "2/3",
+     "3/4",
+     "1/2",
+     "4/9"
+    ],
+    "Divide top and bottom by 6."
+   ],
+   [
+    "How many sides does a dodecagon have?",
+    [
+     "12",
+     "10",
+     "20",
+     "11"
+    ],
+    "Dodeca = twelve."
+   ],
+   [
+    "Roughly how many miles is 1 km?",
+    [
+     "0.62",
+     "1.6",
+     "0.26",
+     "2"
+    ],
+    "1 mile ≈ 1.6 km."
+   ],
+   [
+    "Which is larger?",
+    [
+     "0.7",
+     "0.65",
+     "they are equal",
+     "you can't tell"
+    ],
+    "0.70 is more than 0.65."
+   ],
+   [
+    "15 × 15 = ?",
+    [
+     "225",
+     "215",
+     "250",
+     "205"
+    ],
+    "15² = 225."
+   ],
+   [
+    "1,000 ÷ 8 = ?",
+    [
+     "125",
+     "120",
+     "128",
+     "150"
+    ],
+    "8 × 125 = 1,000."
+   ],
+   [
+    "What is the circumference of a circle with a diameter of 10 cm? (π ≈ 3.14)",
+    [
+     "31.4 cm",
+     "78.5 cm",
+     "15.7 cm",
+     "62.8 cm"
+    ],
+    "π × d."
+   ],
+   [
+    "Round 4.7654 to two decimal places.",
+    [
+     "4.77",
+     "4.76",
+     "4.8",
+     "4.765"
+    ],
+    "The third decimal is 5, so round up."
+   ],
+   [
+    "What is 3 × 10⁴?",
+    [
+     "30,000",
+     "3,000",
+     "300,000",
+     "12"
+    ],
+    "10⁴ = 10,000."
    ]
   ],
   "english": [
@@ -1925,6 +4828,246 @@ const QB = {
      "King Lear"
     ],
     "Hamlet, Act 3."
+   ],
+   [
+    "What is the past participle of \"swim\"?",
+    [
+     "swum",
+     "swam",
+     "swimmed",
+     "swimming"
+    ],
+    "Swim – swam – swum."
+   ],
+   [
+    "Which sentence is correct?",
+    [
+     "The dog wagged its tail.",
+     "The dog wagged it's tail.",
+     "The dog wagged its' tail.",
+     "The dog wagged it is tail."
+    ],
+    "\"Its\" is possessive; \"it's\" means \"it is\"."
+   ],
+   [
+    "What does \"ephemeral\" mean?",
+    [
+     "lasting a very short time",
+     "lasting forever",
+     "very large",
+     "invisible"
+    ],
+    "Fame can be ephemeral."
+   ],
+   [
+    "What does \"benevolent\" mean?",
+    [
+     "kind and generous",
+     "angry",
+     "lazy",
+     "clever"
+    ],
+    "A benevolent ruler."
+   ],
+   [
+    "Who wrote \"Romeo and Juliet\"?",
+    [
+     "William Shakespeare",
+     "Christopher Marlowe",
+     "Charles Dickens",
+     "John Milton"
+    ],
+    "Set in Verona."
+   ],
+   [
+    "Who wrote \"Oliver Twist\"?",
+    [
+     "Charles Dickens",
+     "Jane Austen",
+     "Thomas Hardy",
+     "Mark Twain"
+    ],
+    "\"Please, sir, I want some more.\""
+   ],
+   [
+    "Who wrote the Harry Potter books?",
+    [
+     "J. K. Rowling",
+     "Roald Dahl",
+     "C. S. Lewis",
+     "J. R. R. Tolkien"
+    ],
+    "The first book came out in 1997."
+   ],
+   [
+    "Which word is spelled correctly?",
+    [
+     "occurrence",
+     "occurence",
+     "ocurrence",
+     "occurance"
+    ],
+    "Double c, double r."
+   ],
+   [
+    "Which word is spelled correctly?",
+    [
+     "liaison",
+     "liason",
+     "liasion",
+     "liaision"
+    ],
+    "l-i-a-i-s-o-n."
+   ],
+   [
+    "What is the collective noun for crows?",
+    [
+     "a murder",
+     "a pride",
+     "a pod",
+     "a gaggle"
+    ],
+    "A murder of crows."
+   ],
+   [
+    "What is a haiku?",
+    [
+     "a Japanese poem of three lines",
+     "a 14-line poem",
+     "a funny five-line poem",
+     "a long story poem"
+    ],
+    "Usually 5-7-5 syllables."
+   ],
+   [
+    "What is a limerick?",
+    [
+     "a funny five-line poem",
+     "a sad song",
+     "a 14-line poem",
+     "a speech"
+    ],
+    "Rhyme scheme AABBA."
+   ],
+   [
+    "Which sentence is correct?",
+    [
+     "I could have gone.",
+     "I could of gone.",
+     "I could off gone.",
+     "I could had gone."
+    ],
+    "\"Could of\" is a common mistake."
+   ],
+   [
+    "What is the past tense of \"lead\" (to guide)?",
+    [
+     "led",
+     "leaded",
+     "lead",
+     "lod"
+    ],
+    "Yesterday she led the team."
+   ],
+   [
+    "What does \"procrastinate\" mean?",
+    [
+     "to delay doing something",
+     "to hurry",
+     "to celebrate",
+     "to argue"
+    ],
+    "Leaving things until later."
+   ],
+   [
+    "What is a word with the opposite meaning called?",
+    [
+     "an antonym",
+     "a synonym",
+     "a homonym",
+     "an acronym"
+    ],
+    "Hot and cold."
+   ],
+   [
+    "What is an acronym?",
+    [
+     "a word formed from initial letters",
+     "a word with two meanings",
+     "a very short poem",
+     "a spelling mistake"
+    ],
+    "For example: NATO."
+   ],
+   [
+    "Which sentence is correct?",
+    [
+     "Who's coming tonight?",
+     "Whose coming tonight?",
+     "Who'se coming tonight?",
+     "Whos coming tonight?"
+    ],
+    "Who's = who is."
+   ],
+   [
+    "Which word is a synonym of \"gregarious\"?",
+    [
+     "sociable",
+     "shy",
+     "angry",
+     "generous"
+    ],
+    "Gregarious people like company."
+   ],
+   [
+    "Which word is an antonym of \"verbose\"?",
+    [
+     "concise",
+     "wordy",
+     "loud",
+     "kind"
+    ],
+    "Verbose = using too many words."
+   ],
+   [
+    "What is the plural of \"phenomenon\"?",
+    [
+     "phenomena",
+     "phenomenons",
+     "phenomenas",
+     "phenomenum"
+    ],
+    "It comes from Greek."
+   ],
+   [
+    "Which novel begins \"It was the best of times, it was the worst of times\"?",
+    [
+     "A Tale of Two Cities",
+     "Great Expectations",
+     "Pride and Prejudice",
+     "Jane Eyre"
+    ],
+    "By Charles Dickens."
+   ],
+   [
+    "Who wrote \"Frankenstein\"?",
+    [
+     "Mary Shelley",
+     "Bram Stoker",
+     "Emily Brontë",
+     "H. G. Wells"
+    ],
+    "Published in 1818."
+   ],
+   [
+    "What does \"RSVP\" on an invitation ask you to do?",
+    [
+     "reply",
+     "bring a present",
+     "arrive early",
+     "dress formally"
+    ],
+    "From French: répondez s'il vous plaît."
    ]
   ],
   "science": [
@@ -2047,6 +5190,246 @@ const QB = {
      "volcanic"
     ],
     "It forms when limestone is changed by heat and pressure."
+   ],
+   [
+    "What is the chemical symbol for sodium?",
+    [
+     "Na",
+     "So",
+     "Sd",
+     "S"
+    ],
+    "From the Latin \"natrium\"."
+   ],
+   [
+    "What is the chemical symbol for iron?",
+    [
+     "Fe",
+     "Ir",
+     "In",
+     "I"
+    ],
+    "From the Latin \"ferrum\"."
+   ],
+   [
+    "Which gas do plants release during photosynthesis?",
+    [
+     "oxygen",
+     "carbon dioxide",
+     "nitrogen",
+     "hydrogen"
+    ],
+    "They take in carbon dioxide."
+   ],
+   [
+    "What is the closest star to Earth?",
+    [
+     "the Sun",
+     "Proxima Centauri",
+     "Sirius",
+     "Polaris"
+    ],
+    "Proxima Centauri is the next closest."
+   ],
+   [
+    "Which planet is known as the Red Planet?",
+    [
+     "Mars",
+     "Venus",
+     "Jupiter",
+     "Mercury"
+    ],
+    "Iron oxide makes it red."
+   ],
+   [
+    "What is the largest planet in the Solar System?",
+    [
+     "Jupiter",
+     "Saturn",
+     "Neptune",
+     "Earth"
+    ],
+    "It is a gas giant."
+   ],
+   [
+    "What is the hardest natural substance?",
+    [
+     "diamond",
+     "gold",
+     "iron",
+     "quartz"
+    ],
+    "Diamond is made of carbon."
+   ],
+   [
+    "What is the boiling point of water in Fahrenheit?",
+    [
+     "212 °F",
+     "100 °F",
+     "180 °F",
+     "32 °F"
+    ],
+    "32 °F is freezing."
+   ],
+   [
+    "Where is most of a cell's DNA found?",
+    [
+     "the nucleus",
+     "the cell membrane",
+     "the cell wall",
+     "the vacuole"
+    ],
+    "The nucleus is the control centre."
+   ],
+   [
+    "Which blood cells help blood to clot?",
+    [
+     "platelets",
+     "red blood cells",
+     "white blood cells",
+     "plasma"
+    ],
+    "They form scabs."
+   ],
+   [
+    "What does DNA stand for?",
+    [
+     "deoxyribonucleic acid",
+     "dinitrogen acid",
+     "double nucleic atom",
+     "dynamic natural acid"
+    ],
+    "It carries genetic information."
+   ],
+   [
+    "Roughly how fast does sound travel in air?",
+    [
+     "340 m/s",
+     "3,000 m/s",
+     "34 m/s",
+     "300,000 km/s"
+    ],
+    "Much slower than light."
+   ],
+   [
+    "Which organ produces insulin?",
+    [
+     "the pancreas",
+     "the liver",
+     "the kidneys",
+     "the stomach"
+    ],
+    "Insulin controls blood sugar."
+   ],
+   [
+    "What is the SI unit of force?",
+    [
+     "the newton",
+     "the joule",
+     "the watt",
+     "the pascal"
+    ],
+    "Named after Isaac Newton."
+   ],
+   [
+    "What is the SI unit of energy?",
+    [
+     "the joule",
+     "the newton",
+     "the watt",
+     "the volt"
+    ],
+    "Named after James Joule."
+   ],
+   [
+    "Which element has the atomic number 1?",
+    [
+     "hydrogen",
+     "helium",
+     "oxygen",
+     "carbon"
+    ],
+    "It has one proton."
+   ],
+   [
+    "Who developed the theory of relativity?",
+    [
+     "Albert Einstein",
+     "Isaac Newton",
+     "Niels Bohr",
+     "Stephen Hawking"
+    ],
+    "E = mc²."
+   ],
+   [
+    "What is H₂SO₄?",
+    [
+     "sulphuric acid",
+     "hydrochloric acid",
+     "water",
+     "salt"
+    ],
+    "A strong acid."
+   ],
+   [
+    "How many planets are there in the Solar System?",
+    [
+     "8",
+     "9",
+     "7",
+     "10"
+    ],
+    "Pluto was reclassified in 2006."
+   ],
+   [
+    "Which vitamin is found in large amounts in citrus fruits?",
+    [
+     "vitamin C",
+     "vitamin D",
+     "vitamin K",
+     "vitamin B12"
+    ],
+    "Oranges and lemons."
+   ],
+   [
+    "What is the main gas in natural gas?",
+    [
+     "methane",
+     "oxygen",
+     "nitrogen",
+     "helium"
+    ],
+    "CH₄."
+   ],
+   [
+    "Who discovered radium and polonium?",
+    [
+     "Marie and Pierre Curie",
+     "Ernest Rutherford",
+     "Dmitri Mendeleev",
+     "Michael Faraday"
+    ],
+    "Polonium is named after Poland."
+   ],
+   [
+    "Roughly what is the pH of stomach acid?",
+    [
+     "1–2",
+     "7",
+     "10",
+     "14"
+    ],
+    "It is very acidic."
+   ],
+   [
+    "What kind of animal is a whale?",
+    [
+     "a mammal",
+     "a fish",
+     "an amphibian",
+     "a reptile"
+    ],
+    "Whales breathe air and feed their babies milk."
    ]
   ],
   "hisgeo": [
@@ -2169,12 +5552,1642 @@ const QB = {
      "el Caspio y el Negro"
     ],
     "Se inauguró en 1869."
+   ],
+   [
+    "¿En qué año cayó el Muro de Berlín?",
+    [
+     "1989",
+     "1991",
+     "1961",
+     "1945"
+    ],
+    "El 9 de noviembre de 1989."
+   ],
+   [
+    "¿En qué año llegó el ser humano a la Luna?",
+    [
+     "1969",
+     "1959",
+     "1972",
+     "1965"
+    ],
+    "Con la misión Apolo 11."
+   ],
+   [
+    "¿Cuál es la capital de Canadá?",
+    [
+     "Ottawa",
+     "Toronto",
+     "Montreal",
+     "Vancouver"
+    ],
+    "Toronto es la ciudad más grande."
+   ],
+   [
+    "¿Cuál es la capital de Brasil?",
+    [
+     "Brasilia",
+     "Río de Janeiro",
+     "São Paulo",
+     "Salvador"
+    ],
+    "Es capital desde 1960."
+   ],
+   [
+    "¿Cuál es la capital de Turquía?",
+    [
+     "Ankara",
+     "Estambul",
+     "Esmirna",
+     "Antalya"
+    ],
+    "Estambul es la ciudad más grande."
+   ],
+   [
+    "¿En qué año se aprobó la Constitución de Cádiz, \"la Pepa\"?",
+    [
+     "1812",
+     "1808",
+     "1876",
+     "1931"
+    ],
+    "Se aprobó el día de San José."
+   ],
+   [
+    "¿En qué año se proclamó la Segunda República española?",
+    [
+     "1931",
+     "1936",
+     "1923",
+     "1873"
+    ],
+    "El 14 de abril de 1931."
+   ],
+   [
+    "¿Qué rey reinó en España de 1975 a 2014?",
+    [
+     "Juan Carlos I",
+     "Felipe VI",
+     "Alfonso XIII",
+     "Felipe V"
+    ],
+    "Abdicó en su hijo Felipe."
+   ],
+   [
+    "Who was the first Tudor king?",
+    [
+     "Henry VII",
+     "Henry VIII",
+     "Richard III",
+     "Edward VI"
+    ],
+    "He won the Battle of Bosworth."
+   ],
+   [
+    "Who was the UK Prime Minister during the Falklands War in 1982?",
+    [
+     "Margaret Thatcher",
+     "Tony Blair",
+     "Winston Churchill",
+     "John Major"
+    ],
+    "She was PM from 1979 to 1990."
+   ],
+   [
+    "Which British liner sank in 1912 after hitting an iceberg?",
+    [
+     "the Titanic",
+     "the Lusitania",
+     "the Mary Rose",
+     "the Britannic"
+    ],
+    "On its first voyage."
+   ],
+   [
+    "In which year did the UK officially leave the European Union?",
+    [
+     "2020",
+     "2016",
+     "2019",
+     "2021"
+    ],
+    "The referendum was in 2016."
+   ],
+   [
+    "¿Cuál es el país más grande de Sudamérica?",
+    [
+     "Brasil",
+     "Argentina",
+     "Perú",
+     "Colombia"
+    ],
+    "Ocupa casi la mitad del continente."
+   ],
+   [
+    "¿Qué cordillera recorre Sudamérica de norte a sur?",
+    [
+     "los Andes",
+     "las Rocosas",
+     "los Alpes",
+     "el Himalaya"
+    ],
+    "Es la más larga del mundo."
+   ],
+   [
+    "¿Cuál es la montaña más alta del mundo?",
+    [
+     "el Everest",
+     "el K2",
+     "el Aconcagua",
+     "el Kilimanjaro"
+    ],
+    "Unos 8.849 m."
+   ],
+   [
+    "¿Cuál es la montaña más alta de América?",
+    [
+     "el Aconcagua",
+     "el Denali",
+     "el Chimborazo",
+     "el Cotopaxi"
+    ],
+    "Está en Argentina."
+   ],
+   [
+    "¿Cuál es el país más pequeño del mundo?",
+    [
+     "el Vaticano",
+     "Mónaco",
+     "San Marino",
+     "Liechtenstein"
+    ],
+    "Está dentro de Roma."
+   ],
+   [
+    "¿En qué ciudad está la Sagrada Familia?",
+    [
+     "Barcelona",
+     "Madrid",
+     "Valencia",
+     "Bilbao"
+    ],
+    "Obra de Gaudí."
+   ],
+   [
+    "¿Quién diseñó el Museo Guggenheim de Bilbao?",
+    [
+     "Frank Gehry",
+     "Antoni Gaudí",
+     "Santiago Calatrava",
+     "Norman Foster"
+    ],
+    "Se inauguró en 1997."
+   ],
+   [
+    "¿Qué emperador francés fue derrotado en Waterloo?",
+    [
+     "Napoleón Bonaparte",
+     "Luis XIV",
+     "Carlomagno",
+     "Napoleón III"
+    ],
+    "En 1815."
+   ],
+   [
+    "¿Cuál es la capital de Nueva Zelanda?",
+    [
+     "Wellington",
+     "Auckland",
+     "Christchurch",
+     "Sídney"
+    ],
+    "Auckland es la ciudad más grande."
+   ],
+   [
+    "¿Qué río pasa por Viena, Budapest y Belgrado?",
+    [
+     "el Danubio",
+     "el Rin",
+     "el Elba",
+     "el Volga"
+    ],
+    "Desemboca en el mar Negro."
+   ],
+   [
+    "Which English queen was executed in 1536?",
+    [
+     "Anne Boleyn",
+     "Catherine of Aragon",
+     "Jane Seymour",
+     "Mary I"
+    ],
+    "The second wife of Henry VIII."
+   ],
+   [
+    "¿En qué año se celebró la Expo de Sevilla?",
+    [
+     "1992",
+     "1988",
+     "1982",
+     "2000"
+    ],
+    "El mismo año que los Juegos de Barcelona."
    ]
   ]
  }
 };
 
 /* Preguntas difíciles (Detention y Principal's Office), dentro del nivel de cada curso */
+/* Preguntas de Ms Petunia: MUY difíciles, para salir de su Detention */
+const PETUNIA = {
+ "y4": {
+  "lengua": [
+   [
+    "¿Cuántas sílabas tiene \"otorrinolaringólogo\"?",
+    [
+     "9",
+     "8",
+     "10",
+     "7"
+    ],
+    "o-to-rri-no-la-rin-gó-lo-go: 9 sílabas."
+   ],
+   [
+    "¿Cuál es el plural de \"el menú\"?",
+    [
+     "los menús",
+     "los menúes",
+     "los menú",
+     "los menúses"
+    ],
+    "Las palabras acabadas en ú tónica suelen añadir -s: menús."
+   ],
+   [
+    "¿Qué palabra es un sustantivo colectivo?",
+    [
+     "archipiélago",
+     "isla",
+     "mar",
+     "arena"
+    ],
+    "Un archipiélago es un conjunto de islas."
+   ],
+   [
+    "¿Cuántas sílabas tiene \"extraordinariamente\"?",
+    [
+     "8",
+     "7",
+     "9",
+     "10"
+    ],
+    "ex-tra-or-di-na-ria-men-te: 8 sílabas."
+   ],
+   [
+    "¿Qué palabra es esdrújula?",
+    [
+     "murciélago",
+     "camión",
+     "lápiz",
+     "reloj"
+    ],
+    "mur-CIÉ-la-go: la tónica es la antepenúltima."
+   ],
+   [
+    "¿Cómo se llama un grupo de lobos?",
+    [
+     "manada",
+     "enjambre",
+     "rebaño",
+     "bandada"
+    ],
+    "Manada es un sustantivo colectivo."
+   ],
+   [
+    "¿Cuál es el antónimo de \"generosidad\"?",
+    [
+     "tacañería",
+     "bondad",
+     "alegría",
+     "riqueza"
+    ],
+    "Generosidad y tacañería son contrarios."
+   ],
+   [
+    "¿Cuál está bien escrita?",
+    [
+     "hipopótamo",
+     "ipopótamo",
+     "hipopotamo",
+     "hipopótano"
+    ],
+    "Con h y con tilde: hi-po-PÓ-ta-mo."
+   ],
+   [
+    "¿Qué palabra es un verbo?",
+    [
+     "cantábamos",
+     "canción",
+     "cantante",
+     "cantarín"
+    ],
+    "Cantábamos es una forma del verbo cantar."
+   ]
+  ],
+  "maths": [
+   [
+    "999 × 4 = ?",
+    [
+     "3,996",
+     "3,696",
+     "4,996",
+     "3,969"
+    ],
+    "1,000 × 4 = 4,000, minus 4 = 3,996."
+   ],
+   [
+    "What comes next? 1, 4, 9, 16, 25, …",
+    [
+     "36",
+     "30",
+     "35",
+     "49"
+    ],
+    "They are square numbers: 6 × 6 = 36."
+   ],
+   [
+    "A rectangle has a perimeter of 30 cm and one side of 9 cm. What is its area?",
+    [
+     "54 cm²",
+     "45 cm²",
+     "270 cm²",
+     "21 cm²"
+    ],
+    "The other side is 6 cm (9 + 6 = 15, half of 30), so 9 × 6 = 54."
+   ],
+   [
+    "125 × 8 = ?",
+    [
+     "1,000",
+     "900",
+     "1,025",
+     "1,200"
+    ],
+    "125 × 8 = 1,000."
+   ],
+   [
+    "What is 3/4 of 120?",
+    [
+     "90",
+     "30",
+     "40",
+     "80"
+    ],
+    "120 ÷ 4 = 30, and 30 × 3 = 90."
+   ],
+   [
+    "4,005 − 1,997 = ?",
+    [
+     "2,008",
+     "2,018",
+     "3,008",
+     "2,108"
+    ],
+    "4,005 − 2,000 = 2,005, then add 3."
+   ],
+   [
+    "How many minutes are there in three and a half hours?",
+    [
+     "210",
+     "180",
+     "350",
+     "330"
+    ],
+    "3 × 60 + 30 = 210."
+   ],
+   [
+    "What is the smallest 4-digit number with all different digits?",
+    [
+     "1,023",
+     "1,000",
+     "1,234",
+     "1,012"
+    ],
+    "1, 0, 2, 3: all different."
+   ],
+   [
+    "A square has a perimeter of 48 cm. What is its area?",
+    [
+     "144 cm²",
+     "48 cm²",
+     "12 cm²",
+     "96 cm²"
+    ],
+    "Each side is 12 cm, and 12 × 12 = 144."
+   ]
+  ],
+  "english": [
+   [
+    "Which word is spelled correctly?",
+    [
+     "February",
+     "Febuary",
+     "Februery",
+     "Febrary"
+    ],
+    "Don't forget the first r: Feb-ru-ary."
+   ],
+   [
+    "What is the past tense of \"freeze\"?",
+    [
+     "froze",
+     "freezed",
+     "frozed",
+     "frozen"
+    ],
+    "Yesterday it froze. (\"Frozen\" is the past participle.)"
+   ],
+   [
+    "Which word is a homophone of \"scene\"?",
+    [
+     "seen",
+     "scent",
+     "sin",
+     "sign"
+    ],
+    "Scene and seen sound the same."
+   ],
+   [
+    "Which word is spelled correctly?",
+    [
+     "grammar",
+     "grammer",
+     "gramar",
+     "grammmar"
+    ],
+    "It ends in -ar."
+   ],
+   [
+    "What is the past tense of \"teach\"?",
+    [
+     "taught",
+     "teached",
+     "tought",
+     "thought"
+    ],
+    "Yesterday I taught."
+   ],
+   [
+    "Which word is a homophone of \"whole\"?",
+    [
+     "hole",
+     "holly",
+     "wool",
+     "hold"
+    ],
+    "Whole and hole sound the same."
+   ],
+   [
+    "Which word contains a suffix?",
+    [
+     "careful",
+     "carrot",
+     "carpet",
+     "cart"
+    ],
+    "care + -ful."
+   ],
+   [
+    "What is a group of fish called?",
+    [
+     "a school",
+     "a herd",
+     "a pack",
+     "a flock"
+    ],
+    "A school (or shoal) of fish."
+   ],
+   [
+    "Which sentence uses the apostrophe correctly?",
+    [
+     "It's raining today.",
+     "Its raining today.",
+     "It's' raining today.",
+     "Its' raining today."
+    ],
+    "It's = it is."
+   ]
+  ],
+  "science": [
+   [
+    "What is it called when water falls from clouds as rain, snow or hail?",
+    [
+     "precipitation",
+     "evaporation",
+     "condensation",
+     "collection"
+    ],
+    "Precipitation is part of the water cycle."
+   ],
+   [
+    "Which of these animals is NOT a vertebrate?",
+    [
+     "octopus",
+     "shark",
+     "frog",
+     "bat"
+    ],
+    "An octopus has no backbone."
+   ],
+   [
+    "Through which material does sound travel fastest?",
+    [
+     "steel",
+     "air",
+     "water",
+     "a vacuum"
+    ],
+    "Sound travels faster through solids. It cannot travel through a vacuum."
+   ],
+   [
+    "Which organ takes most of the water back from our food?",
+    [
+     "the large intestine",
+     "the stomach",
+     "the small intestine",
+     "the oesophagus"
+    ],
+    "The large intestine absorbs water."
+   ],
+   [
+    "Which gas do plants take in to make their food?",
+    [
+     "carbon dioxide",
+     "oxygen",
+     "nitrogen",
+     "helium"
+    ],
+    "They give out oxygen."
+   ],
+   [
+    "Which of these is a reptile?",
+    [
+     "crocodile",
+     "frog",
+     "salamander",
+     "newt"
+    ],
+    "Reptiles have dry, scaly skin."
+   ],
+   [
+    "What do we call the temperature at which a liquid turns into a gas?",
+    [
+     "boiling point",
+     "freezing point",
+     "melting point",
+     "dew point"
+    ],
+    "For water, it is 100 °C."
+   ],
+   [
+    "Why does a sound get quieter as it travels?",
+    [
+     "the vibrations get weaker",
+     "sound slows down",
+     "the air stops it completely",
+     "it changes pitch"
+    ],
+    "The energy spreads out."
+   ],
+   [
+    "Which metal is NOT magnetic?",
+    [
+     "aluminium",
+     "iron",
+     "nickel",
+     "steel"
+    ],
+    "Aluminium cans are not attracted to magnets."
+   ]
+  ],
+  "hisgeo": [
+   [
+    "¿Cuál es la provincia más grande de Andalucía?",
+    [
+     "Sevilla",
+     "Jaén",
+     "Córdoba",
+     "Granada"
+    ],
+    "Sevilla es la más extensa, seguida muy de cerca por Córdoba."
+   ],
+   [
+    "What was the Roman name of the town that is now Bath?",
+    [
+     "Aquae Sulis",
+     "Londinium",
+     "Eboracum",
+     "Deva"
+    ],
+    "Its Roman baths are still there today."
+   ],
+   [
+    "¿Cuántas provincias andaluzas tienen costa?",
+    [
+     "5",
+     "4",
+     "6",
+     "8"
+    ],
+    "Huelva, Cádiz, Málaga, Granada y Almería."
+   ],
+   [
+    "¿Cuál es la capital de Aragón?",
+    [
+     "Zaragoza",
+     "Huesca",
+     "Teruel",
+     "Pamplona"
+    ],
+    "Zaragoza está a orillas del Ebro."
+   ],
+   [
+    "¿Qué río pasa por Madrid?",
+    [
+     "el Manzanares",
+     "el Tajo",
+     "el Henares",
+     "el Jarama"
+    ],
+    "El Manzanares cruza la ciudad."
+   ],
+   [
+    "Which Roman emperor ordered a wall to be built across northern Britain?",
+    [
+     "Hadrian",
+     "Claudius",
+     "Julius Caesar",
+     "Nero"
+    ],
+    "Hadrian's Wall."
+   ],
+   [
+    "From which area of Europe did many Anglo-Saxons come?",
+    [
+     "northern Germany and Denmark",
+     "Italy",
+     "Spain",
+     "Greece"
+    ],
+    "They crossed the North Sea."
+   ],
+   [
+    "¿Cuál es el río más largo de Andalucía?",
+    [
+     "el Guadalquivir",
+     "el Genil",
+     "el Guadiana",
+     "el Segura"
+    ],
+    "Nace en Jaén y desemboca en Cádiz."
+   ],
+   [
+    "¿Cuál es la capital de Grecia?",
+    [
+     "Atenas",
+     "Esparta",
+     "Roma",
+     "Estambul"
+    ],
+    "Allí está la Acrópolis."
+   ]
+  ]
+ },
+ "y6": {
+  "lengua": [
+   [
+    "\"Me gustan las fresas.\" ¿Cuál es el sujeto?",
+    [
+     "las fresas",
+     "me",
+     "yo",
+     "no tiene sujeto"
+    ],
+    "¿Qué me gusta? Las fresas: concuerdan con el verbo \"gustan\"."
+   ],
+   [
+    "¿Qué tipo de oración es \"Se venden pisos\"?",
+    [
+     "pasiva refleja",
+     "impersonal",
+     "reflexiva",
+     "recíproca"
+    ],
+    "Equivale a \"Pisos son vendidos\"."
+   ],
+   [
+    "¿Cuántos diptongos hay en \"cuidadoso\"?",
+    [
+     "1",
+     "2",
+     "0",
+     "3"
+    ],
+    "cui-da-do-so: solo \"ui\"."
+   ],
+   [
+    "\"La tarta de chocolate está rica.\" ¿Qué función tiene \"de chocolate\"?",
+    [
+     "complemento del nombre",
+     "complemento directo",
+     "complemento indirecto",
+     "atributo"
+    ],
+    "Completa al sustantivo \"tarta\"."
+   ],
+   [
+    "\"Juan está cansado.\" ¿Qué función tiene \"cansado\"?",
+    [
+     "atributo",
+     "complemento directo",
+     "complemento circunstancial",
+     "sujeto"
+    ],
+    "Con los verbos ser, estar y parecer."
+   ],
+   [
+    "¿Qué tipo de palabra es \"cuyo\"?",
+    [
+     "relativo",
+     "interrogativo",
+     "demostrativo",
+     "indefinido"
+    ],
+    "El chico cuyo perro se perdió."
+   ],
+   [
+    "\"Su boca de fresa.\" ¿Qué figura literaria es?",
+    [
+     "metáfora",
+     "hipérbole",
+     "onomatopeya",
+     "anáfora"
+    ],
+    "Identifica la boca con una fresa."
+   ],
+   [
+    "¿Cuál es el participio de \"romper\"?",
+    [
+     "roto",
+     "rompido",
+     "rompiendo",
+     "rompe"
+    ],
+    "Es un participio irregular."
+   ],
+   [
+    "¿Qué palabra es un gentilicio?",
+    [
+     "malagueño",
+     "montaña",
+     "marinero",
+     "pescador"
+    ],
+    "Indica el lugar de origen."
+   ]
+  ],
+  "maths": [
+   [
+    "What is 15% of 15% of 400?",
+    [
+     "9",
+     "60",
+     "22.5",
+     "90"
+    ],
+    "15% of 400 = 60, and 15% of 60 = 9."
+   ],
+   [
+    "Which fraction is the largest?",
+    [
+     "2/3",
+     "5/8",
+     "3/5",
+     "7/12"
+    ],
+    "2/3 ≈ 0.67, 5/8 = 0.625, 3/5 = 0.6, 7/12 ≈ 0.58."
+   ],
+   [
+    "A cuboid has a volume of 60 cm³. Its length is 5 cm and its width is 3 cm. What is its height?",
+    [
+     "4 cm",
+     "12 cm",
+     "52 cm",
+     "20 cm"
+    ],
+    "60 ÷ (5 × 3) = 4."
+   ],
+   [
+    "2⁵ − 5² = ?",
+    [
+     "7",
+     "0",
+     "10",
+     "3"
+    ],
+    "32 − 25 = 7."
+   ],
+   [
+    "0.2 × 0.3 = ?",
+    [
+     "0.06",
+     "0.6",
+     "0.5",
+     "6"
+    ],
+    "2 × 3 = 6, with two decimal places."
+   ],
+   [
+    "7/8 − 2/3 = ?",
+    [
+     "5/24",
+     "5/11",
+     "1/24",
+     "9/24"
+    ],
+    "21/24 − 16/24 = 5/24."
+   ],
+   [
+    "A car travels 180 km in 2 hours 15 minutes. What is its average speed?",
+    [
+     "80 km/h",
+     "90 km/h",
+     "72 km/h",
+     "85 km/h"
+    ],
+    "180 ÷ 2.25 = 80."
+   ],
+   [
+    "What do the interior angles of a pentagon add up to?",
+    [
+     "540°",
+     "360°",
+     "720°",
+     "450°"
+    ],
+    "(5 − 2) × 180° = 540°."
+   ],
+   [
+    "If 3n − 4 = 2n + 9, what is n?",
+    [
+     "13",
+     "5",
+     "9",
+     "1"
+    ],
+    "n = 9 + 4."
+   ]
+  ],
+  "english": [
+   [
+    "Which sentence is in the future perfect?",
+    [
+     "By June, I will have finished.",
+     "I will finish in June.",
+     "I have finished.",
+     "I had finished by June."
+    ],
+    "Future perfect = will have + past participle."
+   ],
+   [
+    "Which word is an antonym of \"benevolent\"?",
+    [
+     "malevolent",
+     "kind",
+     "generous",
+     "cheerful"
+    ],
+    "Benevolent = kind; malevolent = wishing harm."
+   ],
+   [
+    "Which sentence is punctuated correctly?",
+    [
+     "My sister, who lives in Leeds, is a doctor.",
+     "My sister who lives in Leeds, is a doctor.",
+     "My sister, who lives in Leeds is a doctor.",
+     "My sister who, lives in Leeds, is a doctor."
+    ],
+    "The extra information goes between two commas."
+   ],
+   [
+    "Which word is spelled correctly?",
+    [
+     "mischievous",
+     "mischievious",
+     "mischevous",
+     "mischivous"
+    ],
+    "Three syllables: mis-chie-vous."
+   ],
+   [
+    "What does \"ambiguous\" mean?",
+    [
+     "having more than one possible meaning",
+     "very clear",
+     "very large",
+     "angry"
+    ],
+    "An ambiguous sentence can be understood in two ways."
+   ],
+   [
+    "Which sentence uses a dash correctly for emphasis?",
+    [
+     "I opened the box – it was empty!",
+     "I opened – the box it was empty!",
+     "I – opened the box it was empty!",
+     "I opened the – box it was empty!"
+    ],
+    "The dash adds a dramatic pause."
+   ],
+   [
+    "\"That book is mine.\" What word class is \"That\"?",
+    [
+     "determiner",
+     "pronoun",
+     "conjunction",
+     "adverb"
+    ],
+    "It comes before the noun \"book\"."
+   ],
+   [
+    "Which sentence uses \"whom\" correctly?",
+    [
+     "The girl with whom I travelled was kind.",
+     "Whom is at the door?",
+     "Whom told you?",
+     "The girl whom is kind."
+    ],
+    "\"Whom\" is the object form."
+   ],
+   [
+    "What is an oxymoron?",
+    [
+     "two contradictory words used together",
+     "a comparison using \"like\"",
+     "a word that imitates a sound",
+     "a very long word"
+    ],
+    "For example: \"deafening silence\"."
+   ]
+  ],
+  "science": [
+   [
+    "Which blood vessel carries blood from the heart to the lungs?",
+    [
+     "the pulmonary artery",
+     "the aorta",
+     "the pulmonary vein",
+     "the vena cava"
+    ],
+    "Arteries carry blood away from the heart, and \"pulmonary\" means of the lungs."
+   ],
+   [
+    "Who discovered penicillin?",
+    [
+     "Alexander Fleming",
+     "Louis Pasteur",
+     "Edward Jenner",
+     "Marie Curie"
+    ],
+    "Fleming discovered it in 1928."
+   ],
+   [
+    "Why can we see the Moon at night?",
+    [
+     "it reflects light from the Sun",
+     "it makes its own light",
+     "it reflects the lights of our cities",
+     "it glows because it is hot"
+    ],
+    "The Moon is not a light source."
+   ],
+   [
+    "Which blood vessel carries oxygen-rich blood from the lungs to the heart?",
+    [
+     "the pulmonary vein",
+     "the pulmonary artery",
+     "the aorta",
+     "the vena cava"
+    ],
+    "Veins go to the heart."
+   ],
+   [
+    "What is the largest organ of the human body?",
+    [
+     "the skin",
+     "the liver",
+     "the brain",
+     "the lungs"
+    ],
+    "The skin covers the whole body."
+   ],
+   [
+    "What is the process by which plants make food using sunlight?",
+    [
+     "photosynthesis",
+     "respiration",
+     "evaporation",
+     "digestion"
+    ],
+    "It happens in the leaves."
+   ],
+   [
+    "Who sailed around the world on HMS Beagle?",
+    [
+     "Charles Darwin",
+     "Isaac Newton",
+     "Captain Cook",
+     "Alfred Wallace"
+    ],
+    "The voyage gave him ideas about evolution."
+   ],
+   [
+    "What does a prism do to white light?",
+    [
+     "splits it into colours",
+     "makes it disappear",
+     "turns it into sound",
+     "stores it"
+    ],
+    "You see a rainbow."
+   ],
+   [
+    "Why does a very thin wire make a bulb dimmer?",
+    [
+     "it has more resistance",
+     "it carries more electricity",
+     "it is colder",
+     "it makes no difference"
+    ],
+    "Thin wires resist the current more."
+   ]
+  ],
+  "hisgeo": [
+   [
+    "¿Qué rey visigodo perdió la batalla de Guadalete en el año 711?",
+    [
+     "Don Rodrigo",
+     "Recaredo",
+     "Don Pelayo",
+     "Leovigildo"
+    ],
+    "Fue el último rey visigodo."
+   ],
+   [
+    "Which Tudor queen was known as \"Bloody Mary\"?",
+    [
+     "Mary I",
+     "Elizabeth I",
+     "Mary, Queen of Scots",
+     "Anne Boleyn"
+    ],
+    "She was the daughter of Henry VIII and Catherine of Aragon."
+   ],
+   [
+    "¿Qué río pasa por Zaragoza?",
+    [
+     "el Ebro",
+     "el Tajo",
+     "el Duero",
+     "el Guadiana"
+    ],
+    "Zaragoza está a orillas del Ebro."
+   ],
+   [
+    "¿Qué rey trasladó la corte a Madrid en 1561?",
+    [
+     "Felipe II",
+     "Carlos I",
+     "Felipe III",
+     "Isabel la Católica"
+    ],
+    "Antes estaba en Toledo."
+   ],
+   [
+    "¿Qué tratado de 1713 cedió Gibraltar a Gran Bretaña?",
+    [
+     "el Tratado de Utrecht",
+     "el Tratado de Tordesillas",
+     "el Tratado de Versalles",
+     "la Paz de Westfalia"
+    ],
+    "Puso fin a la Guerra de Sucesión española."
+   ],
+   [
+    "Which Scottish king also became King of England in 1603?",
+    [
+     "James VI",
+     "Robert the Bruce",
+     "Charles I",
+     "William Wallace"
+    ],
+    "In England he was James I."
+   ],
+   [
+    "In which year did the Great Plague hit London?",
+    [
+     "1665",
+     "1666",
+     "1348",
+     "1605"
+    ],
+    "The Great Fire came the next year."
+   ],
+   [
+    "¿Cuál es el desierto cálido más grande del mundo?",
+    [
+     "el Sáhara",
+     "el Gobi",
+     "el de Atacama",
+     "el Kalahari"
+    ],
+    "Ocupa gran parte del norte de África."
+   ],
+   [
+    "¿Qué país tiene más habitantes del mundo?",
+    [
+     "la India",
+     "China",
+     "Estados Unidos",
+     "Indonesia"
+    ],
+    "La India superó a China en 2023."
+   ]
+  ]
+ },
+ "adult": {
+  "lengua": [
+   [
+    "¿Quién ganó el Premio Nobel de Literatura en 1989?",
+    [
+     "Camilo José Cela",
+     "Vicente Aleixandre",
+     "Juan Ramón Jiménez",
+     "Mario Vargas Llosa"
+    ],
+    "Autor de \"La familia de Pascual Duarte\"."
+   ],
+   [
+    "¿Qué es un hipérbaton?",
+    [
+     "alterar el orden lógico de las palabras",
+     "una exageración",
+     "repetir palabras al inicio de los versos",
+     "una comparación con \"como\""
+    ],
+    "Por ejemplo: \"Del salón en el ángulo oscuro\"."
+   ],
+   [
+    "¿Cuál es el plural correcto de \"el cómic\"?",
+    [
+     "los cómics",
+     "los cómices",
+     "los cómic",
+     "los comics"
+    ],
+    "La RAE recomienda \"cómics\", con tilde."
+   ],
+   [
+    "¿Quién escribió \"Tiempo de silencio\"?",
+    [
+     "Luis Martín-Santos",
+     "Miguel Delibes",
+     "Camilo José Cela",
+     "Rafael Sánchez Ferlosio"
+    ],
+    "Publicada en 1962."
+   ],
+   [
+    "¿Qué es un epíteto?",
+    [
+     "un adjetivo que resalta una cualidad propia del sustantivo",
+     "una palabra repetida",
+     "una exageración",
+     "una pregunta retórica"
+    ],
+    "\"La blanca nieve\"."
+   ],
+   [
+    "¿Qué significa \"conspicuo\"?",
+    [
+     "ilustre, sobresaliente",
+     "tímido",
+     "peligroso",
+     "escondido"
+    ],
+    "Un conspicuo defensor de la causa."
+   ],
+   [
+    "¿Cuántas sílabas métricas tiene un verso alejandrino?",
+    [
+     "14",
+     "11",
+     "12",
+     "16"
+    ],
+    "Dos hemistiquios de 7."
+   ],
+   [
+    "¿Qué autor pertenece a la Generación del 98?",
+    [
+     "Miguel de Unamuno",
+     "Federico García Lorca",
+     "Rafael Alberti",
+     "Luis Cernuda"
+    ],
+    "Los otros son del 27."
+   ],
+   [
+    "¿Para qué sirve la diéresis?",
+    [
+     "para que suene la u en güe y güi",
+     "para marcar la sílaba tónica",
+     "para separar sílabas",
+     "para indicar una pregunta"
+    ],
+    "Pingüino, cigüeña."
+   ]
+  ],
+  "maths": [
+   [
+    "What is the sum of all whole numbers from 1 to 100?",
+    [
+     "5,050",
+     "5,000",
+     "10,100",
+     "4,950"
+    ],
+    "100 × 101 ÷ 2 = 5,050."
+   ],
+   [
+    "How many seconds are there in a day?",
+    [
+     "86,400",
+     "3,600",
+     "36,000",
+     "84,600"
+    ],
+    "24 × 60 × 60 = 86,400."
+   ],
+   [
+    "What is log₁₀ 1,000?",
+    [
+     "3",
+     "10",
+     "100",
+     "30"
+    ],
+    "10³ = 1,000."
+   ],
+   [
+    "What is the derivative of x²?",
+    [
+     "2x",
+     "x",
+     "x³/3",
+     "2"
+    ],
+    "Bring down the power and subtract one."
+   ],
+   [
+    "What is √2 to 3 decimal places?",
+    [
+     "1.414",
+     "1.141",
+     "1.732",
+     "1.442"
+    ],
+    "1.732 is √3."
+   ],
+   [
+    "0.1 + 0.2 × 3 = ?",
+    [
+     "0.7",
+     "0.9",
+     "0.3",
+     "0.07"
+    ],
+    "Multiply first: 0.6 + 0.1."
+   ],
+   [
+    "In how many different orders can 4 people stand in a line?",
+    [
+     "24",
+     "16",
+     "12",
+     "4"
+    ],
+    "4! = 4 × 3 × 2 × 1."
+   ],
+   [
+    "What do the angles of a triangle add up to, in radians?",
+    [
+     "π",
+     "2π",
+     "π/2",
+     "180"
+    ],
+    "180° = π radians."
+   ],
+   [
+    "1/3 + 1/6 + 1/9 = ?",
+    [
+     "11/18",
+     "3/18",
+     "1/2",
+     "11/27"
+    ],
+    "6/18 + 3/18 + 2/18."
+   ]
+  ],
+  "english": [
+   [
+    "What is the plural of \"criterion\"?",
+    [
+     "criteria",
+     "criterions",
+     "criterias",
+     "criterium"
+    ],
+    "It comes from Greek."
+   ],
+   [
+    "Which word means \"fear of spiders\"?",
+    [
+     "arachnophobia",
+     "agoraphobia",
+     "claustrophobia",
+     "acrophobia"
+    ],
+    "Agoraphobia: open spaces; claustrophobia: closed spaces; acrophobia: heights."
+   ],
+   [
+    "Who wrote \"Nineteen Eighty-Four\"?",
+    [
+     "George Orwell",
+     "Aldous Huxley",
+     "H. G. Wells",
+     "Ray Bradbury"
+    ],
+    "Published in 1949."
+   ],
+   [
+    "What does \"petrichor\" mean?",
+    [
+     "the smell of rain on dry earth",
+     "a type of rock",
+     "fear of the dark",
+     "a musical term"
+    ],
+    "Coined in 1964."
+   ],
+   [
+    "Who wrote \"Ulysses\" (1922)?",
+    [
+     "James Joyce",
+     "Virginia Woolf",
+     "T. S. Eliot",
+     "Ezra Pound"
+    ],
+    "Set in Dublin on a single day."
+   ],
+   [
+    "What is a palimpsest?",
+    [
+     "a manuscript written over earlier, erased writing",
+     "a type of poem",
+     "a false statement",
+     "a Greek temple"
+    ],
+    "Earlier layers are still visible."
+   ],
+   [
+    "What does \"defenestration\" mean?",
+    [
+     "throwing someone out of a window",
+     "removing a fence",
+     "cutting down trees",
+     "a type of surgery"
+    ],
+    "From the Latin \"fenestra\", window."
+   ],
+   [
+    "What is a portmanteau word?",
+    [
+     "a word that blends two words",
+     "a word borrowed from French",
+     "a very long word",
+     "a word with no vowels"
+    ],
+    "Brunch = breakfast + lunch."
+   ],
+   [
+    "Who wrote \"The Waste Land\"?",
+    [
+     "T. S. Eliot",
+     "W. B. Yeats",
+     "Dylan Thomas",
+     "Ted Hughes"
+    ],
+    "Published in 1922."
+   ]
+  ],
+  "science": [
+   [
+    "What is the most abundant element in the universe?",
+    [
+     "hydrogen",
+     "helium",
+     "oxygen",
+     "carbon"
+    ],
+    "About three quarters of normal matter is hydrogen."
+   ],
+   [
+    "What is the chemical symbol for tungsten?",
+    [
+     "W",
+     "Tu",
+     "Tg",
+     "Tn"
+    ],
+    "From its old name, \"wolfram\"."
+   ],
+   [
+    "How many chromosomes do most human body cells have?",
+    [
+     "46",
+     "23",
+     "44",
+     "48"
+    ],
+    "23 pairs."
+   ],
+   [
+    "What is the speed of light in a vacuum, to three significant figures?",
+    [
+     "3.00 × 10⁸ m/s",
+     "3.00 × 10⁶ m/s",
+     "3.40 × 10² m/s",
+     "9.81 × 10⁸ m/s"
+    ],
+    "About 300,000 km per second."
+   ],
+   [
+    "What is the electric charge of a neutron?",
+    [
+     "zero",
+     "+1",
+     "−1",
+     "+2"
+    ],
+    "That is why it is called a neutron."
+   ],
+   [
+    "Which planet rotates on its side?",
+    [
+     "Uranus",
+     "Neptune",
+     "Saturn",
+     "Venus"
+    ],
+    "Its axis is tilted by about 98°."
+   ],
+   [
+    "What is the chemical symbol for lead?",
+    [
+     "Pb",
+     "Le",
+     "Ld",
+     "Pl"
+    ],
+    "From the Latin \"plumbum\"."
+   ],
+   [
+    "Which gas makes up about 1% of Earth's atmosphere?",
+    [
+     "argon",
+     "carbon dioxide",
+     "neon",
+     "helium"
+    ],
+    "Carbon dioxide is only about 0.04%."
+   ],
+   [
+    "What is the longest bone in the human body?",
+    [
+     "the femur",
+     "the tibia",
+     "the humerus",
+     "the fibula"
+    ],
+    "The thigh bone."
+   ]
+  ],
+  "hisgeo": [
+   [
+    "¿En qué año fue la revolución \"La Gloriosa\", que destronó a Isabel II?",
+    [
+     "1868",
+     "1873",
+     "1898",
+     "1812"
+    ],
+    "Isabel II se exilió en Francia."
+   ],
+   [
+    "In which year was the Battle of Bosworth, which ended the Wars of the Roses?",
+    [
+     "1485",
+     "1415",
+     "1066",
+     "1603"
+    ],
+    "Henry Tudor defeated Richard III."
+   ],
+   [
+    "¿Cuál es la capital de Kazajistán?",
+    [
+     "Astaná",
+     "Almaty",
+     "Taskent",
+     "Biskek"
+    ],
+    "Almaty fue la capital hasta 1997."
+   ],
+   [
+    "¿En qué año fue el intento de golpe de Estado del 23-F?",
+    [
+     "1981",
+     "1978",
+     "1985",
+     "1975"
+    ],
+    "El 23 de febrero de 1981."
+   ],
+   [
+    "¿Qué rey castellano fue conocido como \"el Sabio\"?",
+    [
+     "Alfonso X",
+     "Fernando III",
+     "Sancho IV",
+     "Alfonso VI"
+    ],
+    "Impulsó la Escuela de Traductores de Toledo."
+   ],
+   [
+    "Which royal house ruled England before the Tudors?",
+    [
+     "the Plantagenets",
+     "the Stuarts",
+     "the Windsors",
+     "the Hanoverians"
+    ],
+    "Including the houses of Lancaster and York."
+   ],
+   [
+    "In which year did Queen Victoria die?",
+    [
+     "1901",
+     "1899",
+     "1910",
+     "1837"
+    ],
+    "She came to the throne in 1837."
+   ],
+   [
+    "¿Cuál es el punto más profundo de los océanos?",
+    [
+     "la fosa de las Marianas",
+     "la fosa de Puerto Rico",
+     "la dorsal atlántica",
+     "el mar Muerto"
+    ],
+    "Unos 11.000 m de profundidad."
+   ],
+   [
+    "¿Cuál es la capital de Bután?",
+    [
+     "Timbu",
+     "Katmandú",
+     "Daca",
+     "Rangún"
+    ],
+    "Está en el Himalaya."
+   ]
+  ]
+ }
+};
+
 const HARD = {
  "y4": {
   "lengua": [
@@ -2237,6 +7250,126 @@ const HARD = {
      "reordenar"
     ],
     "El prefijo des- indica lo contrario."
+   ],
+   [
+    "¿Cuántas sílabas tiene \"electricidad\"?",
+    [
+     "5",
+     "4",
+     "6",
+     "3"
+    ],
+    "e-lec-tri-ci-dad: 5 sílabas."
+   ],
+   [
+    "¿Qué palabra es aguda?",
+    [
+     "reloj",
+     "mesa",
+     "árbol",
+     "lápiz"
+    ],
+    "re-LOJ: la tónica es la última."
+   ],
+   [
+    "¿Cuál es el plural de \"el pez\"?",
+    [
+     "los peces",
+     "los pezes",
+     "los pez",
+     "los pezs"
+    ],
+    "La z cambia a c: peces."
+   ],
+   [
+    "¿Qué palabra es un sustantivo abstracto?",
+    [
+     "amistad",
+     "amigo",
+     "amigable",
+     "amistoso"
+    ],
+    "La amistad no se puede tocar."
+   ],
+   [
+    "¿Cuál está bien escrita?",
+    [
+     "cigüeña",
+     "ciguëña",
+     "cigueña",
+     "sigüeña"
+    ],
+    "La diéresis hace que la u suene: güe."
+   ],
+   [
+    "¿Cuál es el diminutivo de \"flor\"?",
+    [
+     "florecita",
+     "florita",
+     "flororcita",
+     "flori"
+    ],
+    "Flor → florecita."
+   ],
+   [
+    "\"Los pájaros cantaban en el árbol.\" ¿En qué tiempo está el verbo?",
+    [
+     "pasado",
+     "presente",
+     "futuro",
+     "no hay verbo"
+    ],
+    "Cantaban es pasado."
+   ],
+   [
+    "¿Qué palabra NO es de la familia de \"pan\"?",
+    [
+     "pantalón",
+     "panadero",
+     "empanada",
+     "panecillo"
+    ],
+    "Pantalón no tiene que ver con el pan."
+   ],
+   [
+    "¿Cuál es el antónimo de \"aburrido\"?",
+    [
+     "divertido",
+     "cansado",
+     "triste",
+     "tranquilo"
+    ],
+    "Aburrido y divertido son contrarios."
+   ],
+   [
+    "¿Qué palabra tiene tres sílabas?",
+    [
+     "pelota",
+     "sol",
+     "mariposa",
+     "casa"
+    ],
+    "pe-lo-ta: 3 sílabas."
+   ],
+   [
+    "¿Cuál es un sinónimo de \"rápido\"?",
+    [
+     "veloz",
+     "lento",
+     "pesado",
+     "torpe"
+    ],
+    "Rápido y veloz significan lo mismo."
+   ],
+   [
+    "¿Cuál está bien escrita?",
+    [
+     "nuevo",
+     "nuebo",
+     "nuevvo",
+     "nhuevo"
+    ],
+    "Nuevo se escribe con v."
    ]
   ],
   "maths": [
@@ -2299,6 +7432,126 @@ const HARD = {
      "0.725"
     ],
     "0.70 + 0.25 = 0.95."
+   ],
+   [
+    "25 × 12 = ?",
+    [
+     "300",
+     "250",
+     "275",
+     "310"
+    ],
+    "25 × 12 = 25 × 4 × 3 = 300."
+   ],
+   [
+    "1,000 ÷ 10 = ?",
+    [
+     "100",
+     "10",
+     "1,000",
+     "110"
+    ],
+    "Dividing by 10 moves the digits one place."
+   ],
+   [
+    "6,035 − 2,748 = ?",
+    [
+     "3,287",
+     "3,387",
+     "4,287",
+     "3,297"
+    ],
+    "6,035 − 2,748 = 3,287."
+   ],
+   [
+    "What is the value of the digit 3 in 8,305?",
+    [
+     "300",
+     "3",
+     "30",
+     "3,000"
+    ],
+    "The 3 is in the hundreds column."
+   ],
+   [
+    "Which fraction is bigger: 3/4 or 5/8?",
+    [
+     "3/4",
+     "5/8",
+     "they are equal",
+     "you can't tell"
+    ],
+    "3/4 = 6/8, which is more than 5/8."
+   ],
+   [
+    "0.6 + 0.07 = ?",
+    [
+     "0.67",
+     "0.13",
+     "0.76",
+     "6.7"
+    ],
+    "6 tenths + 7 hundredths = 0.67."
+   ],
+   [
+    "What is LXXXVIII in numbers?",
+    [
+     "88",
+     "78",
+     "98",
+     "83"
+    ],
+    "L = 50, XXX = 30, VIII = 8."
+   ],
+   [
+    "A film lasts 95 minutes. How long is that?",
+    [
+     "1 h 35 min",
+     "1 h 55 min",
+     "9 h 5 min",
+     "1 h 45 min"
+    ],
+    "95 − 60 = 35 minutes."
+   ],
+   [
+    "A rectangle is 12 cm long and 5 cm wide. What is its perimeter?",
+    [
+     "34 cm",
+     "60 cm",
+     "17 cm",
+     "30 cm"
+    ],
+    "12 + 5 + 12 + 5 = 34."
+   ],
+   [
+    "There are 4 packs of 36 pencils. How many pencils are there?",
+    [
+     "144",
+     "124",
+     "136",
+     "154"
+    ],
+    "36 × 4 = 144."
+   ],
+   [
+    "What is 7/10 of 50?",
+    [
+     "35",
+     "7",
+     "5",
+     "70"
+    ],
+    "50 ÷ 10 = 5, and 5 × 7 = 35."
+   ],
+   [
+    "Round 0.75 to the nearest whole number.",
+    [
+     "1",
+     "0",
+     "0.8",
+     "7"
+    ],
+    "0.75 is closer to 1 than to 0."
    ]
   ],
   "english": [
@@ -2361,6 +7614,126 @@ const HARD = {
      "reason"
     ],
     "re- + build = build again. In the others, \"re\" is not a prefix."
+   ],
+   [
+    "Which word is a homophone of \"flour\"?",
+    [
+     "flower",
+     "floor",
+     "flow",
+     "fleur"
+    ],
+    "Flour and flower sound the same."
+   ],
+   [
+    "Which word is spelled correctly?",
+    [
+     "believe",
+     "beleive",
+     "belive",
+     "beleve"
+    ],
+    "\"i before e except after c\"."
+   ],
+   [
+    "What does \"the girl's shoes\" mean?",
+    [
+     "the shoes of one girl",
+     "the shoes of many girls",
+     "the girl is a shoe",
+     "the shoes are girls"
+    ],
+    "The apostrophe before the s shows one owner."
+   ],
+   [
+    "\"Later that day, we went swimming.\" What is the fronted adverbial?",
+    [
+     "Later that day",
+     "we went",
+     "went swimming",
+     "swimming"
+    ],
+    "It comes first and is followed by a comma."
+   ],
+   [
+    "Which sentence uses \"a\" and \"an\" correctly?",
+    [
+     "I saw an owl and a cat.",
+     "I saw a owl and an cat.",
+     "I saw an owl and an cat.",
+     "I saw a owl and a cat."
+    ],
+    "\"An\" before a vowel sound, \"a\" before a consonant."
+   ],
+   [
+    "What is the plural of \"leaf\"?",
+    [
+     "leaves",
+     "leafs",
+     "leafes",
+     "leavs"
+    ],
+    "-f often changes to -ves."
+   ],
+   [
+    "What is the plural of \"potato\"?",
+    [
+     "potatoes",
+     "potatos",
+     "potatoe",
+     "potatoies"
+    ],
+    "Potato → potatoes."
+   ],
+   [
+    "Which word names a person who acts?",
+    [
+     "actor",
+     "acter",
+     "actist",
+     "actian"
+    ],
+    "act + -or = actor."
+   ],
+   [
+    "Which word has a silent letter?",
+    [
+     "knee",
+     "need",
+     "near",
+     "nose"
+    ],
+    "The k in \"knee\" is silent."
+   ],
+   [
+    "Which word is a possessive pronoun?",
+    [
+     "mine",
+     "me",
+     "I",
+     "they"
+    ],
+    "\"Mine\" shows that something belongs to me."
+   ],
+   [
+    "In \"unhappy\", which part means \"not\"?",
+    [
+     "un-",
+     "happy",
+     "-py",
+     "unh-"
+    ],
+    "The prefix un- means not."
+   ],
+   [
+    "Which sentence is in the present progressive?",
+    [
+     "I am reading.",
+     "I read.",
+     "I have read.",
+     "I will read."
+    ],
+    "am/is/are + -ing."
    ]
   ],
   "science": [
@@ -2423,6 +7796,126 @@ const HARD = {
      "the fork melts"
     ],
     "The vibrations of the fork make the water move."
+   ],
+   [
+    "What is the hard outer coating of our teeth called?",
+    [
+     "enamel",
+     "gum",
+     "root",
+     "nerve"
+    ],
+    "Enamel is the hardest material in the body."
+   ],
+   [
+    "What happens to the pitch if you tighten a guitar string?",
+    [
+     "it gets higher",
+     "it gets lower",
+     "it gets quieter",
+     "it stays the same"
+    ],
+    "A tighter string vibrates faster."
+   ],
+   [
+    "Which state of matter keeps its own shape?",
+    [
+     "solid",
+     "liquid",
+     "gas",
+     "steam"
+    ],
+    "Liquids and gases take the shape of their container."
+   ],
+   [
+    "At what temperature does ice melt?",
+    [
+     "0 °C",
+     "100 °C",
+     "−10 °C",
+     "10 °C"
+    ],
+    "Ice melts at 0 °C."
+   ],
+   [
+    "Which of these is NOT part of the digestive system?",
+    [
+     "the lungs",
+     "the stomach",
+     "the oesophagus",
+     "the small intestine"
+    ],
+    "The lungs are for breathing."
+   ],
+   [
+    "What is usually the first link in a food chain?",
+    [
+     "a green plant",
+     "a fox",
+     "an owl",
+     "a mushroom"
+    ],
+    "Green plants are producers."
+   ],
+   [
+    "Which of these conducts electricity?",
+    [
+     "aluminium foil",
+     "glass",
+     "paper",
+     "wool"
+    ],
+    "Aluminium is a metal."
+   ],
+   [
+    "Why does a bulb not light if there is a gap in the circuit?",
+    [
+     "the circuit is not complete",
+     "the battery is too big",
+     "the bulb is too hot",
+     "the wires are too long"
+    ],
+    "Electricity needs a complete loop."
+   ],
+   [
+    "What is condensation?",
+    [
+     "a gas turning into a liquid",
+     "a liquid turning into a gas",
+     "a solid turning into a liquid",
+     "a liquid turning into a solid"
+    ],
+    "Like steam on a cold mirror."
+   ],
+   [
+    "Which animal is an amphibian?",
+    [
+     "newt",
+     "snake",
+     "turtle",
+     "crocodile"
+    ],
+    "Newts live in water and on land."
+   ],
+   [
+    "Where is a sound loudest?",
+    [
+     "close to where it is made",
+     "far from where it is made",
+     "in space",
+     "behind a thick wall"
+    ],
+    "Vibrations get weaker as they travel."
+   ],
+   [
+    "Which part of the ear vibrates when a sound reaches it?",
+    [
+     "the eardrum",
+     "the earlobe",
+     "the ear wax",
+     "the cheek"
+    ],
+    "The eardrum passes the vibrations on."
    ]
   ],
   "hisgeo": [
@@ -2485,6 +7978,126 @@ const HARD = {
      "la Veleta"
     ],
     "Está en Sierra Nevada (Granada) y mide unos 3.479 m."
+   ],
+   [
+    "¿Cuál es la capital de Galicia?",
+    [
+     "Santiago de Compostela",
+     "A Coruña",
+     "Vigo",
+     "Lugo"
+    ],
+    "Allí termina el Camino de Santiago."
+   ],
+   [
+    "¿Cuál es la capital de Cataluña?",
+    [
+     "Barcelona",
+     "Girona",
+     "Tarragona",
+     "Lleida"
+    ],
+    "Barcelona es también la segunda ciudad de España."
+   ],
+   [
+    "¿Qué montañas están en Granada?",
+    [
+     "Sierra Nevada",
+     "los Pirineos",
+     "los Picos de Europa",
+     "Sierra de Gredos"
+    ],
+    "Allí está el Mulhacén."
+   ],
+   [
+    "What was the Roman name for York?",
+    [
+     "Eboracum",
+     "Londinium",
+     "Aquae Sulis",
+     "Deva"
+    ],
+    "Londinium was London and Aquae Sulis was Bath."
+   ],
+   [
+    "Which Anglo-Saxon king is thought to be buried in the Sutton Hoo ship?",
+    [
+     "Raedwald",
+     "Alfred",
+     "Harold",
+     "Edward"
+    ],
+    "He was king of East Anglia."
+   ],
+   [
+    "¿Qué se une en el estrecho de Gibraltar?",
+    [
+     "el Mediterráneo y el océano Atlántico",
+     "el Cantábrico y el Mediterráneo",
+     "el mar Rojo y el Mediterráneo",
+     "el Atlántico y el Pacífico"
+    ],
+    "Separa Europa de África."
+   ],
+   [
+    "¿Cuál es la ciudad más poblada de Andalucía?",
+    [
+     "Sevilla",
+     "Málaga",
+     "Córdoba",
+     "Granada"
+    ],
+    "Málaga es la segunda."
+   ],
+   [
+    "¿En qué islas está Tenerife?",
+    [
+     "las Canarias",
+     "las Baleares",
+     "las Azores",
+     "las Columbretes"
+    ],
+    "Las Canarias están en el Atlántico."
+   ],
+   [
+    "Which Roman god gave his name to the month of March?",
+    [
+     "Mars",
+     "Jupiter",
+     "Janus",
+     "Neptune"
+    ],
+    "Mars was the god of war."
+   ],
+   [
+    "What did the Romans build to carry water into towns?",
+    [
+     "aqueducts",
+     "pyramids",
+     "windmills",
+     "lighthouses"
+    ],
+    "The aqueduct of Segovia is a famous one."
+   ],
+   [
+    "¿Qué río pasa por Granada?",
+    [
+     "el Genil",
+     "el Guadalquivir",
+     "el Tajo",
+     "el Guadalhorce"
+    ],
+    "El Genil es afluente del Guadalquivir."
+   ],
+   [
+    "¿Qué país tiene forma de bota?",
+    [
+     "Italia",
+     "Grecia",
+     "Chile",
+     "Portugal"
+    ],
+    "Italia es una península en el Mediterráneo."
    ]
   ]
  },
@@ -2549,6 +8162,126 @@ const HARD = {
      "pájaro"
     ],
     "Ma-rí-a: sin tilde, \"ia\" iría junta."
+   ],
+   [
+    "\"Llueve mucho.\" ¿Qué sujeto tiene la oración?",
+    [
+     "no tiene: es impersonal",
+     "sujeto omitido",
+     "\"mucho\"",
+     "\"llueve\""
+    ],
+    "Los verbos de fenómenos meteorológicos no tienen sujeto."
+   ],
+   [
+    "\"Cantamos en el coro.\" ¿Qué tipo de sujeto tiene?",
+    [
+     "sujeto omitido (nosotros)",
+     "no tiene sujeto",
+     "\"el coro\"",
+     "\"cantamos\""
+    ],
+    "El sujeto se sobrentiende por el verbo."
+   ],
+   [
+    "\"Vi a Luis en el cine.\" ¿Qué función tiene \"a Luis\"?",
+    [
+     "complemento directo",
+     "complemento indirecto",
+     "complemento circunstancial",
+     "sujeto"
+    ],
+    "Lo vi: complemento directo de persona."
+   ],
+   [
+    "\"Llegamos ayer.\" ¿Qué función tiene \"ayer\"?",
+    [
+     "complemento circunstancial de tiempo",
+     "complemento directo",
+     "sujeto",
+     "complemento indirecto"
+    ],
+    "Indica cuándo."
+   ],
+   [
+    "¿En qué tiempo está \"hayamos cantado\"?",
+    [
+     "pretérito perfecto de subjuntivo",
+     "pluscuamperfecto de indicativo",
+     "futuro compuesto",
+     "condicional compuesto"
+    ],
+    "haya + participio."
+   ],
+   [
+    "¿En qué tiempo está \"habremos llegado\"?",
+    [
+     "futuro compuesto",
+     "condicional compuesto",
+     "pretérito perfecto compuesto",
+     "pluscuamperfecto"
+    ],
+    "habré + participio."
+   ],
+   [
+    "\"Te lo he dicho mil veces.\" ¿Qué figura literaria es?",
+    [
+     "hipérbole",
+     "metáfora",
+     "personificación",
+     "anáfora"
+    ],
+    "Es una exageración."
+   ],
+   [
+    "¿Qué oración está bien escrita?",
+    [
+     "Sí, quiero ir.",
+     "Si, quiero ir.",
+     "Sí quiéro ir.",
+     "Si quiero ír."
+    ],
+    "Sí de afirmación lleva tilde."
+   ],
+   [
+    "¿Qué verbo es irregular?",
+    [
+     "andar",
+     "cantar",
+     "saltar",
+     "bailar"
+    ],
+    "Andar → anduve, no \"andé\"."
+   ],
+   [
+    "¿Qué es un campo semántico?",
+    [
+     "palabras relacionadas por su significado",
+     "palabras con la misma raíz",
+     "palabras que suenan igual",
+     "palabras contrarias"
+    ],
+    "Por ejemplo: lunes, martes, miércoles…"
+   ],
+   [
+    "¿Qué tipo de oración es \"¡Ojalá apruebe!\"?",
+    [
+     "desiderativa",
+     "interrogativa",
+     "dubitativa",
+     "enunciativa"
+    ],
+    "Expresa un deseo."
+   ],
+   [
+    "¿Cuántas sílabas tiene \"reír\"?",
+    [
+     "2",
+     "1",
+     "3",
+     "4"
+    ],
+    "re-ír: hiato."
    ]
   ],
   "maths": [
@@ -2621,6 +8354,126 @@ const HARD = {
      "8/9"
     ],
     "2/3 × 3/4 = 6/12 = 1/2."
+   ],
+   [
+    "5 + 3 × (8 − 2)² = ?",
+    [
+     "113",
+     "293",
+     "128",
+     "149"
+    ],
+    "(8 − 2)² = 36, 3 × 36 = 108, and 108 + 5 = 113."
+   ],
+   [
+    "1/4 + 2/3 = ?",
+    [
+     "11/12",
+     "3/7",
+     "3/12",
+     "8/12"
+    ],
+    "3/12 + 8/12 = 11/12."
+   ],
+   [
+    "What is 3/8 as a percentage?",
+    [
+     "37.5%",
+     "38%",
+     "3.8%",
+     "35%"
+    ],
+    "3 ÷ 8 = 0.375."
+   ],
+   [
+    "A jacket costs £80 and is reduced by 35%. What is the new price?",
+    [
+     "£52",
+     "£45",
+     "£28",
+     "£55"
+    ],
+    "35% of 80 = 28, and 80 − 28 = 52."
+   ],
+   [
+    "The mean of 6, 9, x and 11 is 9. What is x?",
+    [
+     "10",
+     "9",
+     "12",
+     "8"
+    ],
+    "Total = 36, and 36 − 26 = 10."
+   ],
+   [
+    "What is the next prime number after 47?",
+    [
+     "53",
+     "49",
+     "51",
+     "57"
+    ],
+    "49 = 7 × 7 and 51 = 3 × 17."
+   ],
+   [
+    "Solve: 2x + 7 = 3x − 5",
+    [
+     "x = 12",
+     "x = 2",
+     "x = −12",
+     "x = 1.2"
+    ],
+    "7 + 5 = 3x − 2x."
+   ],
+   [
+    "The angles of a triangle are x, 2x and 3x. What is x?",
+    [
+     "30°",
+     "60°",
+     "20°",
+     "45°"
+    ],
+    "6x = 180°."
+   ],
+   [
+    "A cube has a volume of 64 cm³. How long is each edge?",
+    [
+     "4 cm",
+     "8 cm",
+     "16 cm",
+     "21.3 cm"
+    ],
+    "4 × 4 × 4 = 64."
+   ],
+   [
+    "4.8 × 0.5 = ?",
+    [
+     "2.4",
+     "9.6",
+     "0.24",
+     "24"
+    ],
+    "Multiplying by 0.5 is halving."
+   ],
+   [
+    "Share £72 in the ratio 5 : 3. What is the larger share?",
+    [
+     "£45",
+     "£27",
+     "£40",
+     "£36"
+    ],
+    "72 ÷ 8 = 9, and 9 × 5 = 45."
+   ],
+   [
+    "2³ + 3² = ?",
+    [
+     "17",
+     "12",
+     "36",
+     "13"
+    ],
+    "8 + 9 = 17."
    ]
   ],
   "english": [
@@ -2683,6 +8536,126 @@ const HARD = {
      "I need three things a pen: a ruler and a rubber."
     ],
     "A colon introduces a list after a complete clause."
+   ],
+   [
+    "Which sentence uses the subjunctive?",
+    [
+     "I suggest that he leave early.",
+     "He is leaving early.",
+     "He left early.",
+     "He will leave early."
+    ],
+    "After \"suggest that\", the subjunctive uses the base form."
+   ],
+   [
+    "Which sentence is in the passive voice?",
+    [
+     "The windows were cleaned yesterday.",
+     "We cleaned the windows yesterday.",
+     "They are cleaning the windows.",
+     "Clean the windows!"
+    ],
+    "The windows receive the action."
+   ],
+   [
+    "Which word is a relative pronoun?",
+    [
+     "whose",
+     "they",
+     "these",
+     "them"
+    ],
+    "Who, whom, whose, which, that."
+   ],
+   [
+    "Which sentence uses a semi-colon correctly?",
+    [
+     "The sun was setting; the birds fell silent.",
+     "The sun; was setting the birds fell silent.",
+     "The sun was; setting the birds fell silent.",
+     "The; sun was setting the birds fell silent."
+    ],
+    "It links two main clauses."
+   ],
+   [
+    "Which word is a synonym of \"meticulous\"?",
+    [
+     "careful",
+     "careless",
+     "quick",
+     "messy"
+    ],
+    "Meticulous = very careful and precise."
+   ],
+   [
+    "Which word is an antonym of \"reluctant\"?",
+    [
+     "eager",
+     "unwilling",
+     "slow",
+     "tired"
+    ],
+    "Reluctant = not wanting to."
+   ],
+   [
+    "Which word is spelled correctly?",
+    [
+     "conscience",
+     "concience",
+     "consciense",
+     "conshence"
+    ],
+    "It contains the word \"science\"."
+   ],
+   [
+    "Which word is spelled correctly?",
+    [
+     "parliament",
+     "parliment",
+     "parlament",
+     "parliamant"
+    ],
+    "parl-i-a-ment."
+   ],
+   [
+    "\"You will need: a pen, a ruler and glue.\" What does the colon do?",
+    [
+     "introduces a list",
+     "separates two words",
+     "shows speech",
+     "ends the sentence"
+    ],
+    "A colon can introduce a list."
+   ],
+   [
+    "Which sentence uses a modal verb to show possibility?",
+    [
+     "It might rain later.",
+     "It rained yesterday.",
+     "It is raining.",
+     "It rains a lot."
+    ],
+    "\"Might\" shows possibility."
+   ],
+   [
+    "Which is an example of personification?",
+    [
+     "The old house groaned in the wind.",
+     "The house was old.",
+     "The house was as old as time.",
+     "Crash! went the house."
+    ],
+    "A house cannot really groan."
+   ],
+   [
+    "What does the suffix \"-ology\" mean?",
+    [
+     "the study of",
+     "full of",
+     "without",
+     "able to"
+    ],
+    "Biology: the study of living things."
    ]
   ],
   "science": [
@@ -2745,6 +8718,126 @@ const HARD = {
      "bacteria"
     ],
     "Fungi are not plants: they cannot make their own food."
+   ],
+   [
+    "Which chamber of the heart receives blood coming back from the body?",
+    [
+     "the right atrium",
+     "the left atrium",
+     "the left ventricle",
+     "the right ventricle"
+    ],
+    "Blood from the body enters the right side."
+   ],
+   [
+    "What are the tiny air sacs in the lungs called?",
+    [
+     "alveoli",
+     "capillaries",
+     "villi",
+     "ventricles"
+    ],
+    "Oxygen passes into the blood there."
+   ],
+   [
+    "Which blood cells fight infection?",
+    [
+     "white blood cells",
+     "red blood cells",
+     "platelets",
+     "plasma"
+    ],
+    "They attack germs."
+   ],
+   [
+    "What is the liquid part of the blood called?",
+    [
+     "plasma",
+     "platelets",
+     "haemoglobin",
+     "marrow"
+    ],
+    "Plasma carries cells and nutrients."
+   ],
+   [
+    "Why do our muscles need oxygen?",
+    [
+     "to release energy from food",
+     "to make bones grow",
+     "to make us taller",
+     "to cool us down"
+    ],
+    "This is called respiration."
+   ],
+   [
+    "What does \"natural selection\" mean?",
+    [
+     "the best-adapted living things survive and reproduce more",
+     "people choosing pets",
+     "plants choosing where to grow",
+     "animals choosing their food"
+    ],
+    "Darwin explained it."
+   ],
+   [
+    "What do we call a group of living things that can breed together?",
+    [
+     "a species",
+     "a kingdom",
+     "a habitat",
+     "a class"
+    ],
+    "Humans are one species."
+   ],
+   [
+    "When light reflects off a mirror, the angle of reflection is…",
+    [
+     "equal to the angle of incidence",
+     "always 90°",
+     "double the angle of incidence",
+     "zero"
+    ],
+    "Light bounces off at the same angle."
+   ],
+   [
+    "What happens if you add more bulbs in a series circuit with the same battery?",
+    [
+     "they get dimmer",
+     "they get brighter",
+     "they all go off",
+     "they change colour"
+    ],
+    "The voltage is shared between them."
+   ],
+   [
+    "What makes a test fair?",
+    [
+     "changing only one variable at a time",
+     "changing everything at once",
+     "not measuring anything",
+     "doing it only once"
+    ],
+    "Keep everything else the same."
+   ],
+   [
+    "Who is known as the \"father of genetics\" for his work with pea plants?",
+    [
+     "Gregor Mendel",
+     "Charles Darwin",
+     "Alfred Wallace",
+     "Louis Pasteur"
+    ],
+    "He studied how features are inherited."
+   ],
+   [
+    "What do the kidneys do?",
+    [
+     "filter waste from the blood",
+     "pump blood",
+     "digest food",
+     "store oxygen"
+    ],
+    "The waste leaves the body as urine."
    ]
   ],
   "hisgeo": [
@@ -2807,6 +8900,126 @@ const HARD = {
      "Sierra Morena"
     ],
     "En ella están la Sierra de Gredos y la de Guadarrama."
+   ],
+   [
+    "¿Quiénes firmaron con Colón las Capitulaciones de Santa Fe?",
+    [
+     "los Reyes Católicos",
+     "Felipe II",
+     "Carlos I",
+     "Alfonso X"
+    ],
+    "Las firmaron en 1492."
+   ],
+   [
+    "¿Qué rey de España fue también emperador del Sacro Imperio?",
+    [
+     "Carlos I",
+     "Felipe II",
+     "Felipe V",
+     "Fernando VII"
+    ],
+    "Como emperador era Carlos V."
+   ],
+   [
+    "¿Cómo se llamó la flota que Felipe II envió contra Inglaterra en 1588?",
+    [
+     "la Armada Invencible",
+     "la Flota de Indias",
+     "la Santa Hermandad",
+     "la Armada del Sur"
+    ],
+    "Fracasó por las tormentas y los ingleses."
+   ],
+   [
+    "Which Tudor king broke away from the Catholic Church?",
+    [
+     "Henry VIII",
+     "Henry VII",
+     "Edward VI",
+     "James I"
+    ],
+    "He created the Church of England."
+   ],
+   [
+    "In which year did World War I begin?",
+    [
+     "1914",
+     "1918",
+     "1939",
+     "1905"
+    ],
+    "It ended in 1918."
+   ],
+   [
+    "What was the name of the part of England ruled by the Vikings?",
+    [
+     "the Danelaw",
+     "the Domesday",
+     "the Heptarchy",
+     "Wessex"
+    ],
+    "Alfred the Great agreed its border."
+   ],
+   [
+    "¿Qué montañas separan Europa de Asia?",
+    [
+     "los Urales",
+     "los Alpes",
+     "los Pirineos",
+     "los Andes"
+    ],
+    "Están en Rusia."
+   ],
+   [
+    "¿Cuál es el país más poblado de la Unión Europea?",
+    [
+     "Alemania",
+     "Francia",
+     "Italia",
+     "España"
+    ],
+    "Tiene más de 80 millones de habitantes."
+   ],
+   [
+    "¿Qué es la desembocadura de un río?",
+    [
+     "el lugar donde llega al mar o a otro río",
+     "el lugar donde nace",
+     "un río pequeño que le llega",
+     "una cascada"
+    ],
+    "El Guadalquivir desemboca en Sanlúcar."
+   ],
+   [
+    "¿Qué es un afluente?",
+    [
+     "un río que desemboca en otro río",
+     "un río que llega al mar",
+     "un lago",
+     "la parte más alta de un río"
+    ],
+    "El Genil es afluente del Guadalquivir."
+   ],
+   [
+    "¿Qué río es afluente del Guadalquivir?",
+    [
+     "el Genil",
+     "el Tajo",
+     "el Ebro",
+     "el Segura"
+    ],
+    "El Genil nace en Sierra Nevada."
+   ],
+   [
+    "¿En qué año entró España en la Comunidad Económica Europea?",
+    [
+     "1986",
+     "1978",
+     "1992",
+     "2002"
+    ],
+    "Hoy se llama Unión Europea."
    ]
   ]
  },
@@ -2871,6 +9084,126 @@ const HARD = {
      "temporal"
     ],
     "Introduce una idea que se opone a la anterior."
+   ],
+   [
+    "¿Qué es un zeugma?",
+    [
+     "omitir una palabra ya mencionada antes",
+     "repetir una palabra al final",
+     "exagerar",
+     "comparar dos cosas"
+    ],
+    "\"Era alto; su hermano, bajo.\""
+   ],
+   [
+    "¿Quién escribió \"Luces de bohemia\"?",
+    [
+     "Ramón del Valle-Inclán",
+     "Pío Baroja",
+     "Azorín",
+     "Miguel de Unamuno"
+    ],
+    "Obra clave del esperpento."
+   ],
+   [
+    "¿Quién escribió \"La Regenta\"?",
+    [
+     "Leopoldo Alas \"Clarín\"",
+     "Benito Pérez Galdós",
+     "Emilia Pardo Bazán",
+     "Juan Valera"
+    ],
+    "Ambientada en Vetusta (Oviedo)."
+   ],
+   [
+    "¿Cuál es la forma correcta?",
+    [
+     "Cuanto más estudio, más sé.",
+     "Contra más estudio, más sé.",
+     "Cuanto más estudio, más se.",
+     "Contra más estudio, más se."
+    ],
+    "\"Cuanto más\" y \"sé\" del verbo saber."
+   ],
+   [
+    "¿Qué forma recomienda la RAE?",
+    [
+     "detrás de mí",
+     "detrás mío",
+     "detrás mía",
+     "detrás de mío"
+    ],
+    "La RAE desaconseja \"detrás mío\"."
+   ],
+   [
+    "¿Qué es la sinestesia?",
+    [
+     "mezclar sensaciones de distintos sentidos",
+     "repetir consonantes",
+     "exagerar",
+     "invertir el orden de las palabras"
+    ],
+    "\"Verde chillón\"."
+   ],
+   [
+    "¿Qué es el laísmo?",
+    [
+     "usar \"la\" como complemento indirecto",
+     "usar \"le\" como complemento directo",
+     "usar \"lo\" como complemento indirecto",
+     "usar \"les\" en singular"
+    ],
+    "\"La dije que viniera\" es incorrecto."
+   ],
+   [
+    "¿Cuántos versos tiene una décima?",
+    [
+     "10",
+     "8",
+     "14",
+     "12"
+    ],
+    "También llamada espinela."
+   ],
+   [
+    "¿Quién escribió \"Rimas y leyendas\"?",
+    [
+     "Gustavo Adolfo Bécquer",
+     "Rosalía de Castro",
+     "José de Espronceda",
+     "José Zorrilla"
+    ],
+    "Autor romántico sevillano."
+   ],
+   [
+    "¿Qué significa \"abigarrado\"?",
+    [
+     "de colores mal combinados",
+     "muy ordenado",
+     "triste",
+     "diminuto"
+    ],
+    "Un traje abigarrado."
+   ],
+   [
+    "¿Qué significa \"prolijo\"?",
+    [
+     "largo y detallado en exceso",
+     "breve",
+     "confuso",
+     "falso"
+    ],
+    "Una explicación prolija."
+   ],
+   [
+    "¿Qué autor español recibió el Nobel de Literatura en 1977?",
+    [
+     "Vicente Aleixandre",
+     "Camilo José Cela",
+     "Juan Ramón Jiménez",
+     "José Echegaray"
+    ],
+    "Poeta de la Generación del 27."
    ]
   ],
   "maths": [
@@ -2933,6 +9266,126 @@ const HARD = {
      "111,111,119"
     ],
     "111,111,111 × 9 = 999,999,999."
+   ],
+   [
+    "17 × 19 = ?",
+    [
+     "323",
+     "333",
+     "313",
+     "343"
+    ],
+    "18² − 1 = 323."
+   ],
+   [
+    "What do the interior angles of a decagon add up to?",
+    [
+     "1,440°",
+     "1,800°",
+     "1,260°",
+     "1,080°"
+    ],
+    "(10 − 2) × 180°."
+   ],
+   [
+    "x² = 169 and x is positive. What is x?",
+    [
+     "13",
+     "17",
+     "84.5",
+     "11"
+    ],
+    "13 × 13 = 169."
+   ],
+   [
+    "What is 15% of 240 plus 20% of 150?",
+    [
+     "66",
+     "60",
+     "72",
+     "56"
+    ],
+    "36 + 30 = 66."
+   ],
+   [
+    "A number increased by 20% is 144. What was the number?",
+    [
+     "120",
+     "115.2",
+     "124",
+     "125"
+    ],
+    "144 ÷ 1.2 = 120."
+   ],
+   [
+    "What is the probability of getting two heads when tossing two coins?",
+    [
+     "1/4",
+     "1/2",
+     "1/3",
+     "3/4"
+    ],
+    "HH is 1 of 4 outcomes."
+   ],
+   [
+    "What is 5/8 as a decimal?",
+    [
+     "0.625",
+     "0.58",
+     "0.85",
+     "0.6"
+    ],
+    "5 ÷ 8 = 0.625."
+   ],
+   [
+    "What is the lowest common multiple of 12 and 18?",
+    [
+     "36",
+     "6",
+     "216",
+     "72"
+    ],
+    "36 = 12 × 3 = 18 × 2."
+   ],
+   [
+    "What is the highest common factor of 48 and 36?",
+    [
+     "12",
+     "6",
+     "4",
+     "18"
+    ],
+    "48 = 12 × 4 and 36 = 12 × 3."
+   ],
+   [
+    "What is 72 km/h in metres per second?",
+    [
+     "20 m/s",
+     "72 m/s",
+     "7.2 m/s",
+     "26 m/s"
+    ],
+    "72,000 ÷ 3,600 = 20."
+   ],
+   [
+    "A rectangle has an area of 96 cm² and a length of 12 cm. What is its perimeter?",
+    [
+     "40 cm",
+     "44 cm",
+     "20 cm",
+     "48 cm"
+    ],
+    "Width = 8, so 2 × (12 + 8)."
+   ],
+   [
+    "What is 2¹⁰?",
+    [
+     "1,024",
+     "1,000",
+     "2,048",
+     "512"
+    ],
+    "A kilobyte (in binary)."
    ]
   ],
   "english": [
@@ -2995,6 +9448,126 @@ const HARD = {
      "alliteration"
     ],
     "\"The pen\" stands for writing and ideas."
+   ],
+   [
+    "What does \"sycophant\" mean?",
+    [
+     "a person who flatters powerful people",
+     "a musician",
+     "a type of plant",
+     "a sceptic"
+    ],
+    "A \"yes-man\"."
+   ],
+   [
+    "What does \"laconic\" mean?",
+    [
+     "using very few words",
+     "very talkative",
+     "lazy",
+     "cheerful"
+    ],
+    "A laconic reply."
+   ],
+   [
+    "Which sentence is correct?",
+    [
+     "Fewer than ten people came.",
+     "Less than ten people came.",
+     "Lesser than ten people came.",
+     "Few than ten people came."
+    ],
+    "\"Fewer\" with countable nouns."
+   ],
+   [
+    "Which sentence is correct?",
+    [
+     "I'm going to lie down.",
+     "I'm going to lay down.",
+     "I'm going to lain down.",
+     "I'm going to laid down."
+    ],
+    "You lie down; you lay something down."
+   ],
+   [
+    "\"It's not the worst idea.\" Which figure of speech is this?",
+    [
+     "litotes",
+     "hyperbole",
+     "simile",
+     "onomatopoeia"
+    ],
+    "Understatement using a negative."
+   ],
+   [
+    "Who wrote \"Wuthering Heights\"?",
+    [
+     "Emily Brontë",
+     "Charlotte Brontë",
+     "Anne Brontë",
+     "Jane Austen"
+    ],
+    "Published in 1847."
+   ],
+   [
+    "Which word is spelled correctly?",
+    [
+     "idiosyncrasy",
+     "idiosyncracy",
+     "ideosyncrasy",
+     "idiosincrasy"
+    ],
+    "It ends in -crasy."
+   ],
+   [
+    "What does \"quintessential\" mean?",
+    [
+     "the most perfect example of something",
+     "fifth",
+     "very old",
+     "quiet"
+    ],
+    "The quintessential English breakfast."
+   ],
+   [
+    "Which sentence uses the Oxford comma?",
+    [
+     "We bought apples, pears, and plums.",
+     "We bought apples, pears and plums.",
+     "We bought apples pears and plums.",
+     "We bought, apples, pears and plums."
+    ],
+    "A comma before the final \"and\"."
+   ],
+   [
+    "What is a malapropism?",
+    [
+     "using a similar-sounding wrong word",
+     "a type of poem",
+     "a spelling rule",
+     "an exaggeration"
+    ],
+    "\"Dance a flamingo\" instead of \"flamenco\"."
+   ],
+   [
+    "Who wrote \"The Canterbury Tales\"?",
+    [
+     "Geoffrey Chaucer",
+     "William Shakespeare",
+     "John Milton",
+     "Edmund Spenser"
+    ],
+    "Written in Middle English."
+   ],
+   [
+    "What does \"obfuscate\" mean?",
+    [
+     "to make something unclear",
+     "to explain clearly",
+     "to celebrate",
+     "to shorten"
+    ],
+    "Obfuscating the facts."
    ]
   ],
   "science": [
@@ -3057,6 +9630,126 @@ const HARD = {
      "vacuole"
     ],
     "Chloroplasts contain chlorophyll."
+   ],
+   [
+    "What is Avogadro's number, approximately?",
+    [
+     "6.02 × 10²³",
+     "3 × 10⁸",
+     "9.81",
+     "6.67 × 10⁻¹¹"
+    ],
+    "Particles in one mole."
+   ],
+   [
+    "What is the acceleration due to gravity at Earth's surface, approximately?",
+    [
+     "9.8 m/s²",
+     "3 m/s²",
+     "15 m/s²",
+     "1 m/s²"
+    ],
+    "Often rounded to 10 m/s²."
+   ],
+   [
+    "Which planet has the shortest day?",
+    [
+     "Jupiter",
+     "Mercury",
+     "Earth",
+     "Venus"
+    ],
+    "About 10 hours."
+   ],
+   [
+    "What is the chemical formula of table salt?",
+    [
+     "NaCl",
+     "KCl",
+     "NaOH",
+     "CaCO₃"
+    ],
+    "Sodium chloride."
+   ],
+   [
+    "Which blood type is the most common worldwide?",
+    [
+     "O+",
+     "A+",
+     "B−",
+     "AB−"
+    ],
+    "O positive."
+   ],
+   [
+    "Which part of the brain helps control body temperature?",
+    [
+     "the hypothalamus",
+     "the cerebellum",
+     "the medulla",
+     "the cortex"
+    ],
+    "It works like a thermostat."
+   ],
+   [
+    "Which particle has a negative charge?",
+    [
+     "the electron",
+     "the proton",
+     "the neutron",
+     "the photon"
+    ],
+    "Protons are positive; neutrons are neutral."
+   ],
+   [
+    "What is the half-life of a radioactive substance?",
+    [
+     "the time for half of it to decay",
+     "half its mass",
+     "half its speed",
+     "its age"
+    ],
+    "Carbon-14 has a half-life of about 5,700 years."
+   ],
+   [
+    "Apart from mercury, which element is liquid at room temperature?",
+    [
+     "bromine",
+     "iodine",
+     "chlorine",
+     "sodium"
+    ],
+    "Bromine is a red-brown liquid."
+   ],
+   [
+    "What type of bond holds the two strands of DNA together?",
+    [
+     "hydrogen bonds",
+     "ionic bonds",
+     "metallic bonds",
+     "peptide bonds"
+    ],
+    "Between the base pairs."
+   ],
+   [
+    "What is the SI unit of electric charge?",
+    [
+     "the coulomb",
+     "the volt",
+     "the ohm",
+     "the farad"
+    ],
+    "Named after Charles-Augustin de Coulomb."
+   ],
+   [
+    "Who published the periodic table in 1869?",
+    [
+     "Dmitri Mendeleev",
+     "John Dalton",
+     "Antoine Lavoisier",
+     "Niels Bohr"
+    ],
+    "He left gaps for undiscovered elements."
    ]
   ],
   "hisgeo": [
@@ -3119,6 +9812,126 @@ const HARD = {
      "el cabo de San Vicente"
     ],
     "Está en Cádiz, frente a Marruecos."
+   ],
+   [
+    "¿En qué año tuvo lugar la batalla de Lepanto?",
+    [
+     "1571",
+     "1588",
+     "1492",
+     "1643"
+    ],
+    "Cervantes perdió allí la movilidad de una mano."
+   ],
+   [
+    "¿Qué dinastía llegó al trono de España con Felipe V?",
+    [
+     "los Borbones",
+     "los Austrias",
+     "los Trastámara",
+     "los Saboya"
+    ],
+    "En 1700."
+   ],
+   [
+    "¿Quién fue el primer presidente del Gobierno elegido en democracia tras la dictadura?",
+    [
+     "Adolfo Suárez",
+     "Felipe González",
+     "Leopoldo Calvo-Sotelo",
+     "Carlos Arias Navarro"
+    ],
+    "Ganó las elecciones de 1977."
+   ],
+   [
+    "Who ruled England as Lord Protector after the Civil War?",
+    [
+     "Oliver Cromwell",
+     "Charles I",
+     "William of Orange",
+     "Thomas More"
+    ],
+    "From 1653 to 1658."
+   ],
+   [
+    "Which English king was executed in 1649?",
+    [
+     "Charles I",
+     "Charles II",
+     "James II",
+     "Henry VIII"
+    ],
+    "After the English Civil War."
+   ],
+   [
+    "¿Cuál es el río más largo de Asia?",
+    [
+     "el Yangtsé",
+     "el Ganges",
+     "el Mekong",
+     "el Indo"
+    ],
+    "Recorre China."
+   ],
+   [
+    "¿Qué país tiene más volcanes activos?",
+    [
+     "Indonesia",
+     "Japón",
+     "Italia",
+     "Islandia"
+    ],
+    "Está en el Cinturón de Fuego del Pacífico."
+   ],
+   [
+    "¿Qué dos países comparten la isla de La Española?",
+    [
+     "Haití y la República Dominicana",
+     "Cuba y Haití",
+     "Puerto Rico y Cuba",
+     "Jamaica y Haití"
+    ],
+    "Colón llegó a ella en 1492."
+   ],
+   [
+    "¿En qué año se firmó el Tratado de Versalles?",
+    [
+     "1919",
+     "1918",
+     "1945",
+     "1914"
+    ],
+    "Puso fin oficialmente a la Primera Guerra Mundial."
+   ],
+   [
+    "¿Qué pueblo fundó Tenochtitlan?",
+    [
+     "los mexicas (aztecas)",
+     "los mayas",
+     "los incas",
+     "los olmecas"
+    ],
+    "Hoy es Ciudad de México."
+   ],
+   [
+    "¿Cuál es la capital de Mongolia?",
+    [
+     "Ulán Bator",
+     "Astaná",
+     "Katmandú",
+     "Biskek"
+    ],
+    "Es la capital más fría del mundo."
+   ],
+   [
+    "In which year did the Act of Union with Ireland create the United Kingdom of Great Britain and Ireland?",
+    [
+     "1801",
+     "1707",
+     "1603",
+     "1922"
+    ],
+    "It came into force on 1 January 1801."
    ]
   ]
  }
@@ -3130,24 +9943,34 @@ const svg=document.getElementById('board');
 const el=(tag,attrs={},parent=svg)=>{const e=document.createElementNS(NS,tag);for(const k in attrs)e.setAttribute(k,attrs[k]);parent.appendChild(e);return e;};
 const stxt=(parent,x,y,str,attrs={})=>{const t=el('text',Object.assign({x,y,'text-anchor':'middle'},attrs),parent);t.textContent=str;return t;};
 
-const M=65, L=1000-2*M, GAP=120, TH=GAP*0.8, PITCH=70, GAPT=8;
-const pts=(()=>{const dirs=[[1,0],[0,-1],[-1,0],[0,1]], lens=[L-GAP,L,L,L-GAP,L-GAP,L-2*GAP,L-2*GAP,L-3*GAP];
+const M=60, L=1000-2*M, GAP=108, TH=GAP*0.8, PITCH=63, GAPT=0;
+const pts=(()=>{const dirs=[[1,0],[0,-1],[-1,0],[0,1]], lens=[L-GAP,L,L,L-GAP,L-GAP,L-2*GAP,L-2*GAP,L-3*GAP,L-3*GAP,L-4*GAP];
   let x=M+GAP,y=1000-M; const p=[[x,y]]; lens.forEach((len,i)=>{const[dx,dy]=dirs[i%4];x+=dx*len;y+=dy*len;p.push([x,y]);}); return p;})();
+const NT=TOTAL-1;   // la última casilla (la salida) es el dibujo de la puerta
 const pos=[];
-for(let i=0;i<pts.length-1 && pos.length<TOTAL;i++){
+for(let i=0;i<pts.length-1 && pos.length<NT;i++){
   const [x0,y0]=pts[i],[x1,y1]=pts[i+1];
   const len=Math.hypot(x1-x0,y1-y0), ux=(x1-x0)/len, uy=(y1-y0)/len;
   const startPad=i===0?-PITCH/2:TH/2, space=len-startPad-TH/2, k=Math.floor(space/PITCH), pitch=space/k;
-  for(let j=0;j<k && pos.length<TOTAL;j++){
+  for(let j=0;j<k && pos.length<NT;j++){
     const d=startPad+pitch*(j+.5);
     pos.push({x:x0+ux*d,y:y0+uy*d,w:Math.abs(ux)*(pitch-GAPT)+Math.abs(uy)*TH,h:Math.abs(uy)*(pitch-GAPT)+Math.abs(ux)*TH,corner:false});
   }
-  if(i<pts.length-2 && pos.length<TOTAL) pos.push({x:x1,y:y1,w:TH,h:TH,corner:true});
+  if(i<pts.length-2 && pos.length<NT){
+    const [x2,y2]=pts[i+2], l2=Math.hypot(x2-x1,y2-y1), vx=(x2-x1)/l2, vy=(y2-y1)/l2;
+    pos.push({x:x1,y:y1,w:TH,h:TH,corner:true,cx:Math.sign(ux-vx),cy:Math.sign(uy-vy)});   // esquina exterior (redondeada)
+  }
 }
-const posOf = n => pos[TOTAL-n];
+const EXIT_SPOT={x:72,y:952,w:92,h:72};
+const posOf = n => n>=TOTAL ? EXIT_SPOT : pos[NT-n];
 // Los 6 pupitres del aula: un asiento por color (negro, granate, oro, crema, teal, pistacho)
+// El aula se dibuja en coordenadas 250–750 y se escala al hueco central de la espiral
+const ROOM=(()=>{ const n=pts.length, a=pts[n-4][0]+TH/2+6, b=pts[n-3][1]-TH/2-6, sc=(b-a)/500; return {sc, t:a-250*sc}; })();
+const toBoard=(x,y)=>({x:x*ROOM.sc+ROOM.t, y:y*ROOM.sc+ROOM.t});
+const toRoom=(x,y)=>({x:(x-ROOM.t)/ROOM.sc, y:(y-ROOM.t)/ROOM.sc});
 const SEATS = [0,1,2,3,4,5].map(i=>{ const c=i%3, r=Math.floor(i/3), x=430+c*100, y=615+r*62; return {x:x+27, y:y+22, w:40, h:40}; });
 const seatOf = colorId => SEATS[COLORS.findIndex(c=>c.id===colorId)];
+const seatOnBoard = colorId => { const st=seatOf(colorId), p=toBoard(st.x,st.y); return {x:p.x,y:p.y,w:st.w*ROOM.sc,h:st.h*ROOM.sc}; };
 
 function buildBoard(){
   svg.innerHTML='';
@@ -3159,7 +9982,8 @@ function buildBoard(){
     <pattern id="wood" width="120" height="30" patternUnits="userSpaceOnUse">
       <rect width="120" height="30" fill="#E2B67C"/><line x1="0" y1="29" x2="120" y2="29" stroke="#C99A5E" stroke-width="2"/><line x1="70" y1="0" x2="70" y2="30" stroke="#C99A5E" stroke-width="2"/>
     </pattern>
-    <linearGradient id="split" x1="0" y1="0" x2="1" y2="1"><stop offset="0.5" stop-color="#2E7BD6"/><stop offset="0.5" stop-color="#E3000F"/></linearGradient>
+    <linearGradient id="split" x1="0" y1="0" x2="1" y2="1"><stop offset="0.5" stop-color="#4A7FA7"/><stop offset="0.5" stop-color="#C8553D"/></linearGradient>
+    <filter id="angryRed"><feColorMatrix type="matrix" values="1 0.25 0.25 0 0.12  0 0.45 0 0 0  0 0 0.45 0 0  0 0 0 1 0"/></filter>
     <filter id="drop" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="4" stdDeviation="0" flood-color="#3B3326" flood-opacity=".35"/></filter>`;
   el('rect',{x:0,y:0,width:1000,height:1000,fill:'url(#floor)'});
 
@@ -3169,12 +9993,14 @@ function buildBoard(){
   for(let i=1;i<pts.length;i++){
     const [x,y]=pts[i],[px,py]=pts[i-1];
     const on=(Math.abs(lastP.x-px)<1&&Math.abs(lastP.x-x)<1&&(lastP.y-py)*(lastP.y-y)<=0)||(Math.abs(lastP.y-py)<1&&Math.abs(lastP.y-y)<1&&(lastP.x-px)*(lastP.x-x)<=0);
-    if(on){road+=` L${lastP.x} ${lastP.y}`;break;} road+=` L${x} ${y}`;
+    if(on){ const L2=Math.hypot(x-px,y-py), ux=(x-px)/L2, uy=(y-py)/L2, half=(Math.abs(ux)*lastP.w+Math.abs(uy)*lastP.h)/2+3;
+      road+=` L${lastP.x+ux*half} ${lastP.y+uy*half}`; break; }
+    road+=` L${x} ${y}`;
   }
-  el('path',{d:road,fill:'none',stroke:'#9DB7D6','stroke-opacity':.55,'stroke-width':TH+22,'stroke-linejoin':'round'});
+  el('path',{d:road,fill:'none',stroke:'#1D2B45','stroke-width':TH+6,'stroke-linejoin':'round','stroke-linecap':'butt',filter:'url(#drop)'});
 
   // aula
-  const g=el('g');
+  const g=el('g',{transform:`translate(${ROOM.t} ${ROOM.t}) scale(${ROOM.sc})`});
   el('rect',{x:250,y:250,width:500,height:500,rx:18,fill:'url(#wood)',stroke:'#7A5230','stroke-width':6},g);
   el('rect',{x:253,y:253,width:494,height:210,rx:14,fill:'#F4E9C9'},g);
   el('line',{x1:253,y1:463,x2:747,y2:463,stroke:'#B98B55','stroke-width':6},g);
@@ -3199,18 +10025,18 @@ function buildBoard(){
   el('rect',{x:510,y:484,width:60,height:8,fill:'#2E7BD6'},g);
   el('rect',{x:514,y:476,width:54,height:8,fill:'#E0930F'},g);
   el('rect',{x:508,y:468,width:58,height:8,fill:'#8E44AD'},g);
-  el('rect',{x:652,y:568,width:36,height:8,rx:3,fill:'#5C3A1A'},g);
-  el('line',{x1:670,y1:568,x2:670,y2:548,stroke:'#5C3A1A','stroke-width':5},g);
-  el('circle',{cx:670,cy:520,r:30,fill:'#4FA3E0',stroke:'#1D2B45','stroke-width':3},g);
-  el('path',{d:'M652 508 q10 -12 22 -4 q6 10 -6 16 q-8 4 -16 -2 Z M676 526 q10 -4 14 6 q-4 12 -14 8 Z',fill:'#43A047'},g);
+  el('rect',{x:312,y:568,width:36,height:8,rx:3,fill:'#5C3A1A'},g);
+  el('line',{x1:330,y1:568,x2:330,y2:548,stroke:'#5C3A1A','stroke-width':5},g);
+  el('circle',{cx:330,cy:520,r:30,fill:'#4FA3E0',stroke:'#1D2B45','stroke-width':3},g);
+  el('path',{d:'M312 508 q10 -12 22 -4 q6 10 -6 16 q-8 4 -16 -2 Z M336 526 q10 -4 14 6 q-4 12 -14 8 Z',fill:'#43A047'},g);
   for(let r=0;r<2;r++) for(let c=0;c<3;c++){
     const x=430+c*100, y=615+r*62;
     el('rect',{x:x-6,y:y+28,width:66,height:11,rx:4,fill:'#6B7FA8'},g);
     el('rect',{x,y,width:54,height:28,rx:5,fill:'#C98A4B',stroke:'#7A5230','stroke-width':3},g);
   }
-  const p1=posOf(1);
-  el('rect',{x:250,y:p1.y-40,width:14,height:80,fill:'#8B5A2B',stroke:'#5C3A1A','stroke-width':3},g);
-  const tag=el('g',{transform:`translate(300 ${p1.y})`},g);
+  const p1=posOf(1), d1=toRoom(p1.x,p1.y), right=p1.x>500;
+  el('rect',{x:right?736:250,y:d1.y-40,width:14,height:80,fill:'#8B5A2B',stroke:'#5C3A1A','stroke-width':3},g);
+  const tag=el('g',{transform:`translate(${right?712:300} ${right?d1.y-58:d1.y})`},g);
   el('rect',{x:-30,y:-15,width:60,height:30,rx:8,fill:'#FFD000',stroke:'#1D2B45','stroke-width':3},tag);
   stxt(tag,0,7,'Aula',{'font-family':"'Baloo 2',sans-serif",'font-weight':800,'font-size':19,fill:'#1D2B45'});
   // alumnos sentados de los colores que no juegan
@@ -3225,7 +10051,8 @@ function buildBoard(){
   });
 
   // salida
-  const e=el('g',{transform:'translate(72 930)'});
+  const e=el('g',{transform:'translate(72 930)',class:'tile',tabindex:0,role:'button','aria-label':'Salida del colegio'});
+  e.addEventListener('click',()=>showSquareInfo(TOTAL));
   el('rect',{x:-52,y:-50,width:104,height:112,fill:'#fff',stroke:'#1D2B45','stroke-width':4},e);
   el('rect',{x:-44,y:-18,width:42,height:76,fill:'#5C7FA8',stroke:'#1D2B45','stroke-width':3},e);
   el('rect',{x:2,y:-18,width:42,height:76,fill:'#5C7FA8',stroke:'#1D2B45','stroke-width':3},e);
@@ -3239,15 +10066,24 @@ function buildBoard(){
   // casillas
   const layer=el('g');
   SQUARES.forEach(s=>{
+    if(s.type==='goal') return;   // la salida es el dibujo de la puerta
     const p=posOf(s.n);
     const t=el('g',{class:'tile',tabindex:0,role:'button','data-n':s.n,transform:`translate(${p.x.toFixed(1)} ${p.y.toFixed(1)})`},layer);
     let fill='#FFF4DA', stroke='#1D2B45', nf='#1D2B45', label='';
-    if(s.type==='subject'){fill=s.subj.color;stroke='#FFFFFF';nf='#FFFFFF';label=s.subj.name;}
+    if(s.type==='subject'){fill=s.subj.color;stroke='#FFFFFF';nf=textOn(fill);label=s.subj.name;}
     if(s.type==='special'){label=SPECIALS[s.key].name; const v=SPECIALS[s.key]; if(v.bg){ fill=v.bg2?'url(#split)':v.bg; nf=textOn(v.bg); }}
     if(s.type==='goal'){fill='#FFD000';label='Exit, la salida';}
     t.setAttribute('aria-label',`Casilla ${s.n}: ${label}`);
-    el('rect',{class:'plank',x:-p.w/2,y:-p.h/2,width:p.w,height:p.h,rx:p.corner?24:13,fill,stroke,'stroke-width':4.5,filter:'url(#drop)'},t);
-    stxt(t,0,-10,s.n,{'font-family':"'Baloo 2',sans-serif",'font-weight':800,'font-size':26,fill:nf});
+    if(p.corner){
+      const h=TH/2, P={'-1,-1':[[-h,0],[0,-h]],'1,-1':[[0,-h],[h,0]],'1,1':[[h,0],[0,h]],'-1,1':[[0,h],[-h,0]]};
+      let d=''; [[-1,-1],[1,-1],[1,1],[-1,1]].forEach(([a,b],i)=>{
+        const k=a+','+b;
+        if(a===p.cx&&b===p.cy){ const [s1,s2]=P[k]; d+=`${i?'L':'M'}${s1[0]} ${s1[1]} A${h} ${h} 0 0 1 ${s2[0]} ${s2[1]} `; }
+        else d+=`${i?'L':'M'}${a*h} ${b*h} `;
+      });
+      el('path',{class:'plank',d:d+'Z',fill,stroke:'#1D2B45','stroke-width':1.5},t);
+    } else el('rect',{class:'plank',x:-p.w/2,y:-p.h/2,width:p.w,height:p.h,rx:0,fill,stroke:'#1D2B45','stroke-width':1.5},t);
+    stxt(t,0,-10,s.n,{'font-family':"'Baloo 2',sans-serif",'font-weight':800,'font-size':s.n>=100?22:25,fill:nf});
     const icon=s.type==='subject'?s.subj.icon:s.type==='special'?SPECIALS[s.key].icon:'🚪';
     const isT=icon==='×2';
     if(s.type==='special' && (s.key==='fwd'||s.key==='back')){
@@ -3260,10 +10096,95 @@ function buildBoard(){
     t.addEventListener('click',()=>showSquareInfo(s.n));
     t.addEventListener('keydown',ev=>{if(ev.key==='Enter'||ev.key===' '){ev.preventDefault();showSquareInfo(s.n);}});
   });
+  // Ms Petunia y los dos niños del pasillo (el hueco sin casillas junto al aula)
+  const cx=pts[pts.length-2][0], top=pts[pts.length-1][1]-TH/2, bot=posOf(1).y-posOf(1).h/2;
+  CORRIDOR={x:cx, kidsY:[top+50, top+105], petY:Math.min(bot-40, top+175)};
+  [[CORRIDOR.kidsY[0],'#F6E3A1'],[CORRIDOR.kidsY[1],'#F4BFB4']].forEach(([ky,col])=>{
+    const k=el('g',{transform:`translate(${cx} ${ky})`,'aria-hidden':'true'});
+    el('circle',{r:20,fill:'#fff'},k);
+    el('circle',{r:17,fill:col,stroke:'#1D2B45','stroke-width':3},k);
+    el('circle',{cx:-5,cy:-3,r:2.2,fill:'#1D2B45'},k); el('circle',{cx:5,cy:-3,r:2.2,fill:'#1D2B45'},k);
+    el('path',{d:'M-6 5 q6 5 12 0',fill:'none',stroke:'#1D2B45','stroke-width':2,'stroke-linecap':'round'},k);
+  });
+  const pg=el('g',{id:'petunia',class:'petunia','aria-label':'Ms Petunia'});
+  const pr=el('g',{class:'pet-rot'},pg);
+  const pb=el('g',{class:'pet-body'},pr);
+  const ps=el('g',{transform:'translate(-28 -32) scale(0.19)'},pb); ps.innerHTML=`
+<circle cx="150" cy="58" r="36" fill="#A7ACB2" stroke="#1D2B45" stroke-width="5"/>
+<path d="M112 58 Q150 40 188 58" fill="none" stroke="#1D2B45" stroke-width="3"/>
+<path d="M130 30 Q140 22 146 34 M160 26 Q172 20 174 34" fill="none" stroke="#1D2B45" stroke-width="3" stroke-linecap="round"/>
+<path d="M126 245 L126 282 L174 282 L174 245 Z" fill="#EBC49F" stroke="#1D2B45" stroke-width="5" stroke-linejoin="round"/>
+<path d="M52 320 Q58 276 126 272 L174 272 Q242 276 248 320 Z" fill="#2F5B48" stroke="#1D2B45" stroke-width="5" stroke-linejoin="round"/>
+<path d="M126 272 L150 300 L174 272" fill="#FFFFFF" stroke="#1D2B45" stroke-width="4" stroke-linejoin="round"/>
+<circle cx="73" cy="178" r="15" fill="#EBC49F" stroke="#1D2B45" stroke-width="5"/>
+<circle cx="227" cy="178" r="15" fill="#EBC49F" stroke="#1D2B45" stroke-width="5"/>
+<ellipse cx="150" cy="172" rx="78" ry="90" fill="#EBC49F" stroke="#1D2B45" stroke-width="5"/>
+<path d="M72 168 Q66 78 150 80 Q234 78 228 168 Q222 116 190 108 Q150 124 110 108 Q78 116 72 168 Z" fill="#A7ACB2" stroke="#1D2B45" stroke-width="5" stroke-linejoin="round"/>
+<path d="M92 118 Q84 104 96 98 M204 118 Q214 104 202 98" fill="none" stroke="#1D2B45" stroke-width="3" stroke-linecap="round"/>
+<path d="M145 128 L147 146 M155 128 L153 146" stroke="#1D2B45" stroke-width="3.5" stroke-linecap="round"/>
+<path d="M96 136 L140 156" stroke="#1D2B45" stroke-width="9" stroke-linecap="round"/>
+<path d="M204 136 L160 156" stroke="#1D2B45" stroke-width="9" stroke-linecap="round"/>
+<path d="M106 168 Q119 159 132 168 Q119 173 106 168 Z" fill="#FFFFFF" stroke="#1D2B45" stroke-width="3.5" stroke-linejoin="round"/>
+<path d="M168 168 Q181 159 194 168 Q181 173 168 168 Z" fill="#FFFFFF" stroke="#1D2B45" stroke-width="3.5" stroke-linejoin="round"/>
+<circle cx="122" cy="166" r="4.5" fill="#1D2B45"/><circle cx="178" cy="166" r="4.5" fill="#1D2B45"/>
+<path d="M96 178 H140 A22 17 0 0 1 96 178 Z" fill="#FFFFFF" fill-opacity="0.3" stroke="#1D2B45" stroke-width="4" stroke-linejoin="round"/>
+<path d="M160 178 H204 A22 17 0 0 1 160 178 Z" fill="#FFFFFF" fill-opacity="0.3" stroke="#1D2B45" stroke-width="4" stroke-linejoin="round"/>
+<path d="M140 180 Q150 174 160 180" fill="none" stroke="#1D2B45" stroke-width="4"/>
+<path d="M100 202 Q116 210 132 202 M168 202 Q184 210 200 202" fill="none" stroke="#1D2B45" stroke-width="3" stroke-linecap="round"/>
+<path d="M150 160 Q124 204 140 214 Q150 220 162 210 Q158 196 156 172" fill="#EBC49F" stroke="#1D2B45" stroke-width="4.5" stroke-linejoin="round" stroke-linecap="round"/>
+<circle cx="138" cy="200" r="4" fill="#C98A6B" stroke="#1D2B45" stroke-width="2"/>
+<path d="M142 212 Q146 216 150 213" fill="none" stroke="#1D2B45" stroke-width="3" stroke-linecap="round"/>
+<path d="M120 242 Q150 216 180 242" fill="none" stroke="#7A1E1E" stroke-width="8" stroke-linecap="round"/>
+<path d="M142 227 L142 235 L150 235 L150 226" fill="#FFFFFF" stroke="#1D2B45" stroke-width="2.5" stroke-linejoin="round"/>
+<path d="M114 236 L120 244 M186 236 L180 244" stroke="#1D2B45" stroke-width="3" stroke-linecap="round"/>
+<circle cx="196" cy="214" r="7" fill="#5C3A1A" stroke="#1D2B45" stroke-width="2"/>
+<path d="M196 207 Q200 198 206 196 M198 208 Q206 204 210 206" fill="none" stroke="#1D2B45" stroke-width="2" stroke-linecap="round"/>
+<circle cx="160" cy="254" r="4" fill="#C98A6B" stroke="#1D2B45" stroke-width="2"/>
+<path d="M160 250 L162 242" stroke="#1D2B45" stroke-width="2" stroke-linecap="round"/>
+<path d="M134 256 Q150 262 166 256" fill="none" stroke="#1D2B45" stroke-width="2.5" stroke-linecap="round"/>
+<g fill="#FFFFFF" stroke="#1D2B45" stroke-width="2.5"><circle cx="128" cy="291" r="5"/><circle cx="139" cy="288" r="5"/><circle cx="150" cy="287" r="5"/><circle cx="161" cy="288" r="5"/><circle cx="172" cy="291" r="5"/></g>
+`;
+  placePetunia('board', true); turnPetunia(0, true);
   el('g',{id:'tokenLayer'});
   el('rect',{x:3,y:3,width:994,height:994,rx:22,fill:'none',stroke:'#1D2B45','stroke-width':6,'pointer-events':'none'});
 }
 
+let CORRIDOR=null;
+function petuniaSpots(){
+  const p1=posOf(1), d1=toRoom(p1.x,p1.y);
+  return {
+    board: toBoard(477,488),
+    side:  toBoard(700,488),
+    door:  toBoard(705,d1.y),
+    out:   {x:CORRIDOR.x, y:p1.y},
+    hall:  {x:CORRIDOR.x, y:CORRIDOR.petY}
+  };
+}
+function turnPetunia(deg, instant){
+  const r=document.querySelector('#petunia .pet-rot'); if(!r) return;
+  if(instant) r.style.transition='none';
+  r.style.transform=`rotate(${deg}deg)`;
+  if(instant){ r.getBoundingClientRect(); r.style.transition=''; }
+}
+function placePetunia(where, instant){
+  const g=document.getElementById('petunia'); if(!g) return;
+  const p=petuniaSpots()[where];
+  if(instant) g.style.transition='none';
+  g.style.transform=`translate(${p.x}px,${p.y}px)`;
+  if(instant){ g.getBoundingClientRect(); g.style.transition=''; }
+}
+async function petuniaWalk(){
+  const g=document.getElementById('petunia'); if(!g) return;
+  placePetunia('board', true); turnPetunia(0, true);
+  await sleep(700);
+  // mira hacia donde camina: 0 = de frente (abajo), -90 = derecha, -180 = arriba (de espaldas a la puerta)
+  for(const [w,ms,deg] of [['side',1300,-90],['door',700,0],['out',600,-90],['hall',1100,-180]]){
+    turnPetunia(deg); await sleep(380);
+    g.classList.add('walking');
+    g.style.transitionDuration=ms+'ms'; placePetunia(w); await sleep(ms);
+    g.classList.remove('walking');
+  }
+}
 function showSquareInfo(n){
   document.querySelectorAll('.tile.sel').forEach(t=>t.classList.remove('sel'));
   document.querySelector(`.tile[data-n="${n}"]`)?.classList.add('sel');
@@ -3326,7 +10247,7 @@ $('#addPlayer').onclick=()=>{
 };
 /* ----- Intro de la partida ----- */
 const INTRO=[
-  '<span class="who">👩‍🏫</span>Ms Petunia os ha pillado copiando en un examen de recreo. Dice que os estabais comiendo el bocadillo exactamente igual que vuestro compañero… Por eso, vuestro castigo será no salir de clase hasta que os sepáis <i>El Quijote</i> de memoria…',
+  '<span class="who"><svg viewBox="0 0 300 320" width="120" height="128" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><circle cx="150" cy="58" r="36" fill="#A7ACB2" stroke="#1D2B45" stroke-width="5"/><path d="M112 58 Q150 40 188 58" fill="none" stroke="#1D2B45" stroke-width="3"/><path d="M130 30 Q140 22 146 34 M160 26 Q172 20 174 34" fill="none" stroke="#1D2B45" stroke-width="3" stroke-linecap="round"/><path d="M126 245 L126 282 L174 282 L174 245 Z" fill="#EBC49F" stroke="#1D2B45" stroke-width="5" stroke-linejoin="round"/><path d="M52 320 Q58 276 126 272 L174 272 Q242 276 248 320 Z" fill="#2F5B48" stroke="#1D2B45" stroke-width="5" stroke-linejoin="round"/><path d="M126 272 L150 300 L174 272" fill="#FFFFFF" stroke="#1D2B45" stroke-width="4" stroke-linejoin="round"/><circle cx="73" cy="178" r="15" fill="#EBC49F" stroke="#1D2B45" stroke-width="5"/><circle cx="227" cy="178" r="15" fill="#EBC49F" stroke="#1D2B45" stroke-width="5"/><ellipse cx="150" cy="172" rx="78" ry="90" fill="#EBC49F" stroke="#1D2B45" stroke-width="5"/><path d="M72 168 Q66 78 150 80 Q234 78 228 168 Q222 116 190 108 Q150 124 110 108 Q78 116 72 168 Z" fill="#A7ACB2" stroke="#1D2B45" stroke-width="5" stroke-linejoin="round"/><path d="M92 118 Q84 104 96 98 M204 118 Q214 104 202 98" fill="none" stroke="#1D2B45" stroke-width="3" stroke-linecap="round"/><path d="M145 128 L147 146 M155 128 L153 146" stroke="#1D2B45" stroke-width="3.5" stroke-linecap="round"/><path d="M96 136 L140 156" stroke="#1D2B45" stroke-width="9" stroke-linecap="round"/><path d="M204 136 L160 156" stroke="#1D2B45" stroke-width="9" stroke-linecap="round"/><path d="M106 168 Q119 159 132 168 Q119 173 106 168 Z" fill="#FFFFFF" stroke="#1D2B45" stroke-width="3.5" stroke-linejoin="round"/><path d="M168 168 Q181 159 194 168 Q181 173 168 168 Z" fill="#FFFFFF" stroke="#1D2B45" stroke-width="3.5" stroke-linejoin="round"/><circle cx="122" cy="166" r="4.5" fill="#1D2B45"/><circle cx="178" cy="166" r="4.5" fill="#1D2B45"/><path d="M96 178 H140 A22 17 0 0 1 96 178 Z" fill="#FFFFFF" fill-opacity="0.3" stroke="#1D2B45" stroke-width="4" stroke-linejoin="round"/><path d="M160 178 H204 A22 17 0 0 1 160 178 Z" fill="#FFFFFF" fill-opacity="0.3" stroke="#1D2B45" stroke-width="4" stroke-linejoin="round"/><path d="M140 180 Q150 174 160 180" fill="none" stroke="#1D2B45" stroke-width="4"/><path d="M100 202 Q116 210 132 202 M168 202 Q184 210 200 202" fill="none" stroke="#1D2B45" stroke-width="3" stroke-linecap="round"/><path d="M150 160 Q124 204 140 214 Q150 220 162 210 Q158 196 156 172" fill="#EBC49F" stroke="#1D2B45" stroke-width="4.5" stroke-linejoin="round" stroke-linecap="round"/><circle cx="138" cy="200" r="4" fill="#C98A6B" stroke="#1D2B45" stroke-width="2"/><path d="M142 212 Q146 216 150 213" fill="none" stroke="#1D2B45" stroke-width="3" stroke-linecap="round"/><path d="M120 242 Q150 216 180 242" fill="none" stroke="#7A1E1E" stroke-width="8" stroke-linecap="round"/><path d="M142 227 L142 235 L150 235 L150 226" fill="#FFFFFF" stroke="#1D2B45" stroke-width="2.5" stroke-linejoin="round"/><path d="M114 236 L120 244 M186 236 L180 244" stroke="#1D2B45" stroke-width="3" stroke-linecap="round"/><circle cx="196" cy="214" r="7" fill="#5C3A1A" stroke="#1D2B45" stroke-width="2"/><path d="M196 207 Q200 198 206 196 M198 208 Q206 204 210 206" fill="none" stroke="#1D2B45" stroke-width="2" stroke-linecap="round"/><circle cx="160" cy="254" r="4" fill="#C98A6B" stroke="#1D2B45" stroke-width="2"/><path d="M160 250 L162 242" stroke="#1D2B45" stroke-width="2" stroke-linecap="round"/><path d="M134 256 Q150 262 166 256" fill="none" stroke="#1D2B45" stroke-width="2.5" stroke-linecap="round"/><g fill="#FFFFFF" stroke="#1D2B45" stroke-width="2.5"><circle cx="128" cy="291" r="5"/><circle cx="139" cy="288" r="5"/><circle cx="150" cy="287" r="5"/><circle cx="161" cy="288" r="5"/><circle cx="172" cy="291" r="5"/></g></svg></span>Ms Petunia os ha pillado copiando en un examen de recreo. Dice que os estabais comiendo el bocadillo exactamente igual que vuestro compañero… Por eso, vuestro castigo será no salir de clase hasta que os sepáis <i>El Quijote</i> de memoria…',
   '<span class="who">🏃</span>Ms Petunia ha ido a regañar a unos niños por respirar muy fuerte en el pasillo. ¡Aprovechad la oportunidad para escapar!'
 ];
 async function playScenes(lines, atWhite){
@@ -3353,7 +10274,7 @@ async function playScenes(lines, atWhite){
   await sleep(900);
   box.classList.add('hidden');
 }
-const playIntro=()=>playScenes(INTRO, startGame);
+const playIntro=async()=>{ await playScenes(INTRO, startGame); petuniaWalk(); };
 $('#startBtn').onclick=playIntro;
 
 /* ================= ESTADO ================= */
@@ -3361,8 +10282,8 @@ let S=null;
 function startGame(){
   S={players:setupPlayers.map((p,i)=>({
       name:(p.name||'').trim()||('Jugador '+(i+1)), level:p.level, color:p.color,
-      pos:0, right:0, total:0, skip:0, office:null, exitDone:new Set(), escaped:false
-    })), turn:0, busy:false, over:false, log:[]};
+      pos:0, right:0, total:0, skip:0, office:null, petDet:false, exitDone:new Set(), escaped:false
+    })), turn:0, busy:false, over:false, log:[], round:1, petPos:null, petSafe:[]};
   $('#setup').classList.add('hidden'); $('#game').classList.remove('hidden');
   buildBoard(); setDie(1);
   S.log=[]; addLog(`¡Empieza la partida! Le toca a ${S.players[0].name}.`);
@@ -3397,7 +10318,7 @@ function renderTokens(slow){
   const key=p=>p.pos===0?'seat-'+p.color:p.pos;
   const groups={}; S.players.forEach((p,i)=>(groups[key(p)]=groups[key(p)]||[]).push(i));
   S.players.forEach((p,i)=>{
-    const g=layer.querySelector(`.token[data-i="${i}"]`), box=p.pos===0?seatOf(p.color):posOf(p.pos);
+    const g=layer.querySelector(`.token[data-i="${i}"]`), box=p.pos===0?seatOnBoard(p.color):posOf(p.pos);
     const grp=groups[key(p)], {r,spots}=tokenSpots(grp.length,box), [ox,oy]=spots[grp.indexOf(i)];
     g.classList.toggle('slow',!!slow);
     g.style.transform=`translate(${box.x+ox}px,${box.y+oy}px)`;
@@ -3411,11 +10332,13 @@ function renderTokens(slow){
 function statusOf(p){
   if(p.escaped) return '🏆 ¡Ha escapado!';
   if(p.office) return `🧑‍🏫 En Principal's Office (intento ${p.office.tries+1} de 3)`;
+  if(p.petDet) return '👩‍🏫 En Detention con Ms Petunia';
   if(p.skip>0) return '🎒 Castigado: pierde este turno';
   if(p.pos===TOTAL) return `🚪 En la salida: le faltan ${5-p.exitDone.size} asignaturas`;
   return p.pos===0?'Sentado en su pupitre, listo para salir':`En la casilla ${p.pos}`;
 }
 function actionLabel(p){
+  if(p.petDet) return 'Cumplir Detention';
   if(p.skip>0) return 'Cumplir castigo';
   if(p.office) return 'Intentar salir';
   if(p.pos===TOTAL) return 'Preguntas de salida';
@@ -3428,10 +10351,12 @@ function render(){
   $('#turnStatus').textContent=S.over?'':statusOf(p);
   $('#actBtn').textContent=actionLabel(p);
   $('#actBtn').disabled=S.busy||S.over;
+  $('#jokerBtn').disabled=S.busy||S.over;
   $('#plist').innerHTML=S.players.map((q,i)=>{
     const badges=[];
     if(q.office) badges.push(`<span class="badge">🧑‍🏫 Principal's Office ${q.office.tries}/3</span>`);
     if(q.skip) badges.push('<span class="badge">📝 Detention</span>');
+    if(q.petDet) badges.push('<span class="badge">👩‍🏫 Detention de Ms Petunia</span>');
     if(q.pos===TOTAL||q.exitDone.size) badges.push(`<span class="badge">salida <span class="exitdots">${SUBJECTS.map(s=>`<b class="${q.exitDone.has(s.id)?'on':''}" style="--sc:${s.color}" title="${s.name}"></b>`).join('')}</span></span>`);
     return `<div class="pl ${i===S.turn&&!S.over?'now':''}">
       ${pawnHTML(q)}
@@ -3500,11 +10425,11 @@ function choosePlayer(title,body,list){
   });
 }
 /* Pregunta: devuelve true si acierta */
-function ask(p,subj,{hard=false,context=''}={}){
+function ask(p,subj,{hard=false,petunia=false,context=''}={}){
   return new Promise(res=>{
-    const [q,opts,expl]=hard?draw(HARD,'h',p.level,subj.id):draw(QB,'n',p.level,subj.id);
+    const [q,opts,expl]=petunia?draw(PETUNIA,'p',p.level,subj.id):hard?draw(HARD,'h',p.level,subj.id):draw(QB,'n',p.level,subj.id);
     const correct=opts[0], shown=shuffle(opts);
-    openCard(headHTML(subj.icon,subj.name+(hard?' · difícil':''),`Pregunta para ${esc(p.name)} · ${LEVELS[p.level].short}`),`
+    openCard(headHTML(subj.icon,subj.name+(petunia?' · pregunta de Ms Petunia':hard?' · difícil':''),`Pregunta para ${esc(p.name)} · ${LEVELS[p.level].short}`),`
       ${context?`<div class="situation">${context}</div>`:''}
       <p class="question">${esc(q)}</p>
       <div class="options">${shown.map((o,i)=>`<button class="opt" data-o="${i}"><span class="k">${'ABCD'[i]}</span><span>${esc(o)}</span></button>`).join('')}</div>
@@ -3514,7 +10439,7 @@ function ask(p,subj,{hard=false,context=''}={}){
       const choice=shown[+btn.dataset.o], ok=choice===correct;
       card.querySelectorAll('.opt').forEach(b=>{ b.disabled=true; const v=shown[+b.dataset.o]; if(v===correct) b.classList.add('right'); else if(b===btn) b.classList.add('wrong'); });
       p.total++; if(ok) p.right++;
-      addLog(`${ok?'✅':'❌'} ${p.name} ${ok?'acierta':'falla'} en ${subj.name}${hard?' (difícil)':''}.`);
+      addLog(`${ok?'✅':'❌'} ${p.name} ${ok?'acierta':'falla'} en ${subj.name}${petunia?' (Ms Petunia)':hard?' (difícil)':''}.`);
       $('#fb').innerHTML=`<div class="feedback ${ok?'good':'badf'}"><b>${ok?'¡Correcto! 🎉':'¡Uy! No es esa.'}</b><br>
         ${ok?'':`La respuesta correcta es: <u>${esc(correct)}</u>.<br>`}${esc(expl)}</div>
         <div class="foot"><button class="btn btn-primary" id="contBtn">Continuar</button></div>`;
@@ -3575,6 +10500,7 @@ $('#actBtn').onclick=async()=>{
       await message({icon:'🎒',title:'Castigado',body:`<p>${esc(p.name)} pierde este turno.</p>`});
       return endTurn();
     }
+    if(p.petDet) return await petDetTurn(p);
     if(p.office) return await officeTurn(p);
     if(p.pos===TOTAL) return await exitChallenge(p);
     const d=await rollDie(); addLog(`${p.name} saca un ${d}.`);
@@ -3590,7 +10516,13 @@ async function afterMove(p){
 }
 function endTurn(){
   if(S.over) return;
-  S.turn=(S.turn+1)%S.players.length; S.busy=false; render();
+  if(petVictims().length){ S.busy=true; render(); petuniaSweep().finally(()=>{ endTurn(); }); return; }
+  S.turn=(S.turn+1)%S.players.length;
+  if(S.turn===0){
+    S.round++;
+    if(S.round>=3){ S.busy=true; render(); petuniaRoam().finally(()=>{ S.busy=false; render(); }); return; }
+  }
+  S.busy=false; render();
 }
 
 async function rollAgain(p){
@@ -3600,6 +10532,7 @@ async function rollAgain(p){
 
 async function landOn(p){
   const n=p.pos; if(n<1||n>=TOTAL) return;
+  if(S.petPos && n===S.petPos && !p.petDet && !S.petSafe.includes(p)) return await petuniaCatch([p]);
   const sq=SQUARES[n-1];
   if(sq.type==='subject'){
     const from=p.turnStart??0, where=from===0?'a tu pupitre':`a la casilla ${from}`;
@@ -3616,7 +10549,7 @@ async function landOn(p){
       addLog(`${v.icon} ${p.name} ${step>0?'avanza 2':'retrocede 1'}.`);
       await moveBy(p,step);
       const t=SQUARES[p.pos-1];
-      if(t.type!=='subject'){ await landOn(p); break; }   // casilla especial: se activa (el recreo no tiene pregunta)
+      if(t.type!=='subject' || p.pos===S.petPos){ await landOn(p); break; }   // casilla especial: se activa (el recreo no tiene pregunta)
       const where=from===0?'a tu pupitre':`a la casilla ${from}`;
       const ok=await ask(p,t.subj,{context:`Casilla ${p.pos}. Si aciertas, te quedas aquí. Si fallas, vuelves ${where}.`});
       if(!ok){ addLog(`↩️ ${p.name} vuelve ${from===0?'a su pupitre':where}.`); await goTo(p,from); }
@@ -3646,7 +10579,7 @@ async function landOn(p){
       await moveBy(p,d*2);
       // Casilla de asignatura: no se pregunta. Casilla especial: se activa (con su pregunta si la tiene).
       const t=SQUARES[p.pos-1];
-      if(p.pos<TOTAL && t.type==='special'){ p.turnStart=n; await landOn(p); }
+      if(p.pos<TOTAL && (t.type==='special' || p.pos===S.petPos)){ p.turnStart=n; await landOn(p); }
       break;}
     case 'speed':{
       const r=await speedRun(p); addLog(`⏱️ Speed Run: ${p.name} acierta ${r.hits} y falla ${r.misses} (${r.net>=0?'+':''}${r.net}).`);
@@ -3661,16 +10594,16 @@ async function landOn(p){
 async function versus(p){
   const rivals=others(p);
   if(!rivals.length){ await message({icon:'⚔️',title:'VS',body:'<p>No hay nadie a quien retar. ¡Sigues jugando!</p>'}); return; }
-  const opp=await choosePlayer('VS: ¿a quién retas?',`${esc(p.name)}, elige a tu rival. Quien acierte avanza 3 y quien falle retrocede 3.`,rivals);
+  const opp=await choosePlayer('VS: ¿a quién retas?',`${esc(p.name)}, elige a tu rival. Quien acierte avanza 5 y quien falle retrocede 5.`,rivals);
   const subj=await chooseSubject('VS: elige la asignatura',`${esc(p.name)} elige la asignatura del duelo contra ${esc(opp.name)}.`);
   const ok1=await ask(p,subj,{hard:true,context:`⚔️ Duelo contra ${esc(opp.name)}. Responde ${esc(p.name)}.`});
   await message({icon:'⚔️',title:`Turno de ${esc(opp.name)}`,body:`<p>Pasa el dispositivo a ${esc(opp.name)}.</p>`,buttons:[{label:'Estoy listo',value:1,cls:'btn-primary'}]});
   const ok2=await ask(opp,subj,{hard:true,context:`⚔️ Duelo contra ${esc(p.name)}. Responde ${esc(opp.name)}.`});
-  const r=(q,ok)=>`<p>${pawnHTML(q)} <b>${esc(q.name)}</b> ${ok?'acierta y avanza 3':'falla y retrocede 3'}.</p>`;
+  const r=(q,ok)=>`<p>${pawnHTML(q)} <b>${esc(q.name)}</b> ${ok?'acierta y avanza 5':'falla y retrocede 5'}.</p>`;
   await message({icon:'⚔️',title:'Resultado del duelo',body:r(p,ok1)+r(opp,ok2)});
-  addLog(`⚔️ VS: ${p.name} ${ok1?'+3':'−3'}, ${opp.name} ${ok2?'+3':'−3'}.`);
-  await moveBy(p,ok1?3:-3);
-  if(opp.pos>0) await moveBy(opp,ok2?3:-3); else if(ok2) await moveBy(opp,3);
+  addLog(`⚔️ VS: ${p.name} ${ok1?'+5':'−5'}, ${opp.name} ${ok2?'+5':'−5'}.`);
+  await moveBy(p,ok1?5:-5);
+  if(opp.pos>0) await moveBy(opp,ok2?5:-5); else if(ok2) await moveBy(opp,5);
 }
 
 async function officeTurn(p){
@@ -3713,13 +10646,158 @@ async function exitChallenge(p){
   endTurn();
 }
 
+
+/* ================= ACCIONES ================= */
+const DETENTIONS = SQUARES.filter(q=>q.key==='detention').map(q=>q.n);
+const detentionBehind = n => { const d=DETENTIONS.filter(x=>x<=n); return d.length?d[d.length-1]:0; };
+function actionsMenu(){
+  const p=cur(), canRoll=!p.skip && !p.office && !p.petDet && p.pos<TOTAL, dt=detentionBehind(Math.max(0,p.pos));
+  return new Promise(res=>{
+    openCard(headHTML('⚡','Acciones',`Turno de ${esc(p.name)}`),`
+      <div class="joker-sec">
+        <h3>×2 · Tirada doble</h3>
+        <p>${canRoll?`${esc(p.name)} tira el dado y avanza el doble de lo que saque. Cuenta como su tirada del turno.`:'Ahora no se puede usar: este jugador no puede tirar el dado en este turno.'}</p>
+        <button class="btn btn-go" id="jkX2" ${canRoll?'':'disabled'}>Tirar ×2</button>
+      </div>
+      <div class="joker-sec">
+        <h3>Moverse</h3>
+        <p>${esc(p.name)} se mueve al instante las casillas que elijas (número negativo para retroceder). No se activa la casilla donde cae y no gasta el turno.</p>
+        <div class="stepper">
+          <button class="st" id="jkMinus" aria-label="Menos">−</button>
+          <input id="jkN" type="number" value="1" step="1" min="-20" max="20" aria-label="Número de casillas">
+          <button class="st" id="jkPlus" aria-label="Más">+</button>
+          <button class="btn btn-primary" id="jkMove" style="margin-left:auto">Mover</button>
+        </div>
+      </div>
+      <div class="joker-sec">
+        <h3>Detention</h3>
+        <p>${esc(p.name)} retrocede ${dt?`hasta la casilla de Detention ${dt}`:'hasta su pupitre (no hay ninguna Detention detrás)'}${dt?' y se activa la casilla':''}.</p>
+        <button class="btn btn-no" id="jkDet" ${p.pos>0&&p.pos<TOTAL?'':'disabled'}>Ir a Detention</button>
+      </div>
+      <div class="foot"><button class="btn" id="jkCancel">Cancelar</button></div>`);
+    const n=$('#jkN'), clamp=v=>Math.max(-20,Math.min(20,Math.round(+v||0)));
+    $('#jkMinus').onclick=()=>{ let v=clamp(n.value)-1; if(v===0) v=-1; n.value=clamp(v); };
+    $('#jkPlus').onclick=()=>{ let v=clamp(n.value)+1; if(v===0) v=1; n.value=clamp(v); };
+    $('#jkX2').onclick=()=>{ closeCard(); res({kind:'x2'}); };
+    $('#jkMove').onclick=()=>{ const v=clamp(n.value); if(!v) return; closeCard(); res({kind:'move',n:v}); };
+    $('#jkDet').onclick=()=>{ closeCard(); res({kind:'det',to:dt}); };
+    $('#jkCancel').onclick=()=>{ closeCard(); res(null); };
+  });
+}
+$('#jokerBtn').onclick=async()=>{
+  if(!S||S.busy||S.over) return;
+  S.busy=true; render();
+  try{
+    const c=await actionsMenu();
+    if(!c){ S.busy=false; render(); return; }
+    const p=cur();
+    if(c.kind==='x2'){
+      p.turnStart=p.pos;
+      const d=await rollDie(); addLog(`⚡ ×2: ${p.name} saca un ${d} y avanza ${d*2}.`);
+      await moveBy(p,d*2); return await afterMove(p);
+    }
+    if(c.kind==='move'){
+      addLog(`⚡ ${p.name} ${c.n>0?'avanza':'retrocede'} ${Math.abs(c.n)}.`);
+      await moveBy(p,c.n);
+      await petuniaSweep();
+      S.busy=false; render(); return;
+    }
+    if(c.kind==='det'){
+      addLog(`⚡ ${p.name} retrocede ${c.to?'hasta Detention':'hasta su pupitre'}.`);
+      await moveTo(p,c.to);
+      if(c.to){ p.turnStart=c.to; await landOn(p); }
+      S.busy=false; render(); return;
+    }
+  }catch(err){ console.error(err); closeCard(); S.busy=false; render(); }
+};
+async function moveTo(p,target){
+  if(target===0){ while(p.pos>1){ p.pos--; renderTokens(false); render(); await sleep(170); } p.pos=0; renderTokens(true); render(); await sleep(600); return; }
+  while(p.pos!==target){ p.pos+=Math.sign(target-p.pos); renderTokens(false); render(); await sleep(170); }
+  await sleep(200);
+}
+
+/* ================= MS PETUNIA SUELTA ================= */
+const PET_ICON='<svg viewBox="0 0 300 320" width="46" height="49" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><circle cx="150" cy="58" r="36" fill="#A7ACB2" stroke="#1D2B45" stroke-width="5"/><path d="M112 58 Q150 40 188 58" fill="none" stroke="#1D2B45" stroke-width="3"/><path d="M130 30 Q140 22 146 34 M160 26 Q172 20 174 34" fill="none" stroke="#1D2B45" stroke-width="3" stroke-linecap="round"/><path d="M126 245 L126 282 L174 282 L174 245 Z" fill="#EBC49F" stroke="#1D2B45" stroke-width="5" stroke-linejoin="round"/><path d="M52 320 Q58 276 126 272 L174 272 Q242 276 248 320 Z" fill="#2F5B48" stroke="#1D2B45" stroke-width="5" stroke-linejoin="round"/><path d="M126 272 L150 300 L174 272" fill="#FFFFFF" stroke="#1D2B45" stroke-width="4" stroke-linejoin="round"/><circle cx="73" cy="178" r="15" fill="#EBC49F" stroke="#1D2B45" stroke-width="5"/><circle cx="227" cy="178" r="15" fill="#EBC49F" stroke="#1D2B45" stroke-width="5"/><ellipse cx="150" cy="172" rx="78" ry="90" fill="#EBC49F" stroke="#1D2B45" stroke-width="5"/><path d="M72 168 Q66 78 150 80 Q234 78 228 168 Q222 116 190 108 Q150 124 110 108 Q78 116 72 168 Z" fill="#A7ACB2" stroke="#1D2B45" stroke-width="5" stroke-linejoin="round"/><path d="M92 118 Q84 104 96 98 M204 118 Q214 104 202 98" fill="none" stroke="#1D2B45" stroke-width="3" stroke-linecap="round"/><path d="M145 128 L147 146 M155 128 L153 146" stroke="#1D2B45" stroke-width="3.5" stroke-linecap="round"/><path d="M96 136 L140 156" stroke="#1D2B45" stroke-width="9" stroke-linecap="round"/><path d="M204 136 L160 156" stroke="#1D2B45" stroke-width="9" stroke-linecap="round"/><path d="M106 168 Q119 159 132 168 Q119 173 106 168 Z" fill="#FFFFFF" stroke="#1D2B45" stroke-width="3.5" stroke-linejoin="round"/><path d="M168 168 Q181 159 194 168 Q181 173 168 168 Z" fill="#FFFFFF" stroke="#1D2B45" stroke-width="3.5" stroke-linejoin="round"/><circle cx="122" cy="166" r="4.5" fill="#1D2B45"/><circle cx="178" cy="166" r="4.5" fill="#1D2B45"/><path d="M96 178 H140 A22 17 0 0 1 96 178 Z" fill="#FFFFFF" fill-opacity="0.3" stroke="#1D2B45" stroke-width="4" stroke-linejoin="round"/><path d="M160 178 H204 A22 17 0 0 1 160 178 Z" fill="#FFFFFF" fill-opacity="0.3" stroke="#1D2B45" stroke-width="4" stroke-linejoin="round"/><path d="M140 180 Q150 174 160 180" fill="none" stroke="#1D2B45" stroke-width="4"/><path d="M100 202 Q116 210 132 202 M168 202 Q184 210 200 202" fill="none" stroke="#1D2B45" stroke-width="3" stroke-linecap="round"/><path d="M150 160 Q124 204 140 214 Q150 220 162 210 Q158 196 156 172" fill="#EBC49F" stroke="#1D2B45" stroke-width="4.5" stroke-linejoin="round" stroke-linecap="round"/><circle cx="138" cy="200" r="4" fill="#C98A6B" stroke="#1D2B45" stroke-width="2"/><path d="M142 212 Q146 216 150 213" fill="none" stroke="#1D2B45" stroke-width="3" stroke-linecap="round"/><path d="M120 242 Q150 216 180 242" fill="none" stroke="#7A1E1E" stroke-width="8" stroke-linecap="round"/><path d="M142 227 L142 235 L150 235 L150 226" fill="#FFFFFF" stroke="#1D2B45" stroke-width="2.5" stroke-linejoin="round"/><path d="M114 236 L120 244 M186 236 L180 244" stroke="#1D2B45" stroke-width="3" stroke-linecap="round"/><circle cx="196" cy="214" r="7" fill="#5C3A1A" stroke="#1D2B45" stroke-width="2"/><path d="M196 207 Q200 198 206 196 M198 208 Q206 204 210 206" fill="none" stroke="#1D2B45" stroke-width="2" stroke-linecap="round"/><circle cx="160" cy="254" r="4" fill="#C98A6B" stroke="#1D2B45" stroke-width="2"/><path d="M160 250 L162 242" stroke="#1D2B45" stroke-width="2" stroke-linecap="round"/><path d="M134 256 Q150 262 166 256" fill="none" stroke="#1D2B45" stroke-width="2.5" stroke-linecap="round"/><g fill="#FFFFFF" stroke="#1D2B45" stroke-width="2.5"><circle cx="128" cy="291" r="5"/><circle cx="139" cy="288" r="5"/><circle cx="150" cy="287" r="5"/><circle cx="161" cy="288" r="5"/><circle cx="172" cy="291" r="5"/></g></svg>';
+function petuniaAt(x,y,deg,ms){
+  const g=document.getElementById('petunia'); if(!g) return;
+  g.style.transitionDuration=(ms||0)+'ms';
+  g.style.transform=`translate(${x}px,${y}px)`;
+  if(deg!=null) turnPetunia(deg);
+}
+const faceTo=(x0,y0,x1,y1)=>Math.round(Math.atan2(y1-y0,x1-x0)*180/Math.PI)-90;
+async function petuniaGo(n,ms){
+  const g=document.getElementById('petunia'); if(!g) return;
+  const from=S.petPos?posOf(S.petPos):petuniaSpots().hall, to=posOf(n);
+  turnPetunia(faceTo(from.x,from.y,to.x,to.y)); await sleep(350);
+  g.classList.add('walking'); petuniaAt(to.x,to.y,null,ms); await sleep(ms);
+  g.classList.remove('walking'); turnPetunia(0);
+  S.petPos=n;
+}
+function petVictims(){
+  if(!S.petPos) return [];
+  return S.players.filter(q=>q.pos===S.petPos && !q.petDet && !q.escaped && !S.petSafe.includes(q));
+}
+async function petuniaSweep(){ const v=petVictims(); if(v.length) await petuniaCatch(v); }
+async function petuniaRoam(){
+  const options=SQUARES.filter(q=>q.n>=2 && q.n<TOTAL && q.key!=='detention' && q.n!==S.petPos).map(q=>q.n);
+  if(!options.length) return;
+  const n=rand(options);
+  const from=S.petPos?posOf(S.petPos):petuniaSpots().hall, to=posOf(n);
+  const ms=Math.min(2200, 500+Math.hypot(to.x-from.x,to.y-from.y)*2.2);
+  addLog(`👩‍🏫 Ms Petunia patrulla la casilla ${n}.`);
+  await petuniaGo(n,ms);
+  S.petSafe=[];
+  await petuniaSweep();   // si cae donde hay jugadores, los pilla
+}
+async function petuniaCatch(list){
+  if(!Array.isArray(list)) list=[list];
+  const g=document.getElementById('petunia');
+  g&&g.classList.add('angry');
+  const from=list[0].pos, to=detentionBehind(from);
+  const names=list.map(q=>esc(q.name)), who=names.length>1?names.slice(0,-1).join(', ')+' y '+names[names.length-1]:names[0];
+  addLog(`👩‍🏫 ¡Ms Petunia pilla a ${list.map(q=>q.name).join(' y ')}!`);
+  await message({icon:PET_ICON,title:list.length>1?'¡Ms Petunia os ha pillado!':'¡Ms Petunia te ha pillado!',sub:`Casilla ${from}`,color:'#B23A2E',
+    body:`<p>Ms Petunia se pone roja de ira y acompaña a ${who} ${to?`hasta la casilla de Detention ${to}`:'hasta su pupitre'}.</p><p>Para no perder el próximo turno, habrá que acertar una <b>pregunta de Ms Petunia</b>, que es muy difícil.</p>`,
+    buttons:[{label:'Ir con Ms Petunia',value:1,cls:'btn-no'}]});
+  // caminan juntos hacia atrás, casilla a casilla
+  let pos=from;
+  while(pos>Math.max(to,1)){
+    pos--; list.forEach(q=>q.pos=pos); renderTokens(false); render();
+    const t=posOf(pos); petuniaAt(t.x,t.y,null,160); await sleep(180);
+  }
+  if(to===0){ list.forEach(q=>q.pos=0); renderTokens(true); render(); await sleep(600); }
+  S.petPos=Math.max(to,1);
+  list.forEach(q=>q.petDet=true);
+  S.petSafe=[...list];
+  g&&g.classList.remove('angry'); turnPetunia(0);
+  for(const q of list){
+    const c=await message({icon:PET_ICON,title:'Detention de Ms Petunia',sub:esc(q.name),color:'#B23A2E',
+      body:`<p>${esc(q.name)}, elige: esperar (pierdes tu próximo turno) o responder ahora una pregunta de Ms Petunia. Si la aciertas, sales de Detention y no pierdes el turno. Si la fallas, pierdes tu próximo turno.</p><p>En ningún caso te mueves más en este turno.</p>`,
+      buttons:[{label:'Esperar',value:'wait'},{label:'Pregunta de Ms Petunia',value:'q',cls:'btn-no'}]});
+    if(c==='q'){
+      const s=await chooseSubject('Pregunta de Ms Petunia',`${esc(q.name)}, elige la asignatura.`);
+      const ok=await ask(q,s,{petunia:true,context:'👩‍🏫 Si aciertas, sales de Detention y no pierdes tu próximo turno.'});
+      if(ok){ q.petDet=false; addLog(`👩‍🏫 ${q.name} acierta y sale de la Detention de Ms Petunia.`); continue; }
+      addLog(`👩‍🏫 ${q.name} falla: pierde su próximo turno.`);
+    } else addLog(`👩‍🏫 ${q.name} espera en Detention: pierde su próximo turno.`);
+  }
+  render();
+}
+async function petDetTurn(p){
+  p.petDet=false;
+  addLog(`👩‍🏫 ${p.name} cumple su Detention con Ms Petunia.`);
+  await message({icon:PET_ICON,title:'Detention de Ms Petunia',sub:esc(p.name),color:'#B23A2E',
+    body:`<p>${esc(p.name)} pierde este turno. En el siguiente ya juega normal.</p>`});
+  endTurn();
+}
+
 /* ================= FINAL ================= */
 async function win(p){
   p.escaped=true; S.over=true; S.busy=false;
   addLog(`🏆 ¡${p.name} escapa del cole!`); render();
   const nm=esc(p.name);
   const outro=[`<span class="who">🏆</span>${nm} ha conseguido escapar del colegio…`];
-  if(S.players.length>1) outro.push('<span class="who">👩‍🏫</span>Ms Petunia ha pillado a todos los demás. Ahora nunca podrán salir de la clase: dormirán bajo el pupitre hasta que puedan recitar de memoria todos los libros de la biblioteca…');
+  if(S.players.length>1) outro.push('<span class="who"><svg viewBox="0 0 300 320" width="120" height="128" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><circle cx="150" cy="58" r="36" fill="#A7ACB2" stroke="#1D2B45" stroke-width="5"/><path d="M112 58 Q150 40 188 58" fill="none" stroke="#1D2B45" stroke-width="3"/><path d="M130 30 Q140 22 146 34 M160 26 Q172 20 174 34" fill="none" stroke="#1D2B45" stroke-width="3" stroke-linecap="round"/><path d="M126 245 L126 282 L174 282 L174 245 Z" fill="#EBC49F" stroke="#1D2B45" stroke-width="5" stroke-linejoin="round"/><path d="M52 320 Q58 276 126 272 L174 272 Q242 276 248 320 Z" fill="#2F5B48" stroke="#1D2B45" stroke-width="5" stroke-linejoin="round"/><path d="M126 272 L150 300 L174 272" fill="#FFFFFF" stroke="#1D2B45" stroke-width="4" stroke-linejoin="round"/><circle cx="73" cy="178" r="15" fill="#EBC49F" stroke="#1D2B45" stroke-width="5"/><circle cx="227" cy="178" r="15" fill="#EBC49F" stroke="#1D2B45" stroke-width="5"/><ellipse cx="150" cy="172" rx="78" ry="90" fill="#EBC49F" stroke="#1D2B45" stroke-width="5"/><path d="M72 168 Q66 78 150 80 Q234 78 228 168 Q222 116 190 108 Q150 124 110 108 Q78 116 72 168 Z" fill="#A7ACB2" stroke="#1D2B45" stroke-width="5" stroke-linejoin="round"/><path d="M92 118 Q84 104 96 98 M204 118 Q214 104 202 98" fill="none" stroke="#1D2B45" stroke-width="3" stroke-linecap="round"/><path d="M145 128 L147 146 M155 128 L153 146" stroke="#1D2B45" stroke-width="3.5" stroke-linecap="round"/><path d="M96 136 L140 156" stroke="#1D2B45" stroke-width="9" stroke-linecap="round"/><path d="M204 136 L160 156" stroke="#1D2B45" stroke-width="9" stroke-linecap="round"/><path d="M106 168 Q119 159 132 168 Q119 173 106 168 Z" fill="#FFFFFF" stroke="#1D2B45" stroke-width="3.5" stroke-linejoin="round"/><path d="M168 168 Q181 159 194 168 Q181 173 168 168 Z" fill="#FFFFFF" stroke="#1D2B45" stroke-width="3.5" stroke-linejoin="round"/><circle cx="122" cy="166" r="4.5" fill="#1D2B45"/><circle cx="178" cy="166" r="4.5" fill="#1D2B45"/><path d="M96 178 H140 A22 17 0 0 1 96 178 Z" fill="#FFFFFF" fill-opacity="0.3" stroke="#1D2B45" stroke-width="4" stroke-linejoin="round"/><path d="M160 178 H204 A22 17 0 0 1 160 178 Z" fill="#FFFFFF" fill-opacity="0.3" stroke="#1D2B45" stroke-width="4" stroke-linejoin="round"/><path d="M140 180 Q150 174 160 180" fill="none" stroke="#1D2B45" stroke-width="4"/><path d="M100 202 Q116 210 132 202 M168 202 Q184 210 200 202" fill="none" stroke="#1D2B45" stroke-width="3" stroke-linecap="round"/><path d="M150 160 Q124 204 140 214 Q150 220 162 210 Q158 196 156 172" fill="#EBC49F" stroke="#1D2B45" stroke-width="4.5" stroke-linejoin="round" stroke-linecap="round"/><circle cx="138" cy="200" r="4" fill="#C98A6B" stroke="#1D2B45" stroke-width="2"/><path d="M142 212 Q146 216 150 213" fill="none" stroke="#1D2B45" stroke-width="3" stroke-linecap="round"/><path d="M120 242 Q150 216 180 242" fill="none" stroke="#7A1E1E" stroke-width="8" stroke-linecap="round"/><path d="M142 227 L142 235 L150 235 L150 226" fill="#FFFFFF" stroke="#1D2B45" stroke-width="2.5" stroke-linejoin="round"/><path d="M114 236 L120 244 M186 236 L180 244" stroke="#1D2B45" stroke-width="3" stroke-linecap="round"/><circle cx="196" cy="214" r="7" fill="#5C3A1A" stroke="#1D2B45" stroke-width="2"/><path d="M196 207 Q200 198 206 196 M198 208 Q206 204 210 206" fill="none" stroke="#1D2B45" stroke-width="2" stroke-linecap="round"/><circle cx="160" cy="254" r="4" fill="#C98A6B" stroke="#1D2B45" stroke-width="2"/><path d="M160 250 L162 242" stroke="#1D2B45" stroke-width="2" stroke-linecap="round"/><path d="M134 256 Q150 262 166 256" fill="none" stroke="#1D2B45" stroke-width="2.5" stroke-linecap="round"/><g fill="#FFFFFF" stroke="#1D2B45" stroke-width="2.5"><circle cx="128" cy="291" r="5"/><circle cx="139" cy="288" r="5"/><circle cx="150" cy="287" r="5"/><circle cx="161" cy="288" r="5"/><circle cx="172" cy="291" r="5"/></g></svg></span>Ms Petunia ha pillado a todos los demás. Ahora nunca podrán salir de la clase: dormirán bajo el pupitre hasta que puedan recitar de memoria todos los libros de la biblioteca…');
   outro.push(`<span class="who">🔎</span>Buena suerte, ${nm}. Ahora estás en la lista de los más buscados de Ms Petunia.`);
   await playScenes(outro);
   confetti();
@@ -3728,7 +10806,7 @@ async function win(p){
   openCard(headHTML('🏆',`¡${esc(p.name)} escapa del cole!`,'Ha acertado una pregunta de cada asignatura'),
     `<ul class="win-list">${[p,...rest].map(row).join('')}</ul>
      <div class="foot"><button class="btn" id="chgBtn">Cambiar jugadores</button><button class="btn btn-primary" id="againBtn">Jugar otra vez</button></div>`,'#FFD000');
-  $('#againBtn').onclick=()=>{closeCard();startGame();};
+  $('#againBtn').onclick=()=>{closeCard();startGame();petuniaWalk();};
   $('#chgBtn').onclick=()=>{closeCard();goSetup();};
 }
 function confetti(){
