@@ -6,7 +6,7 @@
 <title>Escapa del cole</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Nunito:wght@600;700;800&family=Gochi+Hand&family=Noto+Color+Emoji&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Nunito:wght@600;700;800&family=Gochi+Hand&family=Noto+Color+Emoji&family=Cinzel:wght@800;900&display=swap" rel="stylesheet">
 <style>
 :root{
   box-sizing:border-box;
@@ -73,6 +73,10 @@ svg#board{display:block;width:100%;height:auto;border-radius:22px;box-shadow:0 6
 .token{transition:transform .23s ease}
 .petunia{transition:transform 1s linear}
 .pet-rot{transition:transform .35s ease-in-out}
+.kid{transition:opacity .6s ease, transform .6s ease; transform-box:fill-box; transform-origin:center}
+.kid.sad{animation:kidShiver .5s ease-in-out infinite alternate}
+@keyframes kidShiver{from{transform:translateX(-1px)}to{transform:translateX(1px)}}
+.kid.gone{opacity:0;transform:scale(.4)}
 #petunia{pointer-events:none}
 .petunia.angry .pet-body{filter:url(#angryRed);animation:angryShake .12s linear infinite}
 @keyframes angryShake{25%{transform:translate(-2px,0)}75%{transform:translate(2px,0)}}
@@ -114,6 +118,16 @@ svg#board{display:block;width:100%;height:auto;border-radius:22px;box-shadow:0 6
 .info .kind{font-weight:800;margin-bottom:4px}
 .info p{margin:0;line-height:1.45;font-size:.95rem}
 details.legend summary{font-family:var(--display);font-weight:800;font-size:1.1rem;cursor:pointer}
+details.fold>summary{font-family:var(--display);font-weight:800;font-size:1.25rem;line-height:1.1;cursor:pointer;list-style:none;display:flex;align-items:center;justify-content:space-between;gap:10px}
+details.fold>summary::-webkit-details-marker{display:none}
+details.fold>summary::after{content:'▸';font-size:1rem;color:var(--muted);transition:transform .2s}
+details.fold[open]>summary::after{transform:rotate(90deg)}
+details.fold>summary:focus-visible{outline:3px solid var(--accent);outline-offset:4px;border-radius:6px}
+details.fold[open]>summary{margin-bottom:10px}
+details.log>summary{font-size:1.1rem}
+.menu-body{display:flex;flex-direction:column;gap:14px}
+.menu-body .box{box-shadow:none}
+.menu-hint{margin:0;color:var(--muted);font-weight:700;font-size:.85rem;line-height:1.4}
 .leg{list-style:none;margin:8px 0 0;padding:0;font-size:.9rem}
 .leg li{display:grid;grid-template-columns:30px 1fr;gap:8px;padding:5px 0;align-items:start}
 .leg .ic{width:28px;height:28px;border-radius:8px;background:#FFF4DA;border:2px solid #1D2B45;display:grid;place-items:center;font-family:var(--display);font-weight:800;color:#1D2B45;font-size:.9rem}
@@ -167,14 +181,46 @@ details.legend summary{font-family:var(--display);font-weight:800;font-size:1.1r
 .stepper{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 .stepper button.st{width:44px;height:44px;border-radius:12px;border:2.5px solid #1D2B45;background:var(--surface);font-family:var(--display);font-size:1.5rem;font-weight:800;line-height:1}
 .stepper input{width:80px;text-align:center;font-family:var(--display);font-size:1.4rem;font-weight:800;border:2.5px solid var(--line);border-radius:12px;padding:6px;background:var(--surface);color:var(--ink)}
+/* ----- Guardar e informe ----- */
+.top-actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:#1D2B45;color:#fff;font-weight:800;padding:10px 18px;border-radius:999px;z-index:50;box-shadow:0 4px 0 rgba(0,0,0,.25)}
+.card.wide{max-width:760px}
+.rep-tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+.rep-tabs button{display:flex;align-items:center;gap:8px;border:2.5px solid var(--line);border-radius:999px;background:var(--surface);padding:5px 12px 5px 5px;font-weight:800}
+.rep-tabs button.on{border-color:var(--ink)}
+.rep-tabs .pawn{width:28px;height:28px;font-size:.85rem}
+.rep-tools{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
+.rep-tools .seg{display:inline-flex;border:2px solid var(--line);border-radius:999px;overflow:hidden}
+.rep-tools .seg button{border:none;background:var(--surface);padding:6px 12px;font-weight:800}
+.rep-tools .seg button.on{background:#1D2B45;color:#fff}
+.rep-list{display:flex;flex-direction:column;gap:10px}
+.rep-item{border:2px solid var(--line);border-radius:14px;padding:10px 12px;background:var(--soft)}
+.rep-item.bad{border-color:color-mix(in srgb,var(--bad) 55%,var(--line))}
+.rep-top{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-weight:800;font-size:.85rem}
+.rep-top .chip{font-size:.8rem}
+.rep-q{font-weight:800;margin:6px 0 4px;line-height:1.35}
+.rep-a{font-size:.9rem;color:var(--muted);font-weight:700;line-height:1.4}
+.rep-a b{color:var(--ink)}
+.rep-pref{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.rep-pref button{border:2px solid var(--line);border-radius:999px;background:var(--surface);padding:4px 12px;font-weight:800;font-size:.85rem}
+.rep-pref button.on[data-v="repeat"]{background:var(--ok);border-color:var(--ok);color:#fff}
+.rep-pref button.on[data-v="skip"]{background:var(--bad);border-color:var(--bad);color:#fff}
+.rep-empty{color:var(--muted);font-weight:700;padding:10px 0}
 /* ----- Intro ----- */
 .intro{position:fixed;inset:0;z-index:40;background:#fff;display:grid;place-items:center;padding:calc(24px + env(safe-area-inset-top,0px)) 24px calc(24px + env(safe-area-inset-bottom,0px));opacity:0;transition:opacity .9s ease;cursor:pointer}
 .intro.show{opacity:1}
 .intro-text{max-width:760px;text-align:center;font-family:var(--display);font-weight:700;font-size:clamp(1.35rem,3.6vw,2.2rem);line-height:1.35;color:#1D2B45;opacity:0;transition:opacity .9s ease}
 .intro-text.show{opacity:1}
 .intro-text .who{display:block;font-size:3rem;margin-bottom:10px}
+.intro-text .who-shake svg{animation:angryShake .12s linear infinite}
+.intro-text .who .pawn{display:grid}
 .intro-hint{position:absolute;left:0;right:0;bottom:calc(22px + env(safe-area-inset-bottom,0px));text-align:center;color:#8A93A8;font-weight:700;font-size:.95rem}
 .intro-skip{position:absolute;top:calc(16px + env(safe-area-inset-top,0px));right:16px;border:2px solid #C9D0DD;background:#fff;color:#5E6780;border-radius:999px;padding:6px 14px;font-weight:800;font-size:.9rem}
+.intro{transition:opacity .9s ease, background-color 1s ease}
+.intro.dark{background:#050507}
+.intro.dark .intro-text{color:#F4F1E0}
+.intro.dark .intro-hint{color:#6B6F80}
+.intro.dark .intro-skip{background:#15161C;border-color:#33363F;color:#A6ADBF}
 @media (prefers-reduced-motion:reduce){.intro,.intro-text{transition:opacity .2s}}
 @media (prefers-reduced-motion:reduce){.petunia.walking .pet-body{animation:none}.token,.token.slow{transition:none}.halo,.die.rolling,.card{animation:none}.confetti{display:none}}
 </style>
@@ -193,11 +239,14 @@ details.legend summary{font-family:var(--display);font-weight:800;font-size:1.1r
       <div id="playerRows"></div>
       <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:4px">
         <button class="btn" id="addPlayer">+ Añadir jugador</button>
-        <button class="btn btn-primary btn-big" id="startBtn" style="margin-left:auto">Empezar partida</button>
+        <button class="btn btn-big hidden" id="continueBtn" style="margin-left:auto">▶ Continuar partida</button>
+        <button class="btn btn-primary btn-big" id="startBtn">Empezar partida</button>
+      </div>
+      <div id="continueInfo" class="hidden" style="margin-top:8px;color:var(--muted);font-weight:700;font-size:.9rem;text-align:right">
       </div>
     </div>
-    <div class="box">
-      <h2>Cómo se juega</h2>
+    <details class="box fold">
+      <summary>Cómo se juega</summary>
       <ol class="rules">
         <li>Todos empiezan en el aula. Tira el dado y avanza por la espiral.</li>
         <li>En las casillas de color respondes una pregunta de esa asignatura. Si aciertas, te quedas. Si fallas, vuelves a la casilla donde empezaste el turno.</li>
@@ -207,7 +256,7 @@ details.legend summary{font-family:var(--display);font-weight:800;font-size:1.1r
         <li>Para escapar por la salida (100) hay que acertar una pregunta de cada asignatura. Las que aciertes ya no se repiten.</li>
       </ol>
       <p style="color:var(--muted);font-weight:700;margin:10px 0 0">Cada jugador elige su nivel de preguntas: Year 5, Year 7 o Adulto.</p>
-    </div>
+    </details>
   </div>
 </div>
 
@@ -215,7 +264,11 @@ details.legend summary{font-family:var(--display);font-weight:800;font-size:1.1r
 <div id="game" class="wrap hidden">
   <div class="topbar">
     <h1>Escapa del cole</h1>
-    <button class="btn" id="newGameBtn">Nueva partida</button>
+    <div class="top-actions">
+      <button class="btn" id="reportBtn">📋 Informe</button>
+      <button class="btn" id="saveBtn">💾 Guardar partida</button>
+      <button class="btn" id="newGameBtn">Nueva partida</button>
+    </div>
   </div>
   <div class="layout">
     <div class="board-box">
@@ -232,10 +285,16 @@ details.legend summary{font-family:var(--display);font-weight:800;font-size:1.1r
           <button class="btn btn-big" id="jokerBtn">⚡ Acciones</button>
         </div>
       </div>
-      <div class="box plist" id="plist"></div>
-      <div class="box log"><h2 style="font-size:1.1rem;margin-bottom:6px">Lo último</h2><ul id="log"></ul></div>
-      <div class="box info" id="info"><div class="kind">Toca una casilla</div><p>Toca cualquier casilla del tablero para ver qué hace.</p></div>
-      <details class="box legend"><summary>Qué hace cada casilla</summary><ul class="leg" id="legend"></ul></details>
+      <details class="box fold menu-fold" id="menuFold">
+        <summary>☰ Menú</summary>
+        <div class="menu-body">
+          <div class="box plist" id="plist"></div>
+          <details class="box log fold"><summary>Lo último</summary><ul id="log"></ul></details>
+          <div class="box info" id="info"><div class="kind">Toca una casilla</div><p>Toca cualquier casilla del tablero para ver qué hace.</p></div>
+          <details class="box legend"><summary>Qué hace cada casilla</summary><ul class="leg" id="legend"></ul></details>
+          <p class="menu-hint">Atajo: pulsa la tecla <b>I</b> para abrir el informe de la partida.</p>
+        </div>
+      </details>
     </aside>
   </div>
 </div>
@@ -245,6 +304,7 @@ details.legend summary{font-family:var(--display);font-weight:800;font-size:1.1r
   <div class="intro-text" id="introText" aria-live="polite"></div>
   <div class="intro-hint">Toca para continuar</div>
 </div>
+<div id="toast" class="toast hidden" role="status" aria-live="polite"></div>
 <div id="modal" class="modal hidden"><div class="card" id="card" role="dialog" aria-modal="true"></div></div>
 <script>
 /* ================= DATOS ================= */
@@ -2894,6 +2954,146 @@ const QB = {
      "10"
     ],
     "5 miles ≈ 8 km."
+   ],
+   [
+    "−3 + 7 = ?",
+    [
+     "4",
+     "−10",
+     "−4",
+     "10"
+    ],
+    "Start at −3 and move 7 up."
+   ],
+   [
+    "5 − 9 = ?",
+    [
+     "−4",
+     "4",
+     "−14",
+     "14"
+    ],
+    "Start at 5 and move 9 down."
+   ],
+   [
+    "−6 − 4 = ?",
+    [
+     "−10",
+     "−2",
+     "2",
+     "10"
+    ],
+    "Taking away 4 from −6 makes it more negative."
+   ],
+   [
+    "−2 × 5 = ?",
+    [
+     "−10",
+     "10",
+     "−7",
+     "3"
+    ],
+    "Negative × positive = negative."
+   ],
+   [
+    "−4 × −3 = ?",
+    [
+     "12",
+     "−12",
+     "−7",
+     "7"
+    ],
+    "Negative × negative = positive."
+   ],
+   [
+    "7 + (−2) = ?",
+    [
+     "5",
+     "9",
+     "−5",
+     "−9"
+    ],
+    "Adding a negative is like subtracting."
+   ],
+   [
+    "3 − (−5) = ?",
+    [
+     "8",
+     "−2",
+     "2",
+     "−8"
+    ],
+    "Subtracting a negative is like adding."
+   ],
+   [
+    "−12 + 12 = ?",
+    [
+     "0",
+     "24",
+     "−24",
+     "1"
+    ],
+    "A number plus its opposite is 0."
+   ],
+   [
+    "6 × −2 = ?",
+    [
+     "−12",
+     "12",
+     "4",
+     "−4"
+    ],
+    "Positive × negative = negative."
+   ],
+   [
+    "−10 + 3 − 4 = ?",
+    [
+     "−11",
+     "−3",
+     "11",
+     "−17"
+    ],
+    "−10 + 3 = −7, and −7 − 4 = −11."
+   ],
+   [
+    "At night it is −5 °C and at midday it is 6 °C. What is the difference?",
+    [
+     "11 °C",
+     "1 °C",
+     "−1 °C",
+     "−11 °C"
+    ],
+    "From −5 to 0 is 5, and from 0 to 6 is 6."
+   ],
+   [
+    "Which number is the smallest?",
+    [
+     "−9",
+     "−2",
+     "0",
+     "3"
+    ],
+    "The further left on the number line, the smaller."
+   ],
+   [
+    "−8 × 0 = ?",
+    [
+     "0",
+     "−8",
+     "8",
+     "−80"
+    ],
+    "Anything times 0 is 0."
+   ],
+   [
+    "15 + (−20) = ?",
+    [
+     "−5",
+     "5",
+     "35",
+     "−35"
+    ],
+    "15 − 20 = −5."
    ]
   ],
   "english": [
@@ -3618,6 +3818,126 @@ const QB = {
      "a suntan"
     ],
     "Eye colour is passed on in our genes."
+   ],
+   [
+    "What is the basic unit of all living things?",
+    [
+     "the cell",
+     "the atom",
+     "the organ",
+     "the tissue"
+    ],
+    "All living things are made of cells."
+   ],
+   [
+    "Which part of the cell controls its activities?",
+    [
+     "the nucleus",
+     "the cell membrane",
+     "the cytoplasm",
+     "the vacuole"
+    ],
+    "The nucleus contains the genetic information."
+   ],
+   [
+    "Which part of the cell controls what goes in and out?",
+    [
+     "the cell membrane",
+     "the nucleus",
+     "the cell wall",
+     "the chloroplast"
+    ],
+    "The cell wall only supports; the membrane controls what passes."
+   ],
+   [
+    "What is the jelly-like substance where most chemical reactions happen?",
+    [
+     "the cytoplasm",
+     "the nucleus",
+     "the vacuole",
+     "the cell wall"
+    ],
+    "The other parts sit in the cytoplasm."
+   ],
+   [
+    "In which part of the cell does respiration (releasing energy) happen?",
+    [
+     "the mitochondria",
+     "the nucleus",
+     "the vacuole",
+     "the cell wall"
+    ],
+    "Mitochondria release energy from glucose."
+   ],
+   [
+    "Which part is found in plant cells but NOT in animal cells?",
+    [
+     "the cell wall",
+     "the nucleus",
+     "the cell membrane",
+     "the cytoplasm"
+    ],
+    "Plant cells also have chloroplasts and a large vacuole."
+   ],
+   [
+    "Where does photosynthesis happen?",
+    [
+     "in the chloroplasts",
+     "in the mitochondria",
+     "in the nucleus",
+     "in the cell membrane"
+    ],
+    "Chloroplasts contain chlorophyll."
+   ],
+   [
+    "What do we use to see cells?",
+    [
+     "a microscope",
+     "a telescope",
+     "a periscope",
+     "a thermometer"
+    ],
+    "Most cells are too small to see with the naked eye."
+   ],
+   [
+    "What is the job of the cell wall?",
+    [
+     "to support and strengthen the cell",
+     "to control the cell",
+     "to make food",
+     "to release energy"
+    ],
+    "It is made of cellulose."
+   ],
+   [
+    "What does the large vacuole in a plant cell contain?",
+    [
+     "cell sap",
+     "blood",
+     "air",
+     "chlorophyll"
+    ],
+    "It helps keep the cell firm."
+   ],
+   [
+    "A group of similar cells working together is called a…",
+    [
+     "tissue",
+     "organ",
+     "organism",
+     "system"
+    ],
+    "For example, muscle tissue."
+   ],
+   [
+    "Which green substance in chloroplasts absorbs light?",
+    [
+     "chlorophyll",
+     "cytoplasm",
+     "cell sap",
+     "glucose"
+    ],
+    "It gives plants their green colour."
    ]
   ],
   "hisgeo": [
@@ -6445,6 +6765,66 @@ const PETUNIA = {
      "1"
     ],
     "n = 9 + 4."
+   ],
+   [
+    "(−2)³ = ?",
+    [
+     "−8",
+     "8",
+     "−6",
+     "6"
+    ],
+    "(−2) × (−2) × (−2) = −8."
+   ],
+   [
+    "−4 × (−3 + 7) − (−5) = ?",
+    [
+     "−11",
+     "−21",
+     "11",
+     "21"
+    ],
+    "−3 + 7 = 4; −4 × 4 = −16; −16 + 5 = −11."
+   ],
+   [
+    "If a = −2 and b = 5, what is a × b − b?",
+    [
+     "−15",
+     "−5",
+     "5",
+     "15"
+    ],
+    "−2 × 5 = −10, and −10 − 5 = −15."
+   ],
+   [
+    "(−3)² × (−2) = ?",
+    [
+     "−18",
+     "18",
+     "12",
+     "−12"
+    ],
+    "(−3)² = 9, and 9 × −2 = −18."
+   ],
+   [
+    "Two numbers add up to −4 and multiply to −12. What are they?",
+    [
+     "2 and −6",
+     "−2 and 6",
+     "−3 and 4",
+     "3 and −4"
+    ],
+    "2 + (−6) = −4 and 2 × (−6) = −12."
+   ],
+   [
+    "−1 × −1 × −1 × −1 × −1 = ?",
+    [
+     "−1",
+     "1",
+     "−5",
+     "5"
+    ],
+    "An odd number of negatives gives a negative."
    ]
   ],
   "english": [
@@ -6629,6 +7009,56 @@ const PETUNIA = {
      "it makes no difference"
     ],
     "Thin wires resist the current more."
+   ],
+   [
+    "What is the name for the spreading of particles from a high concentration to a low concentration?",
+    [
+     "diffusion",
+     "respiration",
+     "photosynthesis",
+     "digestion"
+    ],
+    "This is how oxygen enters cells."
+   ],
+   [
+    "What does the DNA in the nucleus contain?",
+    [
+     "the genetic instructions for the cell",
+     "energy for the cell",
+     "water for the cell",
+     "sugar for the cell"
+    ],
+    "DNA carries inherited information."
+   ],
+   [
+    "What kind of living thing is an amoeba?",
+    [
+     "a single-celled organism",
+     "a plant cell",
+     "a nerve cell",
+     "a blood cell"
+    ],
+    "It does everything with just one cell."
+   ],
+   [
+    "Why do nerve cells have long extensions?",
+    [
+     "to carry electrical signals over long distances",
+     "to absorb water",
+     "to make food",
+     "to swim"
+    ],
+    "They connect different parts of the body."
+   ],
+   [
+    "A microscope has a ×10 eyepiece and a ×40 objective lens. What is the total magnification?",
+    [
+     "×400",
+     "×50",
+     "×4",
+     "×4,000"
+    ],
+    "Multiply the two: 10 × 40."
    ]
   ],
   "hisgeo": [
@@ -8474,6 +8904,106 @@ const HARD = {
      "13"
     ],
     "8 + 9 = 17."
+   ],
+   [
+    "−7 × −6 = ?",
+    [
+     "42",
+     "−42",
+     "−13",
+     "13"
+    ],
+    "Negative × negative = positive."
+   ],
+   [
+    "−3 × 4 × −2 = ?",
+    [
+     "24",
+     "−24",
+     "−9",
+     "9"
+    ],
+    "−3 × 4 = −12, and −12 × −2 = 24."
+   ],
+   [
+    "−15 − (−8) = ?",
+    [
+     "−7",
+     "−23",
+     "7",
+     "23"
+    ],
+    "−15 + 8 = −7."
+   ],
+   [
+    "(−5)² = ?",
+    [
+     "25",
+     "−25",
+     "10",
+     "−10"
+    ],
+    "(−5) × (−5) = 25."
+   ],
+   [
+    "−2 × (3 − 8) = ?",
+    [
+     "10",
+     "−10",
+     "−22",
+     "22"
+    ],
+    "3 − 8 = −5, and −2 × −5 = 10."
+   ],
+   [
+    "4 − 7 × 2 = ?",
+    [
+     "−10",
+     "−6",
+     "6",
+     "22"
+    ],
+    "Multiply first: 4 − 14 = −10."
+   ],
+   [
+    "A submarine is at −120 m and rises 45 m. Where is it now?",
+    [
+     "−75 m",
+     "−165 m",
+     "75 m",
+     "−85 m"
+    ],
+    "−120 + 45 = −75."
+   ],
+   [
+    "−9 + (−6) − (−4) = ?",
+    [
+     "−11",
+     "−19",
+     "−1",
+     "1"
+    ],
+    "−9 − 6 + 4 = −11."
+   ],
+   [
+    "What is −5 × −5 × −2?",
+    [
+     "−50",
+     "50",
+     "−12",
+     "12"
+    ],
+    "25 × −2 = −50."
+   ],
+   [
+    "If x = −3, what is 2x + 10?",
+    [
+     "4",
+     "16",
+     "−16",
+     "7"
+    ],
+    "2 × −3 = −6, and −6 + 10 = 4."
    ]
   ],
   "english": [
@@ -8838,6 +9368,86 @@ const HARD = {
      "store oxygen"
     ],
     "The waste leaves the body as urine."
+   ],
+   [
+    "Where are proteins made in the cell?",
+    [
+     "in the ribosomes",
+     "in the vacuole",
+     "in the cell wall",
+     "in the cell sap"
+    ],
+    "Ribosomes are tiny structures in the cytoplasm."
+   ],
+   [
+    "What is the correct order from smallest to largest?",
+    [
+     "cell → tissue → organ → organ system → organism",
+     "tissue → cell → organ → organ system → organism",
+     "cell → organ → tissue → organ system → organism",
+     "organism → organ → tissue → cell → organ system"
+    ],
+    "Cells make tissues, tissues make organs…"
+   ],
+   [
+    "Which of these cells has no nucleus when it is mature?",
+    [
+     "a red blood cell",
+     "a nerve cell",
+     "a muscle cell",
+     "a skin cell"
+    ],
+    "This leaves more room to carry oxygen."
+   ],
+   [
+    "What is a plant cell wall made of?",
+    [
+     "cellulose",
+     "chitin",
+     "protein",
+     "fat"
+    ],
+    "Cellulose is a strong fibre."
+   ],
+   [
+    "Which specialised cell has a tail to help it swim?",
+    [
+     "a sperm cell",
+     "a red blood cell",
+     "a root hair cell",
+     "a nerve cell"
+    ],
+    "The tail moves it towards the egg."
+   ],
+   [
+    "What is the job of a root hair cell?",
+    [
+     "to absorb water and minerals from the soil",
+     "to make food by photosynthesis",
+     "to carry oxygen",
+     "to send electrical signals"
+    ],
+    "Its long shape gives a large surface area."
+   ],
+   [
+    "Why do muscle cells have lots of mitochondria?",
+    [
+     "they need a lot of energy",
+     "they make their own food",
+     "they store water",
+     "they are green"
+    ],
+    "Mitochondria release energy for movement."
+   ],
+   [
+    "What does \"unicellular\" mean?",
+    [
+     "made of only one cell",
+     "made of many cells",
+     "with no cells",
+     "a type of plant cell"
+    ],
+    "For example, bacteria and amoebas."
    ]
   ],
   "hisgeo": [
@@ -10010,10 +10620,11 @@ function buildBoard(){
   el('rect',{x:330,y:430,width:22,height:6,rx:2,fill:'#fff'},g);
   el('rect',{x:590,y:430,width:30,height:8,rx:2,fill:'#F5D06E'},g);
   const chalk={'font-family':"'Gochi Hand','Comic Sans MS',cursive",fill:'rgba(255,255,255,.92)'};
-  stxt(g,477,352,'¡Escapa del cole!',Object.assign({'font-size':44},chalk));
+  stxt(g,477,352,'Prohibido pestañear',Object.assign({'font-size':38},chalk));
   stxt(g,370,405,'7 × 8 = 56',Object.assign({'font-size':24},chalk));
   stxt(g,480,405,'ABC',Object.assign({'font-size':24},chalk));
   stxt(g,585,405,'H₂O',Object.assign({'font-size':24},chalk));
+  stxt(g,632,318,'67',Object.assign({'font-size':16},chalk));
   el('circle',{cx:708,cy:320,r:26,fill:'#fff',stroke:'#1D2B45','stroke-width':5},g);
   el('line',{x1:708,y1:320,x2:708,y2:302,stroke:'#1D2B45','stroke-width':4,'stroke-linecap':'round'},g);
   el('line',{x1:708,y1:320,x2:721,y2:326,stroke:'#C0392B','stroke-width':3,'stroke-linecap':'round'},g);
@@ -10022,9 +10633,12 @@ function buildBoard(){
   el('rect',{x:556,y:524,width:24,height:40,fill:'#7A4E24'},g);
   el('circle',{cx:445,cy:490,r:12,fill:'#E53935'},g);
   el('path',{d:'M445 478 q4 -8 10 -6',stroke:'#2E7D32','stroke-width':3,fill:'none'},g);
-  el('rect',{x:510,y:484,width:60,height:8,fill:'#2E7BD6'},g);
-  el('rect',{x:514,y:476,width:54,height:8,fill:'#E0930F'},g);
-  el('rect',{x:508,y:468,width:58,height:8,fill:'#8E44AD'},g);
+  // pila de libros apoyada en la mesa (la mesa empieza en y=500)
+  [[504,488,66,12,'#7A4A1E','EL QUIJOTE'],[508,476,60,12,'#2E7BD6','MATHS'],[512,464,54,12,'#E0930F','HISTORIA'],[506,452,58,12,'#8E44AD','SCIENCE']].forEach(([x,y,w,h,c,t])=>{
+    el('rect',{x,y,width:w,height:h,rx:1.5,fill:c,stroke:'#1D2B45','stroke-width':1.2},g);
+    el('rect',{x:x+3,y:y+2,width:3,height:h-4,fill:'#F4E9C9',opacity:.8},g);
+    const tt=el('text',{x:x+w/2+2,y:y+h/2+0.5,'text-anchor':'middle','dominant-baseline':'central','font-family':"'Baloo 2',sans-serif",'font-weight':800,'font-size':7.5,'letter-spacing':'.5',fill:'#FFF8E7'},g); tt.textContent=t;
+  });
   el('rect',{x:312,y:568,width:36,height:8,rx:3,fill:'#5C3A1A'},g);
   el('line',{x1:330,y1:568,x2:330,y2:548,stroke:'#5C3A1A','stroke-width':5},g);
   el('circle',{cx:330,cy:520,r:30,fill:'#4FA3E0',stroke:'#1D2B45','stroke-width':3},g);
@@ -10034,11 +10648,55 @@ function buildBoard(){
     el('rect',{x:x-6,y:y+28,width:66,height:11,rx:4,fill:'#6B7FA8'},g);
     el('rect',{x,y,width:54,height:28,rx:5,fill:'#C98A4B',stroke:'#7A5230','stroke-width':3},g);
   }
+  // esqueleto de anatomía bajo el reloj, con su placa
+  { const sk=el('g',{'aria-label':'Esqueleto de anatomía: RIP Rodolfo, le pillaron escapando de clase'},g);
+    const tt=el('title',{},sk); tt.textContent='RIP Rodolfo · Le pillaron escapando de clase';
+    const sb=el('g',{transform:'translate(706 530) scale(0.88) translate(-706 -530)'},sk);   // esqueleto un poco más pequeño
+    const bone=(d,w=5)=>{ el('path',{d,fill:'none',stroke:'#1D2B45','stroke-width':w,'stroke-linecap':'round','stroke-linejoin':'round'},sb); el('path',{d,fill:'none',stroke:'#F4EFE1','stroke-width':w-2.2,'stroke-linecap':'round','stroke-linejoin':'round'},sb); };
+    el('line',{x1:706,y1:362,x2:706,y2:530,stroke:'#8E949B','stroke-width':3},sb);
+    el('ellipse',{cx:706,cy:530,rx:22,ry:5,fill:'#5C6575',stroke:'#1D2B45','stroke-width':2},sb);
+    bone('M706 388 V456',5);
+    for(let i=0;i<4;i++){ const y=398+i*9, w=17-i*1.5; bone(`M${706-w} ${y} Q706 ${y+7} ${706+w} ${y}`,4); }
+    bone('M690 394 H722',4.5);
+    bone('M690 394 L684 428 L682 456',4.2); bone('M722 394 L728 428 L730 456',4.2);
+    el('circle',{cx:682,cy:459,r:3,fill:'#F4EFE1',stroke:'#1D2B45','stroke-width':1.6},sb); el('circle',{cx:730,cy:459,r:3,fill:'#F4EFE1',stroke:'#1D2B45','stroke-width':1.6},sb);
+    el('path',{d:'M694 456 Q706 450 718 456 L714 468 Q706 472 698 468 Z',fill:'#F4EFE1',stroke:'#1D2B45','stroke-width':2},sb);
+    bone('M699 468 L697 498 L697 524',4.4); bone('M713 468 L715 498 L715 524',4.4);
+    bone('M697 524 L690 526',3.6); bone('M715 524 L722 526',3.6);
+    el('circle',{cx:706,cy:373,r:13,fill:'#F4EFE1',stroke:'#1D2B45','stroke-width':2.5},sb);
+    el('ellipse',{cx:701,cy:371,rx:3.2,ry:3.6,fill:'#1D2B45'},sb); el('ellipse',{cx:711,cy:371,rx:3.2,ry:3.6,fill:'#1D2B45'},sb);
+    el('path',{d:'M706 375 l-2 4 h4 Z',fill:'#1D2B45'},sb);
+    el('rect',{x:699,y:381,width:14,height:7,rx:2,fill:'#F4EFE1',stroke:'#1D2B45','stroke-width':1.8},sb);
+    el('path',{d:'M702.5 381 v7 M706 381 v7 M709.5 381 v7',stroke:'#1D2B45','stroke-width':1},sb);
+    // placa (Cinzel, grabada)
+    const pl=el('g',{transform:'translate(664 531) scale(1.05 1.5)'},sk);   // más alta y estrecha
+    el('rect',{x:1,y:1,width:78,height:30,rx:3,fill:'#8B5A2B',stroke:'#5C3A1A','stroke-width':2},pl);
+    el('rect',{x:4,y:4,width:72,height:24,rx:2,fill:'#E9C46A'},pl);
+    const pf="'Cinzel', 'Times New Roman', serif";
+    [[13,7.82,900,'RIP Rodolfo'],[20.5,5.52,800,'Le pillaron'],[26.5,5.52,800,'escapando de clase']].forEach(([y,fs,fw,tx])=>{
+      const t=el('text',{x:40,y,'text-anchor':'middle','font-family':pf,'font-size':fs,'font-weight':fw,fill:'#2A1C08'},pl); t.textContent=tx; });
+  }
+  // alumno castigado en una jaula (esquina inferior izquierda del aula)
+  { const cg=el('g',{transform:'translate(302 690)','aria-hidden':'true'},g);
+    el('ellipse',{cx:0,cy:48,rx:44,ry:7,fill:'rgba(60,40,20,.25)'},cg);
+    el('rect',{x:-38,y:-44,width:76,height:88,rx:6,fill:'#E8DCC4',opacity:.35},cg);
+    el('circle',{r:23,fill:'#fff'},cg);
+    el('circle',{r:20,fill:'#A9C8E8',stroke:'#1D2B45','stroke-width':3.5},cg);
+    el('circle',{cx:-6,cy:-4,r:2.6,fill:'#1D2B45'},cg); el('circle',{cx:6,cy:-4,r:2.6,fill:'#1D2B45'},cg);
+    el('path',{d:'M-11 -12 l6 3 M11 -12 l-6 3',fill:'none',stroke:'#1D2B45','stroke-width':2,'stroke-linecap':'round'},cg);
+    el('path',{d:'M-7 9 q7 -6 14 0',fill:'none',stroke:'#1D2B45','stroke-width':2.4,'stroke-linecap':'round'},cg);
+    el('path',{d:'M9 0 q-3 5 0 7 q3 -2 0 -7 Z',fill:'#5BB8F0',stroke:'#1D2B45','stroke-width':1},cg);
+    // barrotes
+    for(let bx=-32;bx<=32;bx+=10.6) el('line',{x1:bx,y1:-40,x2:bx,y2:44,stroke:'#4A5160','stroke-width':3.5,'stroke-linecap':'round'},cg);
+    el('rect',{x:-40,y:-46,width:80,height:8,rx:3,fill:'#5C6575',stroke:'#1D2B45','stroke-width':2.5},cg);
+    el('rect',{x:-40,y:42,width:80,height:8,rx:3,fill:'#5C6575',stroke:'#1D2B45','stroke-width':2.5},cg);
+    el('path',{d:'M-10 -46 Q0 -64 10 -46',fill:'none',stroke:'#5C6575','stroke-width':4},cg);
+    // candado
+    el('rect',{x:30,y:4,width:14,height:12,rx:2,fill:'#E0A91A',stroke:'#1D2B45','stroke-width':2},cg);
+    el('path',{d:'M33 4 v-4 a4 4 0 0 1 8 0 v4',fill:'none',stroke:'#1D2B45','stroke-width':2},cg);
+  }
   const p1=posOf(1), d1=toRoom(p1.x,p1.y), right=p1.x>500;
   el('rect',{x:right?736:250,y:d1.y-40,width:14,height:80,fill:'#8B5A2B',stroke:'#5C3A1A','stroke-width':3},g);
-  const tag=el('g',{transform:`translate(${right?712:300} ${right?d1.y-58:d1.y})`},g);
-  el('rect',{x:-30,y:-15,width:60,height:30,rx:8,fill:'#FFD000',stroke:'#1D2B45','stroke-width':3},tag);
-  stxt(tag,0,7,'Aula',{'font-family':"'Baloo 2',sans-serif",'font-weight':800,'font-size':19,fill:'#1D2B45'});
   // alumnos sentados de los colores que no juegan
   COLORS.forEach(c=>{
     if(S && S.players.some(p=>p.color===c.id)) return;
@@ -10100,11 +10758,14 @@ function buildBoard(){
   const cx=pts[pts.length-2][0], top=pts[pts.length-1][1]-TH/2, bot=posOf(1).y-posOf(1).h/2;
   CORRIDOR={x:cx, kidsY:[top+50, top+105], petY:Math.min(bot-40, top+175)};
   [[CORRIDOR.kidsY[0],'#F6E3A1'],[CORRIDOR.kidsY[1],'#F4BFB4']].forEach(([ky,col])=>{
-    const k=el('g',{transform:`translate(${cx} ${ky})`,'aria-hidden':'true'});
+    const kw=el('g',{transform:`translate(${cx} ${ky})`,'aria-hidden':'true'});
+    const k=el('g',{class:'kid'},kw);
     el('circle',{r:20,fill:'#fff'},k);
     el('circle',{r:17,fill:col,stroke:'#1D2B45','stroke-width':3},k);
     el('circle',{cx:-5,cy:-3,r:2.2,fill:'#1D2B45'},k); el('circle',{cx:5,cy:-3,r:2.2,fill:'#1D2B45'},k);
-    el('path',{d:'M-6 5 q6 5 12 0',fill:'none',stroke:'#1D2B45','stroke-width':2,'stroke-linecap':'round'},k);
+    el('path',{class:'kid-brow',d:'M-9 -9 l5 2 M9 -9 l-5 2',fill:'none',stroke:'#1D2B45','stroke-width':1.8,'stroke-linecap':'round',opacity:0},k);
+    el('path',{class:'kid-mouth',d:'M-6 5 q6 5 12 0',fill:'none',stroke:'#1D2B45','stroke-width':2,'stroke-linecap':'round'},k);
+    el('path',{class:'kid-tear',d:'M8 1 q-2.5 4 0 5.5 q2.5 -1.5 0 -5.5 Z',fill:'#5BB8F0',stroke:'#1D2B45','stroke-width':1,opacity:0},k);
   });
   const pg=el('g',{id:'petunia',class:'petunia','aria-label':'Ms Petunia'});
   const pr=el('g',{class:'pet-rot'},pg);
@@ -10184,8 +10845,26 @@ async function petuniaWalk(){
     g.style.transitionDuration=ms+'ms'; placePetunia(w); await sleep(ms);
     g.classList.remove('walking');
   }
+  kidsSad(true);   // solo cuando ya está parada delante de ellos
+  g.classList.add('angry');   // y se pone roja de ira, como cuando pilla a un jugador
+}
+/* Los niños del pasillo: tristes cuando llega Ms Petunia; desaparecen cuando ella se va */
+function kidsSad(on=true){
+  document.querySelectorAll('.kid').forEach(k=>{
+    k.querySelector('.kid-mouth').setAttribute('d', on?'M-6 8 q6 -5 12 0':'M-6 5 q6 5 12 0');
+    k.querySelector('.kid-brow').setAttribute('opacity', on?1:0);
+    k.querySelector('.kid-tear').setAttribute('opacity', on?1:0);
+    k.classList.toggle('sad', on);
+  });
+}
+function kidsHide(instant){
+  document.querySelectorAll('.kid').forEach(k=>{
+    if(instant){ k.style.display='none'; return; }
+    k.classList.add('gone'); setTimeout(()=>{ k.style.display='none'; },700);
+  });
 }
 function showSquareInfo(n){
+  const mf=document.getElementById('menuFold'); if(mf) mf.open=true;
   document.querySelectorAll('.tile.sel').forEach(t=>t.classList.remove('sel'));
   document.querySelector(`.tile[data-n="${n}"]`)?.classList.add('sel');
   const s=SQUARES[n-1], info=document.getElementById('info');
@@ -10202,11 +10881,49 @@ const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'
 const rand=a=>a[Math.floor(Math.random()*a.length)];
 const pawnHTML=p=>`<span class="pawn" style="background:${COL[p.color].hex};color:${textOn(COL[p.color].hex)}">${esc(p.name.charAt(0).toUpperCase())}</span>`;
 
+const SUBJ=Object.fromEntries(SUBJECTS.map(su=>[su.id,su]));
 const decks={};
-function draw(bank,tag,level,subj){
-  const key=tag+level+subj;
-  if(!decks[key]||!decks[key].length) decks[key]=shuffle(bank[level][subj].map((_,i)=>i));
-  return bank[level][subj][decks[key].pop()];
+/* ----- almacenamiento local (solo en este dispositivo y navegador) ----- */
+const store={
+  get(k){ try{ const v=localStorage.getItem(k); return v?JSON.parse(v):null; }catch(e){ return null; } },
+  set(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)); return true; }catch(e){ return false; } },
+  del(k){ try{ localStorage.removeItem(k); }catch(e){} }
+};
+const SAVE_KEY='escapa-del-cole:partida', PREFS_KEY='escapa-del-cole:preguntas';
+const pkey=name=>String(name||'').trim().toLowerCase();
+function prefsFor(name){ const all=store.get(PREFS_KEY)||{}; return all[pkey(name)]||{repeat:[],skip:[]}; }
+function setPref(name,id,val){
+  const all=store.get(PREFS_KEY)||{}, k=pkey(name), p=all[k]||{repeat:[],skip:[]};
+  p.repeat=p.repeat.filter(x=>x!==id); p.skip=p.skip.filter(x=>x!==id);
+  if(val==='repeat') p.repeat.push(id); if(val==='skip') p.skip.push(id);
+  all[k]=p; store.set(PREFS_KEY,all);
+}
+function prefOf(name,id){ const p=prefsFor(name); return p.repeat.includes(id)?'repeat':p.skip.includes(id)?'skip':''; }
+/* Saca una pregunta: nunca las marcadas "no repetir" y, a veces, una marcada "repetir" que aún no ha salido */
+/* Temas que están dando ahora en clase: salen más a menudo (60 % de las preguntas de esa asignatura) */
+const FOCUS_P=0.6;
+const FOCUS={ y6:{ science:new Set(["What is the basic unit of all living things?", "Which part of the cell controls its activities?", "Which part of the cell controls what goes in and out?", "What is the jelly-like substance where most chemical reactions happen?", "In which part of the cell does respiration (releasing energy) happen?", "Which part is found in plant cells but NOT in animal cells?", "Where does photosynthesis happen?", "What do we use to see cells?", "What is the job of the cell wall?", "What does the large vacuole in a plant cell contain?", "A group of similar cells working together is called a…", "Which green substance in chloroplasts absorbs light?", "Where are proteins made in the cell?", "What is the correct order from smallest to largest?", "Which of these cells has no nucleus when it is mature?", "What is a plant cell wall made of?", "Which specialised cell has a tail to help it swim?", "What is the job of a root hair cell?", "Why do muscle cells have lots of mitochondria?", "What does \"unicellular\" mean?", "What is the name for the spreading of particles from a high concentration to a low concentration?", "What does the DNA in the nucleus contain?", "What kind of living thing is an amoeba?", "Why do nerve cells have long extensions?", "A microscope has a ×10 eyepiece and a ×40 objective lens. What is the total magnification?"]), maths:new Set(["−3 + 7 = ?", "5 − 9 = ?", "−6 − 4 = ?", "−2 × 5 = ?", "−4 × −3 = ?", "7 + (−2) = ?", "3 − (−5) = ?", "−12 + 12 = ?", "6 × −2 = ?", "−10 + 3 − 4 = ?", "At night it is −5 °C and at midday it is 6 °C. What is the difference?", "Which number is the smallest?", "−8 × 0 = ?", "15 + (−20) = ?", "−7 × −6 = ?", "−3 × 4 × −2 = ?", "−15 − (−8) = ?", "(−5)² = ?", "−2 × (3 − 8) = ?", "4 − 7 × 2 = ?", "A submarine is at −120 m and rises 45 m. Where is it now?", "−9 + (−6) − (−4) = ?", "What is −5 × −5 × −2?", "If x = −3, what is 2x + 10?", "(−2)³ = ?", "−4 × (−3 + 7) − (−5) = ?", "If a = −2 and b = 5, what is a × b − b?", "(−3)² × (−2) = ?", "Two numbers add up to −4 and multiply to −12. What are they?", "−1 × −1 × −1 × −1 × −1 = ?"]) } };
+function draw(bank,tag,level,subj,pl){
+  const list=bank[level][subj], idOf=i=>`${tag}|${level}|${subj}|${list[i][0]}|${list[i][1][0]}`;
+  const pref=pl?prefsFor(pl.name):{repeat:[],skip:[]};
+  if(pl && pref.repeat.length){
+    const asked=new Set((S.history||[]).filter(h=>h.p===pl.name).map(h=>h.id));
+    const rep=list.map((_,i)=>i).filter(i=>pref.repeat.includes(idOf(i)) && !asked.has(idOf(i)));
+    if(rep.length && Math.random()<0.5){ const i=rand(rep); return [...list[i], idOf(i)]; }
+  }
+  const key=tag+level+subj+'|'+(pl?pkey(pl.name):'');
+  const fset=FOCUS[level]&&FOCUS[level][subj];
+  if(fset && Math.random()<FOCUS_P){
+    const fk='F|'+key;
+    if(!decks[fk]||!decks[fk].length) decks[fk]=shuffle(list.map((_,i)=>i).filter(i=>fset.has(list[i][0]) && !pref.skip.includes(idOf(i))));
+    if(decks[fk].length){ const i=decks[fk].pop(); return [...list[i], idOf(i)]; }
+  }
+  if(!decks[key]||!decks[key].length){
+    let idx=list.map((_,i)=>i).filter(i=>!pref.skip.includes(idOf(i)));
+    if(!idx.length) idx=list.map((_,i)=>i);
+    decks[key]=shuffle(idx);
+  }
+  const i=decks[key].pop(); return [...list[i], idOf(i)];
 }
 
 /* ================= PANTALLA INICIAL ================= */
@@ -10248,7 +10965,7 @@ $('#addPlayer').onclick=()=>{
 /* ----- Intro de la partida ----- */
 const INTRO=[
   '<span class="who"><svg viewBox="0 0 300 320" width="120" height="128" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><circle cx="150" cy="58" r="36" fill="#A7ACB2" stroke="#1D2B45" stroke-width="5"/><path d="M112 58 Q150 40 188 58" fill="none" stroke="#1D2B45" stroke-width="3"/><path d="M130 30 Q140 22 146 34 M160 26 Q172 20 174 34" fill="none" stroke="#1D2B45" stroke-width="3" stroke-linecap="round"/><path d="M126 245 L126 282 L174 282 L174 245 Z" fill="#EBC49F" stroke="#1D2B45" stroke-width="5" stroke-linejoin="round"/><path d="M52 320 Q58 276 126 272 L174 272 Q242 276 248 320 Z" fill="#2F5B48" stroke="#1D2B45" stroke-width="5" stroke-linejoin="round"/><path d="M126 272 L150 300 L174 272" fill="#FFFFFF" stroke="#1D2B45" stroke-width="4" stroke-linejoin="round"/><circle cx="73" cy="178" r="15" fill="#EBC49F" stroke="#1D2B45" stroke-width="5"/><circle cx="227" cy="178" r="15" fill="#EBC49F" stroke="#1D2B45" stroke-width="5"/><ellipse cx="150" cy="172" rx="78" ry="90" fill="#EBC49F" stroke="#1D2B45" stroke-width="5"/><path d="M72 168 Q66 78 150 80 Q234 78 228 168 Q222 116 190 108 Q150 124 110 108 Q78 116 72 168 Z" fill="#A7ACB2" stroke="#1D2B45" stroke-width="5" stroke-linejoin="round"/><path d="M92 118 Q84 104 96 98 M204 118 Q214 104 202 98" fill="none" stroke="#1D2B45" stroke-width="3" stroke-linecap="round"/><path d="M145 128 L147 146 M155 128 L153 146" stroke="#1D2B45" stroke-width="3.5" stroke-linecap="round"/><path d="M96 136 L140 156" stroke="#1D2B45" stroke-width="9" stroke-linecap="round"/><path d="M204 136 L160 156" stroke="#1D2B45" stroke-width="9" stroke-linecap="round"/><path d="M106 168 Q119 159 132 168 Q119 173 106 168 Z" fill="#FFFFFF" stroke="#1D2B45" stroke-width="3.5" stroke-linejoin="round"/><path d="M168 168 Q181 159 194 168 Q181 173 168 168 Z" fill="#FFFFFF" stroke="#1D2B45" stroke-width="3.5" stroke-linejoin="round"/><circle cx="122" cy="166" r="4.5" fill="#1D2B45"/><circle cx="178" cy="166" r="4.5" fill="#1D2B45"/><path d="M96 178 H140 A22 17 0 0 1 96 178 Z" fill="#FFFFFF" fill-opacity="0.3" stroke="#1D2B45" stroke-width="4" stroke-linejoin="round"/><path d="M160 178 H204 A22 17 0 0 1 160 178 Z" fill="#FFFFFF" fill-opacity="0.3" stroke="#1D2B45" stroke-width="4" stroke-linejoin="round"/><path d="M140 180 Q150 174 160 180" fill="none" stroke="#1D2B45" stroke-width="4"/><path d="M100 202 Q116 210 132 202 M168 202 Q184 210 200 202" fill="none" stroke="#1D2B45" stroke-width="3" stroke-linecap="round"/><path d="M150 160 Q124 204 140 214 Q150 220 162 210 Q158 196 156 172" fill="#EBC49F" stroke="#1D2B45" stroke-width="4.5" stroke-linejoin="round" stroke-linecap="round"/><circle cx="138" cy="200" r="4" fill="#C98A6B" stroke="#1D2B45" stroke-width="2"/><path d="M142 212 Q146 216 150 213" fill="none" stroke="#1D2B45" stroke-width="3" stroke-linecap="round"/><path d="M120 242 Q150 216 180 242" fill="none" stroke="#7A1E1E" stroke-width="8" stroke-linecap="round"/><path d="M142 227 L142 235 L150 235 L150 226" fill="#FFFFFF" stroke="#1D2B45" stroke-width="2.5" stroke-linejoin="round"/><path d="M114 236 L120 244 M186 236 L180 244" stroke="#1D2B45" stroke-width="3" stroke-linecap="round"/><circle cx="196" cy="214" r="7" fill="#5C3A1A" stroke="#1D2B45" stroke-width="2"/><path d="M196 207 Q200 198 206 196 M198 208 Q206 204 210 206" fill="none" stroke="#1D2B45" stroke-width="2" stroke-linecap="round"/><circle cx="160" cy="254" r="4" fill="#C98A6B" stroke="#1D2B45" stroke-width="2"/><path d="M160 250 L162 242" stroke="#1D2B45" stroke-width="2" stroke-linecap="round"/><path d="M134 256 Q150 262 166 256" fill="none" stroke="#1D2B45" stroke-width="2.5" stroke-linecap="round"/><g fill="#FFFFFF" stroke="#1D2B45" stroke-width="2.5"><circle cx="128" cy="291" r="5"/><circle cx="139" cy="288" r="5"/><circle cx="150" cy="287" r="5"/><circle cx="161" cy="288" r="5"/><circle cx="172" cy="291" r="5"/></g></svg></span>Ms Petunia os ha pillado copiando en un examen de recreo. Dice que os estabais comiendo el bocadillo exactamente igual que vuestro compañero… Por eso, vuestro castigo será no salir de clase hasta que os sepáis <i>El Quijote</i> de memoria…',
-  '<span class="who">🏃</span>Ms Petunia ha ido a regañar a unos niños por respirar muy fuerte en el pasillo. ¡Aprovechad la oportunidad para escapar!'
+  '<span class="who"><svg viewBox="-110 -10 420 340" width="150" height="121" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><g stroke="#1D2B45" stroke-width="9" stroke-linecap="round" opacity=".55"><path d="M-95 120 H-25"/><path d="M-80 170 H-10"/><path d="M-100 220 H-30"/></g><g fill="#E9E2D2" stroke="#1D2B45" stroke-width="4"><circle cx="-30" cy="300" r="16"/><circle cx="-60" cy="290" r="11"/></g><path d="M235 110 q10 -16 4 -30 M250 140 q14 -10 12 -26" fill="none" stroke="#5BB8F0" stroke-width="7" stroke-linecap="round"/><g transform="rotate(12 150 170)"><circle cx="150" cy="58" r="36" fill="#A7ACB2" stroke="#1D2B45" stroke-width="5"/><path d="M112 58 Q150 40 188 58" fill="none" stroke="#1D2B45" stroke-width="3"/><path d="M130 30 Q140 22 146 34 M160 26 Q172 20 174 34" fill="none" stroke="#1D2B45" stroke-width="3" stroke-linecap="round"/><path d="M126 245 L126 282 L174 282 L174 245 Z" fill="#EBC49F" stroke="#1D2B45" stroke-width="5" stroke-linejoin="round"/><path d="M52 320 Q58 276 126 272 L174 272 Q242 276 248 320 Z" fill="#2F5B48" stroke="#1D2B45" stroke-width="5" stroke-linejoin="round"/><path d="M126 272 L150 300 L174 272" fill="#FFFFFF" stroke="#1D2B45" stroke-width="4" stroke-linejoin="round"/><circle cx="73" cy="178" r="15" fill="#EBC49F" stroke="#1D2B45" stroke-width="5"/><circle cx="227" cy="178" r="15" fill="#EBC49F" stroke="#1D2B45" stroke-width="5"/><ellipse cx="150" cy="172" rx="78" ry="90" fill="#EBC49F" stroke="#1D2B45" stroke-width="5"/><path d="M72 168 Q66 78 150 80 Q234 78 228 168 Q222 116 190 108 Q150 124 110 108 Q78 116 72 168 Z" fill="#A7ACB2" stroke="#1D2B45" stroke-width="5" stroke-linejoin="round"/><path d="M92 118 Q84 104 96 98 M204 118 Q214 104 202 98" fill="none" stroke="#1D2B45" stroke-width="3" stroke-linecap="round"/><path d="M145 128 L147 146 M155 128 L153 146" stroke="#1D2B45" stroke-width="3.5" stroke-linecap="round"/><path d="M96 136 L140 156" stroke="#1D2B45" stroke-width="9" stroke-linecap="round"/><path d="M204 136 L160 156" stroke="#1D2B45" stroke-width="9" stroke-linecap="round"/><path d="M106 168 Q119 159 132 168 Q119 173 106 168 Z" fill="#FFFFFF" stroke="#1D2B45" stroke-width="3.5" stroke-linejoin="round"/><path d="M168 168 Q181 159 194 168 Q181 173 168 168 Z" fill="#FFFFFF" stroke="#1D2B45" stroke-width="3.5" stroke-linejoin="round"/><circle cx="122" cy="166" r="4.5" fill="#1D2B45"/><circle cx="178" cy="166" r="4.5" fill="#1D2B45"/><path d="M96 178 H140 A22 17 0 0 1 96 178 Z" fill="#FFFFFF" fill-opacity="0.3" stroke="#1D2B45" stroke-width="4" stroke-linejoin="round"/><path d="M160 178 H204 A22 17 0 0 1 160 178 Z" fill="#FFFFFF" fill-opacity="0.3" stroke="#1D2B45" stroke-width="4" stroke-linejoin="round"/><path d="M140 180 Q150 174 160 180" fill="none" stroke="#1D2B45" stroke-width="4"/><path d="M100 202 Q116 210 132 202 M168 202 Q184 210 200 202" fill="none" stroke="#1D2B45" stroke-width="3" stroke-linecap="round"/><path d="M150 160 Q124 204 140 214 Q150 220 162 210 Q158 196 156 172" fill="#EBC49F" stroke="#1D2B45" stroke-width="4.5" stroke-linejoin="round" stroke-linecap="round"/><circle cx="138" cy="200" r="4" fill="#C98A6B" stroke="#1D2B45" stroke-width="2"/><path d="M142 212 Q146 216 150 213" fill="none" stroke="#1D2B45" stroke-width="3" stroke-linecap="round"/><path d="M120 242 Q150 216 180 242" fill="none" stroke="#7A1E1E" stroke-width="8" stroke-linecap="round"/><path d="M142 227 L142 235 L150 235 L150 226" fill="#FFFFFF" stroke="#1D2B45" stroke-width="2.5" stroke-linejoin="round"/><path d="M114 236 L120 244 M186 236 L180 244" stroke="#1D2B45" stroke-width="3" stroke-linecap="round"/><circle cx="196" cy="214" r="7" fill="#5C3A1A" stroke="#1D2B45" stroke-width="2"/><path d="M196 207 Q200 198 206 196 M198 208 Q206 204 210 206" fill="none" stroke="#1D2B45" stroke-width="2" stroke-linecap="round"/><circle cx="160" cy="254" r="4" fill="#C98A6B" stroke="#1D2B45" stroke-width="2"/><path d="M160 250 L162 242" stroke="#1D2B45" stroke-width="2" stroke-linecap="round"/><path d="M134 256 Q150 262 166 256" fill="none" stroke="#1D2B45" stroke-width="2.5" stroke-linecap="round"/><g fill="#FFFFFF" stroke="#1D2B45" stroke-width="2.5"><circle cx="128" cy="291" r="5"/><circle cx="139" cy="288" r="5"/><circle cx="150" cy="287" r="5"/><circle cx="161" cy="288" r="5"/><circle cx="172" cy="291" r="5"/></g></g></svg></span>Ms Petunia ha ido a regañar a unos niños por respirar muy fuerte en el pasillo. ¡Aprovechad la oportunidad para escapar!'
 ];
 async function playScenes(lines, atWhite){
   const box=$('#intro'), tx=$('#introText'); let skip=false, next=null;
@@ -10260,8 +10977,10 @@ async function playScenes(lines, atWhite){
   document.addEventListener('keydown',key);
   tx.classList.remove('show'); box.classList.remove('hidden'); box.offsetWidth; box.classList.add('show');
   await sleep(900);
-  for(const line of lines){
+  for(const item of lines){
     if(skip) break;
+    const line=typeof item==='string'?item:item.html, dark=typeof item==='object'&&item.dark;
+    if(dark!==box.classList.contains('dark')){ box.classList.toggle('dark',!!dark); await sleep(1000); }
     tx.innerHTML=line; tx.offsetWidth; tx.classList.add('show');
     await sleep(700);
     if(!skip) await wait(Math.max(5000, line.replace(/<[^>]+>/g,'').length*75));
@@ -10272,7 +10991,7 @@ async function playScenes(lines, atWhite){
   if(atWhite) atWhite();
   box.classList.remove('show');
   await sleep(900);
-  box.classList.add('hidden');
+  box.classList.add('hidden'); box.classList.remove('dark');
 }
 const playIntro=async()=>{ await playScenes(INTRO, startGame); petuniaWalk(); };
 $('#startBtn').onclick=playIntro;
@@ -10283,7 +11002,7 @@ function startGame(){
   S={players:setupPlayers.map((p,i)=>({
       name:(p.name||'').trim()||('Jugador '+(i+1)), level:p.level, color:p.color,
       pos:0, right:0, total:0, skip:0, office:null, petDet:false, exitDone:new Set(), escaped:false
-    })), turn:0, busy:false, over:false, log:[], round:1, petPos:null, petSafe:[]};
+    })), turn:0, busy:false, over:false, log:[], round:1, petPos:null, petSafe:[], history:[]};
   $('#setup').classList.add('hidden'); $('#game').classList.remove('hidden');
   buildBoard(); setDie(1);
   S.log=[]; addLog(`¡Empieza la partida! Le toca a ${S.players[0].name}.`);
@@ -10346,6 +11065,7 @@ function actionLabel(p){
 }
 function render(){
   const p=cur();
+  $('#reportBtn').classList.toggle('hidden', !S.over);
   $('#turnWho').innerHTML=S.over?'¡Fin de la partida!':`${pawnHTML(p)} ${esc(p.name)}`;
   $('#turnLvl').textContent=S.over?'':LEVELS[p.level].label;
   $('#turnStatus').textContent=S.over?'':statusOf(p);
@@ -10427,7 +11147,8 @@ function choosePlayer(title,body,list){
 /* Pregunta: devuelve true si acierta */
 function ask(p,subj,{hard=false,petunia=false,context=''}={}){
   return new Promise(res=>{
-    const [q,opts,expl]=petunia?draw(PETUNIA,'p',p.level,subj.id):hard?draw(HARD,'h',p.level,subj.id):draw(QB,'n',p.level,subj.id);
+    const tag=petunia?'p':hard?'h':'n';
+    const [q,opts,expl,qid]=draw(petunia?PETUNIA:hard?HARD:QB,tag,p.level,subj.id,p);
     const correct=opts[0], shown=shuffle(opts);
     openCard(headHTML(subj.icon,subj.name+(petunia?' · pregunta de Ms Petunia':hard?' · difícil':''),`Pregunta para ${esc(p.name)} · ${LEVELS[p.level].short}`),`
       ${context?`<div class="situation">${context}</div>`:''}
@@ -10439,6 +11160,7 @@ function ask(p,subj,{hard=false,petunia=false,context=''}={}){
       const choice=shown[+btn.dataset.o], ok=choice===correct;
       card.querySelectorAll('.opt').forEach(b=>{ b.disabled=true; const v=shown[+b.dataset.o]; if(v===correct) b.classList.add('right'); else if(b===btn) b.classList.add('wrong'); });
       p.total++; if(ok) p.right++;
+      S.history.push({p:p.name,lvl:p.level,subj:subj.id,tag,q,ans:choice,correct,ok,expl,id:qid});
       addLog(`${ok?'✅':'❌'} ${p.name} ${ok?'acierta':'falla'} en ${subj.name}${petunia?' (Ms Petunia)':hard?' (difícil)':''}.`);
       $('#fb').innerHTML=`<div class="feedback ${ok?'good':'badf'}"><b>${ok?'¡Correcto! 🎉':'¡Uy! No es esa.'}</b><br>
         ${ok?'':`La respuesta correcta es: <u>${esc(correct)}</u>.<br>`}${esc(expl)}</div>
@@ -10459,7 +11181,7 @@ function speedRun(p){
     };
     const next=()=>{
       if(done) return;
-      const subj=rand(SUBJECTS), [q,opts]=draw(QB,'n',p.level,subj.id), correct=opts[0], shown=shuffle(opts);
+      const subj=rand(SUBJECTS), [q,opts,expl,qid]=draw(QB,'n',p.level,subj.id,p), correct=opts[0], shown=shuffle(opts);
       card.style.setProperty('--sc',subj.color);
       card.querySelector('.card-body').innerHTML=`<div class="score">${subj.icon} ${subj.name} · aciertos: ${hits} · fallos: ${tries-hits}</div>
         <p class="question">${esc(q)}</p>
@@ -10468,6 +11190,7 @@ function speedRun(p){
       card.querySelectorAll('.opt').forEach(btn=>btn.onclick=()=>{
         if(locked) return; locked=true;
         const ok=shown[+btn.dataset.o]===correct; tries++; p.total++; if(ok){hits++;p.right++;}
+        S.history.push({p:p.name,lvl:p.level,subj:subj.id,tag:'n',q,ans:shown[+btn.dataset.o],correct,ok,expl,id:qid,speed:true});
         card.querySelectorAll('.opt').forEach(b=>{b.disabled=true; if(shown[+b.dataset.o]===correct) b.classList.add('right'); else if(b===btn) b.classList.add('wrong');});
         setTimeout(()=>{ if(left<=0) finish(); else next(); }, ok?450:1100);
       });
@@ -10728,6 +11451,8 @@ const faceTo=(x0,y0,x1,y1)=>Math.round(Math.atan2(y1-y0,x1-x0)*180/Math.PI)-90;
 async function petuniaGo(n,ms){
   const g=document.getElementById('petunia'); if(!g) return;
   const from=S.petPos?posOf(S.petPos):petuniaSpots().hall, to=posOf(n);
+  if(!S.petPos) kidsHide();
+  g.classList.remove('angry');   // se le pasa el enfado al irse
   turnPetunia(faceTo(from.x,from.y,to.x,to.y)); await sleep(350);
   g.classList.add('walking'); petuniaAt(to.x,to.y,null,ms); await sleep(ms);
   g.classList.remove('walking'); turnPetunia(0);
@@ -10791,24 +11516,178 @@ async function petDetTurn(p){
   endTurn();
 }
 
+/* ================= GUARDAR PARTIDA ================= */
+function toast(msg){ const t=$('#toast'); t.textContent=msg; t.classList.remove('hidden'); clearTimeout(toast._t); toast._t=setTimeout(()=>t.classList.add('hidden'),2600); }
+function saveGame(){
+  const data={v:1,at:Date.now(),turn:S.turn,round:S.round,petPos:S.petPos,over:S.over,log:S.log,history:S.history,
+    petSafe:S.petSafe.map(q=>S.players.indexOf(q)),
+    players:S.players.map(q=>({...q,exitDone:[...q.exitDone]}))};
+  return store.set(SAVE_KEY,data);
+}
+$('#saveBtn').onclick=()=>{
+  if(!S) return;
+  if(S.busy){ toast('Espera a que termine el turno para guardar'); return; }
+  toast(saveGame()?'💾 Partida guardada en este dispositivo':'No se ha podido guardar en este navegador');
+};
+function refreshContinue(){
+  const d=store.get(SAVE_KEY), b=$('#continueBtn'), info=$('#continueInfo');
+  if(!d||!d.players){ b.classList.add('hidden'); info.classList.add('hidden'); return; }
+  const dt=new Date(d.at);
+  b.classList.remove('hidden'); info.classList.remove('hidden');
+  info.textContent=`Partida guardada: ${d.players.map(q=>q.name).join(', ')} · ronda ${d.round} · ${dt.toLocaleDateString('es-ES')} ${dt.toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'})}`;
+}
+function loadGame(){
+  const d=store.get(SAVE_KEY); if(!d) return;
+  S={players:d.players.map(q=>({...q,exitDone:new Set(q.exitDone||[])})),turn:d.turn,busy:false,over:!!d.over,log:d.log||[],
+     round:d.round||1,petPos:d.petPos||null,petSafe:[],history:d.history||[]};
+  S.petSafe=(d.petSafe||[]).map(i=>S.players[i]).filter(Boolean);
+  $('#setup').classList.add('hidden'); $('#game').classList.remove('hidden');
+  buildBoard(); setDie(1);
+  if(S.petPos){ const t=posOf(S.petPos); petuniaAt(t.x,t.y,0,0); turnPetunia(0,true); }
+  else { placePetunia('hall',true); turnPetunia(-180,true); kidsSad(true); document.getElementById('petunia')?.classList.add('angry'); }
+  if(S.petPos) kidsHide(true);
+  $('#log').innerHTML=S.log.map(x=>`<li>${esc(x)}</li>`).join('');
+  addLog(`▶ Partida recuperada. Le toca a ${cur().name}.`);
+  render(); window.scrollTo(0,0);
+}
+$('#continueBtn').onclick=loadGame;
+
+/* ================= INFORME ================= */
+function showReport(onClose){
+  let who=0, filter='all';
+  const names=[...new Set(S.players.map(q=>q.name))];
+  const tagName={n:'',h:'difícil',p:'Ms Petunia'};
+  const draw_=()=>{
+    const pl=S.players.find(q=>q.name===names[who]);
+    const items=S.history.filter(h=>h.p===names[who] && (filter==='all'||!h.ok));
+    const all=S.history.filter(h=>h.p===names[who]), okN=all.filter(h=>h.ok).length;
+    card.style.setProperty('--sc','#1D2B45'); card.style.setProperty('--hc','#fff');
+    card.classList.add('wide');
+    card.innerHTML=`<div class="card-head">${headHTML('📋','Informe de la partida','Elige qué preguntas repetir en las próximas partidas')}</div>
+      <div class="card-body">
+        <div class="rep-tabs">${names.map((n,i)=>{ const q=S.players.find(x=>x.name===n); const h=S.history.filter(x=>x.p===n);
+          return `<button data-who="${i}" class="${i===who?'on':''}">${pawnHTML(q)} ${esc(n)} · ${h.filter(x=>x.ok).length}/${h.length}</button>`; }).join('')}</div>
+        <div class="rep-tools">
+          <span class="seg"><button data-f="all" class="${filter==='all'?'on':''}">Todas (${all.length})</button><button data-f="bad" class="${filter==='bad'?'on':''}">Falladas (${all.length-okN})</button></span>
+          <button class="btn" id="repAllBad" style="padding:6px 12px">🔁 Repetir todas las falladas</button>
+        </div>
+        <div class="rep-list">${items.length?items.map((h,i)=>{ const s=SUBJ[h.subj], pv=prefOf(h.p,h.id);
+          return `<div class="rep-item ${h.ok?'':'bad'}">
+            <div class="rep-top"><span>${h.ok?'✅ Acertada':'❌ Fallada'}</span><span class="chip" style="--sc:${s.color};color:${textOn(s.color)}">${s.icon} ${s.name}</span>${tagName[h.tag]?`<span class="badge">${tagName[h.tag]}</span>`:''}${h.speed?'<span class="badge">Speed Run</span>':''}</div>
+            <div class="rep-q">${esc(h.q)}</div>
+            <div class="rep-a">${h.ok?`Respuesta: <b>${esc(h.correct)}</b>`:`Respondió: <b>${esc(h.ans)}</b> · Correcta: <b>${esc(h.correct)}</b>`}</div>
+            <div class="rep-pref" data-id="${esc(h.id)}" data-p="${esc(h.p)}">
+              <button data-v="repeat" class="${pv==='repeat'?'on':''}">🔁 Repetir</button>
+              <button data-v="skip" class="${pv==='skip'?'on':''}">🚫 No repetir</button>
+            </div></div>`; }).join(''):`<div class="rep-empty">${filter==='bad'?'No ha fallado ninguna pregunta. 🎉':'Todavía no ha respondido ninguna pregunta.'}</div>`}</div>
+        <p style="color:var(--muted);font-weight:700;font-size:.85rem;margin:12px 0 0">Con "Copiar informe" o "Descargar informe" tienes un documento con todas las preguntas, las falladas y lo que has marcado: envíaselo a Claude para preparar el próximo banco de preguntas. 🔁 Las preguntas para repetir saldrán con más frecuencia en las próximas partidas de ${esc(names[who])}. 🚫 Las de "no repetir" ya no le volverán a salir. Se guarda en este dispositivo.</p>
+        <div class="foot"><button class="btn" id="repCopy">📋 Copiar informe</button><button class="btn" id="repDown">⬇️ Descargar informe</button><button class="btn btn-primary" id="repClose">Cerrar</button></div>
+      </div>`;
+    card.querySelectorAll('[data-who]').forEach(b=>b.onclick=()=>{ who=+b.dataset.who; draw_(); });
+    card.querySelectorAll('[data-f]').forEach(b=>b.onclick=()=>{ filter=b.dataset.f; draw_(); });
+    card.querySelectorAll('.rep-pref button').forEach(b=>b.onclick=()=>{
+      const box=b.parentElement, id=box.dataset.id, p=box.dataset.p, v=b.dataset.v;
+      const nv=prefOf(p,id)===v?'':v; setPref(p,id,nv);
+      // actualiza todas las apariciones de esa misma pregunta
+      card.querySelectorAll('.rep-pref').forEach(x=>{ if(x.dataset.id===id) x.querySelectorAll('button').forEach(y=>y.classList.toggle('on',y.dataset.v===nv)); });
+    });
+    $('#repAllBad').onclick=()=>{ all.filter(h=>!h.ok).forEach(h=>setPref(h.p,h.id,'repeat')); draw_(); toast('🔁 Falladas marcadas para repetir'); };
+    $('#repClose').onclick=()=>{ card.classList.remove('wide'); closeCard(); onClose&&onClose(); };
+    $('#repDown').onclick=()=>{
+      const txt=reportText(), d=new Date(), name=`informe-escapa-del-cole-${d.toISOString().slice(0,10)}.md`;
+      try{ const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([txt],{type:'text/markdown'})); a.download=name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(a.href),2000); toast('⬇️ Informe descargado'); }
+      catch(e){ copyText(txt); }
+    };
+    $('#repCopy').onclick=()=>copyText(reportText());
+  };
+  modal.classList.remove('hidden'); draw_();
+}
+/* Informe en texto para enviar a Claude y preparar el próximo banco de preguntas */
+function copyText(txt){
+  const done=()=>toast('📋 Informe copiado: pégalo en tu mensaje a Claude');
+  const fallback=()=>{ const ta=document.createElement('textarea'); ta.value=txt; ta.style.position='fixed'; ta.style.opacity='0'; document.body.appendChild(ta); ta.select();
+    try{ document.execCommand('copy'); done(); }catch(e){ toast('No se ha podido copiar'); } ta.remove(); };
+  try{ navigator.clipboard.writeText(txt).then(done,fallback); }catch(e){ fallback(); }
+}
+function reportText(){
+  const d=new Date(), tagName={n:'normal',h:'difícil',p:'Ms Petunia'};
+  const pv=v=>v==='repeat'?'REPETIR':v==='skip'?'NO REPETIR':'sin marcar';
+  const L=[];
+  L.push('# Informe de partida · Escapa del cole');
+  L.push(`Fecha: ${d.toLocaleDateString('es-ES')} ${d.toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'})} · Ronda ${S.round}${S.over?' · partida terminada':' · partida en curso'}`);
+  L.push('Jugadores: '+S.players.map(q=>`${q.name} (${LEVELS[q.level].short})`).join(', '));
+  L.push('');
+  S.players.forEach(q=>{
+    const hist=S.history.filter(h=>h.p===q.name);
+    const byId=new Map();
+    hist.forEach(h=>{ const e=byId.get(h.id)||{...h,tries:0,fails:0,answers:[]}; e.tries++; if(!h.ok){e.fails++; e.answers.push(h.ans);} byId.set(h.id,e); });
+    const items=[...byId.values()], bad=items.filter(e=>e.fails), good=items.filter(e=>!e.fails);
+    L.push(`## ${q.name} · ${LEVELS[q.level].short} — ${hist.filter(h=>h.ok).length}/${hist.length} aciertos`);
+    L.push('');
+    L.push('### Por asignatura');
+    SUBJECTS.forEach(su=>{ const h=hist.filter(x=>x.subj===su.id); if(h.length) L.push(`- ${su.name}: ${h.filter(x=>x.ok).length}/${h.length}`); });
+    L.push('');
+    const line=(e,i)=>{ const su=SUBJ[e.subj]; const extra=e.fails?` — respondió: «${[...new Set(e.answers)].join('», «')}»; correcta: «${e.correct}»`:` — correcta: «${e.correct}»`;
+      return `${i+1}. [${su.name} · ${tagName[e.tag]||'normal'}${e.speed?' · Speed Run':''}] ${e.q}${extra}${e.tries>1?` (salió ${e.tries} veces)`:''} — ${pv(prefOf(q.name,e.id))}`; };
+    L.push(`### Falladas (${bad.length})`);
+    L.push(bad.length?bad.map(line).join('\n'):'Ninguna.');
+    L.push('');
+    L.push(`### Acertadas (${good.length})`);
+    L.push(good.length?good.map(line).join('\n'):'Ninguna.');
+    L.push('');
+    const pr=prefsFor(q.name), lab=id=>{ const [t,lv,su,qq]=id.split('|'); return `[${(SUBJ[su]||{name:su}).name} · ${tagName[t]||t}] ${qq}`; };
+    if(pr.repeat.length||pr.skip.length){
+      L.push(`### Marcadas en este dispositivo para ${q.name} (todas las partidas)`);
+      if(pr.repeat.length){ L.push('**Repetir:**'); pr.repeat.forEach(id=>L.push('- '+lab(id))); }
+      if(pr.skip.length){ L.push('**No repetir:**'); pr.skip.forEach(id=>L.push('- '+lab(id))); }
+      L.push('');
+    }
+  });
+  L.push('## Instrucciones para Claude');
+  L.push('Usa este informe para preparar el próximo banco de preguntas de Escapa del cole:');
+  L.push('- Mantén las preguntas marcadas como REPETIR y quita del banco las marcadas como NO REPETIR.');
+  L.push('- Crea preguntas nuevas parecidas a las falladas (mismo tema y nivel), para reforzar lo que más les cuesta.');
+  L.push('- Añade más preguntas en las asignaturas con menos aciertos de cada jugador.');
+  L.push('- Respeta el formato y las reglas de idioma del juego (Lengua en español; Maths, English y Science en inglés; Historia y Geografía: Gran Bretaña en inglés y el resto en español).');
+  return L.join('\n');
+}
+$('#reportBtn').onclick=()=>{ if(!S) return; if(S.busy && !S.over){ toast('Espera a que termine el turno'); return; } showReport(); };
+/* Atajo de teclado: I abre el informe (solo durante la partida, sin ventanas abiertas) */
+document.addEventListener('keydown',e=>{
+  if(e.key!=='i' && e.key!=='I') return;
+  if(e.ctrlKey||e.metaKey||e.altKey) return;
+  const t=e.target; if(t && (/^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName) || t.isContentEditable)) return;
+  if(!S || $('#game').classList.contains('hidden')) return;
+  if(!$('#modal').classList.contains('hidden') || !$('#intro').classList.contains('hidden')) return;
+  if(S.busy && !S.over){ toast('Espera a que termine el turno'); return; }
+  e.preventDefault(); showReport();
+});
+
 /* ================= FINAL ================= */
 async function win(p){
   p.escaped=true; S.over=true; S.busy=false;
   addLog(`🏆 ¡${p.name} escapa del cole!`); render();
   const nm=esc(p.name);
-  const outro=[`<span class="who">🏆</span>${nm} ha conseguido escapar del colegio…`];
-  if(S.players.length>1) outro.push('<span class="who"><svg viewBox="0 0 300 320" width="120" height="128" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><circle cx="150" cy="58" r="36" fill="#A7ACB2" stroke="#1D2B45" stroke-width="5"/><path d="M112 58 Q150 40 188 58" fill="none" stroke="#1D2B45" stroke-width="3"/><path d="M130 30 Q140 22 146 34 M160 26 Q172 20 174 34" fill="none" stroke="#1D2B45" stroke-width="3" stroke-linecap="round"/><path d="M126 245 L126 282 L174 282 L174 245 Z" fill="#EBC49F" stroke="#1D2B45" stroke-width="5" stroke-linejoin="round"/><path d="M52 320 Q58 276 126 272 L174 272 Q242 276 248 320 Z" fill="#2F5B48" stroke="#1D2B45" stroke-width="5" stroke-linejoin="round"/><path d="M126 272 L150 300 L174 272" fill="#FFFFFF" stroke="#1D2B45" stroke-width="4" stroke-linejoin="round"/><circle cx="73" cy="178" r="15" fill="#EBC49F" stroke="#1D2B45" stroke-width="5"/><circle cx="227" cy="178" r="15" fill="#EBC49F" stroke="#1D2B45" stroke-width="5"/><ellipse cx="150" cy="172" rx="78" ry="90" fill="#EBC49F" stroke="#1D2B45" stroke-width="5"/><path d="M72 168 Q66 78 150 80 Q234 78 228 168 Q222 116 190 108 Q150 124 110 108 Q78 116 72 168 Z" fill="#A7ACB2" stroke="#1D2B45" stroke-width="5" stroke-linejoin="round"/><path d="M92 118 Q84 104 96 98 M204 118 Q214 104 202 98" fill="none" stroke="#1D2B45" stroke-width="3" stroke-linecap="round"/><path d="M145 128 L147 146 M155 128 L153 146" stroke="#1D2B45" stroke-width="3.5" stroke-linecap="round"/><path d="M96 136 L140 156" stroke="#1D2B45" stroke-width="9" stroke-linecap="round"/><path d="M204 136 L160 156" stroke="#1D2B45" stroke-width="9" stroke-linecap="round"/><path d="M106 168 Q119 159 132 168 Q119 173 106 168 Z" fill="#FFFFFF" stroke="#1D2B45" stroke-width="3.5" stroke-linejoin="round"/><path d="M168 168 Q181 159 194 168 Q181 173 168 168 Z" fill="#FFFFFF" stroke="#1D2B45" stroke-width="3.5" stroke-linejoin="round"/><circle cx="122" cy="166" r="4.5" fill="#1D2B45"/><circle cx="178" cy="166" r="4.5" fill="#1D2B45"/><path d="M96 178 H140 A22 17 0 0 1 96 178 Z" fill="#FFFFFF" fill-opacity="0.3" stroke="#1D2B45" stroke-width="4" stroke-linejoin="round"/><path d="M160 178 H204 A22 17 0 0 1 160 178 Z" fill="#FFFFFF" fill-opacity="0.3" stroke="#1D2B45" stroke-width="4" stroke-linejoin="round"/><path d="M140 180 Q150 174 160 180" fill="none" stroke="#1D2B45" stroke-width="4"/><path d="M100 202 Q116 210 132 202 M168 202 Q184 210 200 202" fill="none" stroke="#1D2B45" stroke-width="3" stroke-linecap="round"/><path d="M150 160 Q124 204 140 214 Q150 220 162 210 Q158 196 156 172" fill="#EBC49F" stroke="#1D2B45" stroke-width="4.5" stroke-linejoin="round" stroke-linecap="round"/><circle cx="138" cy="200" r="4" fill="#C98A6B" stroke="#1D2B45" stroke-width="2"/><path d="M142 212 Q146 216 150 213" fill="none" stroke="#1D2B45" stroke-width="3" stroke-linecap="round"/><path d="M120 242 Q150 216 180 242" fill="none" stroke="#7A1E1E" stroke-width="8" stroke-linecap="round"/><path d="M142 227 L142 235 L150 235 L150 226" fill="#FFFFFF" stroke="#1D2B45" stroke-width="2.5" stroke-linejoin="round"/><path d="M114 236 L120 244 M186 236 L180 244" stroke="#1D2B45" stroke-width="3" stroke-linecap="round"/><circle cx="196" cy="214" r="7" fill="#5C3A1A" stroke="#1D2B45" stroke-width="2"/><path d="M196 207 Q200 198 206 196 M198 208 Q206 204 210 206" fill="none" stroke="#1D2B45" stroke-width="2" stroke-linecap="round"/><circle cx="160" cy="254" r="4" fill="#C98A6B" stroke="#1D2B45" stroke-width="2"/><path d="M160 250 L162 242" stroke="#1D2B45" stroke-width="2" stroke-linecap="round"/><path d="M134 256 Q150 262 166 256" fill="none" stroke="#1D2B45" stroke-width="2.5" stroke-linecap="round"/><g fill="#FFFFFF" stroke="#1D2B45" stroke-width="2.5"><circle cx="128" cy="291" r="5"/><circle cx="139" cy="288" r="5"/><circle cx="150" cy="287" r="5"/><circle cx="161" cy="288" r="5"/><circle cx="172" cy="291" r="5"/></g></svg></span>Ms Petunia ha pillado a todos los demás. Ahora nunca podrán salir de la clase: dormirán bajo el pupitre hasta que puedan recitar de memoria todos los libros de la biblioteca…');
-  outro.push(`<span class="who">🔎</span>Buena suerte, ${nm}. Ahora estás en la lista de los más buscados de Ms Petunia.`);
+  const pc=COL[p.color].hex;
+  const pawnBig=`<span class="pawn" style="width:110px;height:110px;font-size:3.4rem;border-width:5px;margin:0 auto 12px;background:${pc};color:${textOn(pc)}">${esc(p.name.charAt(0).toUpperCase())}</span>`;
+  const outro=[`<span class="who">${pawnBig}</span>${nm} ha conseguido escapar del colegio…`];
+  if(S.players.length>1) outro.push(`<span class="who who-shake"><svg viewBox="0 0 300 320" width="120" height="128" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><defs><filter id="outroAngry"><feColorMatrix type="matrix" values="1 0.25 0.25 0 0.12  0 0.45 0 0 0  0 0 0.45 0 0  0 0 0 1 0"/></filter></defs><g filter="url(#outroAngry)"><circle cx="150" cy="58" r="36" fill="#A7ACB2" stroke="#1D2B45" stroke-width="5"/><path d="M112 58 Q150 40 188 58" fill="none" stroke="#1D2B45" stroke-width="3"/><path d="M130 30 Q140 22 146 34 M160 26 Q172 20 174 34" fill="none" stroke="#1D2B45" stroke-width="3" stroke-linecap="round"/><path d="M126 245 L126 282 L174 282 L174 245 Z" fill="#EBC49F" stroke="#1D2B45" stroke-width="5" stroke-linejoin="round"/><path d="M52 320 Q58 276 126 272 L174 272 Q242 276 248 320 Z" fill="#2F5B48" stroke="#1D2B45" stroke-width="5" stroke-linejoin="round"/><path d="M126 272 L150 300 L174 272" fill="#FFFFFF" stroke="#1D2B45" stroke-width="4" stroke-linejoin="round"/><circle cx="73" cy="178" r="15" fill="#EBC49F" stroke="#1D2B45" stroke-width="5"/><circle cx="227" cy="178" r="15" fill="#EBC49F" stroke="#1D2B45" stroke-width="5"/><ellipse cx="150" cy="172" rx="78" ry="90" fill="#EBC49F" stroke="#1D2B45" stroke-width="5"/><path d="M72 168 Q66 78 150 80 Q234 78 228 168 Q222 116 190 108 Q150 124 110 108 Q78 116 72 168 Z" fill="#A7ACB2" stroke="#1D2B45" stroke-width="5" stroke-linejoin="round"/><path d="M92 118 Q84 104 96 98 M204 118 Q214 104 202 98" fill="none" stroke="#1D2B45" stroke-width="3" stroke-linecap="round"/><path d="M145 128 L147 146 M155 128 L153 146" stroke="#1D2B45" stroke-width="3.5" stroke-linecap="round"/><path d="M96 136 L140 156" stroke="#1D2B45" stroke-width="9" stroke-linecap="round"/><path d="M204 136 L160 156" stroke="#1D2B45" stroke-width="9" stroke-linecap="round"/><path d="M106 168 Q119 159 132 168 Q119 173 106 168 Z" fill="#FFFFFF" stroke="#1D2B45" stroke-width="3.5" stroke-linejoin="round"/><path d="M168 168 Q181 159 194 168 Q181 173 168 168 Z" fill="#FFFFFF" stroke="#1D2B45" stroke-width="3.5" stroke-linejoin="round"/><circle cx="122" cy="166" r="4.5" fill="#1D2B45"/><circle cx="178" cy="166" r="4.5" fill="#1D2B45"/><path d="M96 178 H140 A22 17 0 0 1 96 178 Z" fill="#FFFFFF" fill-opacity="0.3" stroke="#1D2B45" stroke-width="4" stroke-linejoin="round"/><path d="M160 178 H204 A22 17 0 0 1 160 178 Z" fill="#FFFFFF" fill-opacity="0.3" stroke="#1D2B45" stroke-width="4" stroke-linejoin="round"/><path d="M140 180 Q150 174 160 180" fill="none" stroke="#1D2B45" stroke-width="4"/><path d="M100 202 Q116 210 132 202 M168 202 Q184 210 200 202" fill="none" stroke="#1D2B45" stroke-width="3" stroke-linecap="round"/><path d="M150 160 Q124 204 140 214 Q150 220 162 210 Q158 196 156 172" fill="#EBC49F" stroke="#1D2B45" stroke-width="4.5" stroke-linejoin="round" stroke-linecap="round"/><circle cx="138" cy="200" r="4" fill="#C98A6B" stroke="#1D2B45" stroke-width="2"/><path d="M142 212 Q146 216 150 213" fill="none" stroke="#1D2B45" stroke-width="3" stroke-linecap="round"/><path d="M120 242 Q150 216 180 242" fill="none" stroke="#7A1E1E" stroke-width="8" stroke-linecap="round"/><path d="M142 227 L142 235 L150 235 L150 226" fill="#FFFFFF" stroke="#1D2B45" stroke-width="2.5" stroke-linejoin="round"/><path d="M114 236 L120 244 M186 236 L180 244" stroke="#1D2B45" stroke-width="3" stroke-linecap="round"/><circle cx="196" cy="214" r="7" fill="#5C3A1A" stroke="#1D2B45" stroke-width="2"/><path d="M196 207 Q200 198 206 196 M198 208 Q206 204 210 206" fill="none" stroke="#1D2B45" stroke-width="2" stroke-linecap="round"/><circle cx="160" cy="254" r="4" fill="#C98A6B" stroke="#1D2B45" stroke-width="2"/><path d="M160 250 L162 242" stroke="#1D2B45" stroke-width="2" stroke-linecap="round"/><path d="M134 256 Q150 262 166 256" fill="none" stroke="#1D2B45" stroke-width="2.5" stroke-linecap="round"/><g fill="#FFFFFF" stroke="#1D2B45" stroke-width="2.5"><circle cx="128" cy="291" r="5"/><circle cx="139" cy="288" r="5"/><circle cx="150" cy="287" r="5"/><circle cx="161" cy="288" r="5"/><circle cx="172" cy="291" r="5"/></g></g><g fill="#FFFFFF" stroke="#1D2B45" stroke-width="3" opacity=".9"><circle cx="44" cy="74" r="12"/><circle cx="30" cy="52" r="9"/><circle cx="256" cy="74" r="12"/><circle cx="270" cy="52" r="9"/></g></svg></span>Ms Petunia ha pillado a todos los demás. Ahora nunca podrán salir de la clase: dormirán bajo el pupitre hasta que puedan recitar de memoria todos los libros de la biblioteca…`);
+  outro.push({dark:true, html:`<span class="who"><svg viewBox="0 0 300 320" width="140" height="149" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><defs><linearGradient id="hC_l" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#000" stop-opacity=".78"/><stop offset=".55" stop-color="#000" stop-opacity=".25"/><stop offset="1" stop-color="#FFD24A" stop-opacity=".45"/></linearGradient><clipPath id="hC_clip"><ellipse cx="150" cy="172" rx="78" ry="90"/></clipPath><filter id="hC_glow" x="-100%" y="-100%" width="300%" height="300%"><feGaussianBlur stdDeviation="4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs><circle cx="150" cy="58" r="36" fill="#A7ACB2" stroke="#1D2B45" stroke-width="5"/><path d="M112 58 Q150 40 188 58" fill="none" stroke="#1D2B45" stroke-width="3"/><path d="M130 30 Q140 22 146 34 M160 26 Q172 20 174 34" fill="none" stroke="#1D2B45" stroke-width="3" stroke-linecap="round"/><path d="M126 245 L126 282 L174 282 L174 245 Z" fill="#EBC49F" stroke="#1D2B45" stroke-width="5" stroke-linejoin="round"/><path d="M52 320 Q58 276 126 272 L174 272 Q242 276 248 320 Z" fill="#2F5B48" stroke="#1D2B45" stroke-width="5" stroke-linejoin="round"/><path d="M126 272 L150 300 L174 272" fill="#FFFFFF" stroke="#1D2B45" stroke-width="4" stroke-linejoin="round"/><circle cx="73" cy="178" r="15" fill="#EBC49F" stroke="#1D2B45" stroke-width="5"/><circle cx="227" cy="178" r="15" fill="#EBC49F" stroke="#1D2B45" stroke-width="5"/><ellipse cx="150" cy="172" rx="78" ry="90" fill="#EBC49F" stroke="#1D2B45" stroke-width="5"/><path d="M72 168 Q66 78 150 80 Q234 78 228 168 Q222 116 190 108 Q150 124 110 108 Q78 116 72 168 Z" fill="#A7ACB2" stroke="#1D2B45" stroke-width="5" stroke-linejoin="round"/><path d="M92 118 Q84 104 96 98 M204 118 Q214 104 202 98" fill="none" stroke="#1D2B45" stroke-width="3" stroke-linecap="round"/><path d="M145 128 L147 146 M155 128 L153 146" stroke="#1D2B45" stroke-width="3.5" stroke-linecap="round"/><path d="M96 136 L140 156" stroke="#1D2B45" stroke-width="9" stroke-linecap="round"/><path d="M204 136 L160 156" stroke="#1D2B45" stroke-width="9" stroke-linecap="round"/><path d="M106 168 Q119 159 132 168 Q119 173 106 168 Z" fill="#FFFFFF" stroke="#1D2B45" stroke-width="3.5" stroke-linejoin="round"/><path d="M168 168 Q181 159 194 168 Q181 173 168 168 Z" fill="#FFFFFF" stroke="#1D2B45" stroke-width="3.5" stroke-linejoin="round"/><circle cx="122" cy="166" r="4.5" fill="#1D2B45"/><circle cx="178" cy="166" r="4.5" fill="#1D2B45"/><path d="M96 178 H140 A22 17 0 0 1 96 178 Z" fill="#FFFFFF" fill-opacity="0.3" stroke="#1D2B45" stroke-width="4" stroke-linejoin="round"/><path d="M160 178 H204 A22 17 0 0 1 160 178 Z" fill="#FFFFFF" fill-opacity="0.3" stroke="#1D2B45" stroke-width="4" stroke-linejoin="round"/><path d="M140 180 Q150 174 160 180" fill="none" stroke="#1D2B45" stroke-width="4"/><path d="M100 202 Q116 210 132 202 M168 202 Q184 210 200 202" fill="none" stroke="#1D2B45" stroke-width="3" stroke-linecap="round"/><path d="M150 160 Q124 204 140 214 Q150 220 162 210 Q158 196 156 172" fill="#EBC49F" stroke="#1D2B45" stroke-width="4.5" stroke-linejoin="round" stroke-linecap="round"/><circle cx="138" cy="200" r="4" fill="#C98A6B" stroke="#1D2B45" stroke-width="2"/><path d="M142 212 Q146 216 150 213" fill="none" stroke="#1D2B45" stroke-width="3" stroke-linecap="round"/><path d="M114 236 L120 244 M186 236 L180 244" stroke="#1D2B45" stroke-width="3" stroke-linecap="round"/><circle cx="196" cy="214" r="7" fill="#5C3A1A" stroke="#1D2B45" stroke-width="2"/><path d="M196 207 Q200 198 206 196 M198 208 Q206 204 210 206" fill="none" stroke="#1D2B45" stroke-width="2" stroke-linecap="round"/><circle cx="160" cy="254" r="4" fill="#C98A6B" stroke="#1D2B45" stroke-width="2"/><path d="M160 250 L162 242" stroke="#1D2B45" stroke-width="2" stroke-linecap="round"/><path d="M134 256 Q150 262 166 256" fill="none" stroke="#1D2B45" stroke-width="2.5" stroke-linecap="round"/><g fill="#FFFFFF" stroke="#1D2B45" stroke-width="2.5"><circle cx="128" cy="291" r="5"/><circle cx="139" cy="288" r="5"/><circle cx="150" cy="287" r="5"/><circle cx="161" cy="288" r="5"/><circle cx="172" cy="291" r="5"/></g><rect x="0" y="0" width="300" height="320" fill="url(#hC_l)" clip-path="url(#hC_clip)"/><path d="M118 112 l6 8 -6 6 7 9 M182 112 l-6 8 6 6 -7 9" fill="none" stroke="#7A1E3A" stroke-width="3" stroke-linecap="round"/><path d="M116 240 Q150 210 184 240" fill="none" stroke="#2A0505" stroke-width="10" stroke-linecap="round"/><path d="M140 226 L144 236 L148 227 M152 227 L156 236 L160 226" fill="#FFF" stroke="#1D2B45" stroke-width="2"/><g filter="url(#hC_glow)"><circle cx="122" cy="166" r="6" fill="#FF3B3B"/><circle cx="178" cy="166" r="6" fill="#FF3B3B"/></g><circle cx="122" cy="166" r="2.7" fill="#FFF3B0"/><circle cx="178" cy="166" r="2.7" fill="#FFF3B0"/></svg></span>Buena suerte, ${nm}. Ahora estás en la lista de los más buscados de Ms Petunia.`});
   await playScenes(outro);
   confetti();
+  winCard=()=>{
   const rest=others(p).sort((a,b)=>b.exitDone.size-a.exitDone.size||b.pos-a.pos||b.right-a.right);
   const row=(q,i)=>`<li><span>${i+1}. ${pawnHTML(q)} ${esc(q.name)}</span><span>${q===p?'🏆 escapa':q.pos===0?'aula':'casilla '+q.pos} · ${q.right}/${q.total} aciertos</span></li>`;
   openCard(headHTML('🏆',`¡${esc(p.name)} escapa del cole!`,'Ha acertado una pregunta de cada asignatura'),
     `<ul class="win-list">${[p,...rest].map(row).join('')}</ul>
-     <div class="foot"><button class="btn" id="chgBtn">Cambiar jugadores</button><button class="btn btn-primary" id="againBtn">Jugar otra vez</button></div>`,'#FFD000');
+     <div class="foot"><button class="btn" id="repWinBtn">📋 Ver informe</button><button class="btn" id="chgBtn">Cambiar jugadores</button><button class="btn btn-primary" id="againBtn">Jugar otra vez</button></div>`,'#FFD000');
   $('#againBtn').onclick=()=>{closeCard();startGame();petuniaWalk();};
   $('#chgBtn').onclick=()=>{closeCard();goSetup();};
+  $('#repWinBtn').onclick=()=>showReport(()=>winCard());
+  };
+  winCard();
 }
+let winCard=()=>{};
 function confetti(){
   const cols=['#E4572E','#2E7BD6','#8E44AD','#1F9E5B','#E0930F','#FFD000'];
   for(let i=0;i<90;i++){ const d=document.createElement('div'); d.className='confetti';
@@ -10816,7 +11695,7 @@ function confetti(){
     d.style.animationDuration=(1.8+Math.random()*2)+'s'; d.style.animationDelay=(Math.random()*.6)+'s';
     document.body.appendChild(d); setTimeout(()=>d.remove(),4600); }
 }
-function goSetup(){ $('#game').classList.add('hidden'); $('#setup').classList.remove('hidden'); renderSetup(); }
+function goSetup(){ refreshContinue(); $('#game').classList.add('hidden'); $('#setup').classList.remove('hidden'); renderSetup(); }
 $('#newGameBtn').onclick=()=>{ if(S&&!S.over&&!confirm('¿Empezar una partida nueva? Se perderá la actual.')) return; closeCard(); goSetup(); };
 
 /* Leyenda */
@@ -10825,6 +11704,7 @@ $('#legend').innerHTML=SUBJECTS.map(s=>`<li><span class="ic" style="background:$
   +`<li><span class="ic" style="background:#FFD000">🚪</span><span><b>Exit</b>: ${GOAL_DESC}</span></li>`;
 
 renderSetup();
+refreshContinue();
 </script>
 </body>
 </html>
